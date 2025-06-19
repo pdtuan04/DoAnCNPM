@@ -18,7 +18,8 @@ namespace ET.Controllers.api
         private readonly UserManager<User> userManager;
         private readonly RoleManager<IdentityRole> roleManager;
         private readonly IConfiguration _configuration;
-        public AuthenticateController(UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration) {
+        public AuthenticateController(UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration)
+        {
             this.userManager = userManager;
             this.roleManager = roleManager;
             _configuration = configuration;
@@ -33,11 +34,11 @@ namespace ET.Controllers.api
             User user = new();
             user.UserName = model.Username;
             user.Email = model.Email;
-            
+
             var createUserResult = await userManager.CreateAsync(user, model.Password);
 
 
-            return Ok(new { status = true, message = "Đăng Ký Tài Khoản Thành Công"});
+            return Ok(new { status = true, message = "Đăng Ký Tài Khoản Thành Công" });
         }
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginModel model)
@@ -46,10 +47,10 @@ namespace ET.Controllers.api
             if (user == null)
                 return Ok(new { status = true, message = "Invalid username" });
             if (!await userManager.CheckPasswordAsync(user, model.Password))
-                return Ok(new { status = true, message = "Invalid password" }); 
+                return Ok(new { status = true, message = "Invalid password" });
 
             var userRoles = await userManager.GetRolesAsync(user);
-            
+
 
             var authClaims = new List<Claim>
             {
@@ -67,7 +68,7 @@ namespace ET.Controllers.api
                 }
                 authClaims.Add(new Claim(ClaimTypes.Role, userRole.Name));
             }
-            
+
 
             string token = GenerateToken(authClaims);
             return Ok(new { status = true, message = "", token = token });
@@ -89,6 +90,12 @@ namespace ET.Controllers.api
             var tokenHandler = new JwtSecurityTokenHandler();
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
+        }
+        [HttpPost("forgot-password")]
+        private async Task<IActionResult> forgotPassWord()
+        {
+
+            return Ok(new { status = true, message = "Chức năng này chưa được triển khai" });
         }
     }
 }
