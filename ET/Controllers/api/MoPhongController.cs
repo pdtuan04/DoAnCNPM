@@ -24,13 +24,7 @@ namespace ET.Controllers.api
             {
                 return Ok(new { status = false, message = "Mô phỏng không tìm thấy" });
             }
-            IEnumerable<MoPhongModel> moPhongModels = result.Select(x => new MoPhongModel
-            {
-                NoiDung = x.NoiDung,
-                VideoUrl = x.VideoUrl,
-                DapAn = x.DapAn,
-            }).ToList();
-            return Ok(new { status = true, message = "Lấy mô phỏng thành công", data = moPhongModels });
+            return Ok(new { status = true, message = "Lấy mô phỏng thành công", data = result });
         }
         [Authorize(Roles = "Admin")]
         [HttpGet("get-all-mo-phong")]
@@ -51,13 +45,7 @@ namespace ET.Controllers.api
             {
                 return Ok(new { status = false, message = "Mô phỏng không tìm thấy" });
             }
-            MoPhongModel moPhongModel = new MoPhongModel
-            {
-                NoiDung = result.NoiDung,
-                VideoUrl = result.VideoUrl,
-                DapAn = result.DapAn,
-            };
-            return Ok(new { status = true, message = "Lấy mô phỏng thành công", data = moPhongModel });
+            return Ok(new { status = true, message = "Lấy mô phỏng thành công", data = result });
         }
     }
 }
