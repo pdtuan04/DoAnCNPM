@@ -9,6 +9,7 @@ namespace Libs
         public DbSet<Questions> Questions { get; set; }
         public DbSet<ChuDes> ChuDes { get; set; }
         public DbSet<LoaiBangLais> LoaiBangLais { get; set; }
+        public DbSet<MoPhong> MoPhongs { get; set; }
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
         }

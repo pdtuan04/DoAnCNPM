@@ -13,5 +13,9 @@ namespace ET.Controllers
         {
             return View();
         }
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
     }
 }
