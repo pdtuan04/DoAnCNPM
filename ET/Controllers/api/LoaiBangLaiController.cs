@@ -69,6 +69,11 @@ namespace YourProject.Controllers
 
             return Ok(result);
         }
-
+        [HttpGet("get-loai-bang-lai-list")]
+        public IActionResult GetLoaiBangLaiList()
+        {
+            List<LoaiBangLai> loaiBangLaiList = _loaiBangLaiService.GetAllLoaiBangLais();
+            return Ok(new { status = true, message = "Get Loai Bang Lai Successfully", data = loaiBangLaiList });
+        }
     }
 }

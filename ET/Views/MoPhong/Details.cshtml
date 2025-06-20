@@ -65,18 +65,6 @@
     }
 </style>
 <div class="container-xl">
-    <div class="row breadcrumb-container">
-        <div class="col-12">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
-                    <li class="breadcrumb-item"><a href="/MoPhong">Loại bằng lái</a></li>
-                    <li class="breadcrumb-item active" id="license-name">Đang tải...</li>
-                </ol>
-            </nav>
-        </div>
-    </div>
-
     <div class="row" id="license-info-container">
         <div class="col-12">
             <div class="license-info">
@@ -92,7 +80,7 @@
         <div class="col-md-3">
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Danh sách mô phỏng</h5>
+                    <h5 class="mb-0">Chọn Bài Ôn</h5>
                 </div>
                 <div class="card-body p-0">
                     <div id="moPhongList" class="list-group list-group-flush">
@@ -108,7 +96,7 @@
         <div class="col-md-9">
             <div class="card">
                 <div class="card-header bg-primary text-white">
-					<h5 class="mb-0">Bài Mô phỏng</h5>
+                    <h5 class="mb-0">Bài Mô phỏng</h5>
                 </div>
                 <div class="card-body">
                     <div id="contentArea">
@@ -138,7 +126,11 @@
     const canvas = document.getElementById("timeline");
     const ctx = canvas.getContext("2d");
     const resetBtn = document.getElementById("resetBtn");
+        const predefinedMarkers = [];
 
+    // Define the colors and scores you want to use
+    const colors = ['green', 'red', 'yellow', 'blue', 'purple'];
+    const scores = [5, 4, 3, 2, 1];
     let readyToDraw = false;
     let userMarked = false;
         const id = new URLSearchParams(window.location.search).get("id"); // Lấy ID từ URL
@@ -149,9 +141,20 @@
         .then(res => res.json())
         .then(data => {
           if (data.status && data.data) {
-            const { noiDung, videoUrl } = data.data;
+            const { noiDung, videoUrl ,dapAn} = data.data;
             document.getElementById("video").src = videoUrl;
-            document.getElementById("currentTitle").innerText = noiDung;
+                const numbers = dapAn.split(',').map(num => parseInt(num.trim()));
+    // Populate the predefinedMarkers array
+    for (let i = 0; i < numbers.length - 1; i++) {
+      predefinedMarkers.push({
+        start: numbers[i],
+        end: numbers[i + 1],
+        score: scores[i],
+        color: colors[i % colors.length]
+      });
+    }
+
+    console.log(predefinedMarkers);
           } else {
             console.warn("Không tìm thấy dữ liệu mô phỏng");
           }
@@ -180,14 +183,14 @@
         console.error('Error fetching license name:', error);
         document.getElementById("license-name").innerText = "Không thể tải tên loại bằng lái";
       });
-    // Các marker có sẵn
-    const predefinedMarkers = [
-      { start: 2, end: 4, color: 'green', score: 1 },
-      { start: 4, end: 6, color: 'red', score: 2 },
-      { start: 6, end: 8, color: 'yellow', score: 3 },
-      { start: 8, end: 10, color: 'blue', score: 4 },
-      { start: 10, end: 12, color: 'purple', score: 5 }
-    ];
+    // // Các marker có sẵn
+    // const predefinedMarkers = [
+    //   { start: 2, end: 4, color: 'green', score: 1 },
+    //   { start: 4, end: 6, color: 'red', score: 2 },
+    //   { start: 6, end: 8, color: 'yellow', score: 3 },
+    //   { start: 8, end: 10, color: 'blue', score: 4 },
+    //   { start: 10, end: 12, color: 'purple', score: 5 }
+    // ];
     let userScore = 0;
     // Mảng để lưu các marker do người dùng tạo bằng phím Space
     const userMarkers = [];

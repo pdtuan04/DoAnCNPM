@@ -39,7 +39,9 @@ namespace Libs.Service
         {
             return await _loaiBangLaiRepository.GetChuDeByLoaiBangLaiAsync(id);
         }
-
-        
+        public List<LoaiBangLai> GetAllLoaiBangLais()
+        {
+            return _loaiBangLaiRepository.GetAll().ToList();
+        }
     }
 }

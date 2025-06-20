@@ -757,7 +757,7 @@ namespace Libs.Migrations
             modelBuilder.Entity("Libs.Entity.MoPhong", b =>
                 {
                     b.HasOne("Libs.Entity.LoaiBangLai", "LoaiBangLai")
-                        .WithMany()
+                        .WithMany("MoPhongs")
                         .HasForeignKey("LoaiBangLaiId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -869,6 +869,8 @@ namespace Libs.Migrations
                     b.Navigation("BaiSaHinhs");
 
                     b.Navigation("CauHois");
+
+                    b.Navigation("MoPhongs");
                 });
 #pragma warning restore 612, 618
         }

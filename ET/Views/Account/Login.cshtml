@@ -1,18 +1,25 @@
 ﻿@{
-    ViewData["Title"] = "Login";
+    ViewData["Title"] = "Đăng nhập";
     Layout = "~/Views/Shared/_PublicLayout.cshtml";
 }
 
-<h2>Login</h2>
-<form onsubmit="login(event)">
-    <div id="loginError" class="text-danger" style="display:none;"></div>
-    <div class="form-group">
-        <label for="Username">Username</label>
-        <input id="Username" class="form-control" required />
-    </div>
-    <div class="form-group">
-        <label for="Password">Password</label>
-        <input id="Password" class="form-control" type="password" required />
-    </div>
-    <button type="submit" class="btn btn-primary">Login</button>
-</form>
+<div class="auth-card">
+    <img src="~/images/hutech_logo.png" class="auth-logo" alt="HUTECH logo" />
+    <h2 class="auth-title">Đăng nhập</h2>
+
+    <form onsubmit="login(event)">
+        <div id="loginError" class="text-danger mb-2" style="display:none;"></div>
+
+        <div class="form-group mb-3">
+            <label for="Username">Tên đăng nhập</label>
+            <input id="Username" class="form-control" required />
+        </div>
+
+        <div class="form-group mb-3">
+            <label for="Password">Mật khẩu</label>
+            <input id="Password" class="form-control" type="password" required />
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Đăng nhập</button>
+    </form>
+</div>

@@ -13,6 +13,6 @@ namespace Libs.Entity
         public string? VideoUrl { get; set; }
         public string DapAn { get; set; }
         public Guid LoaiBangLaiId { get; set; }
-        public LoaiBangLai LoaiBangLai { get; set; }
+        public LoaiBangLai? LoaiBangLai { get; set; }
     }
 }
