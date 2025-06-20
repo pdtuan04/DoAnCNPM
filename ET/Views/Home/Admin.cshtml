@@ -1,6 +1,8 @@
 ﻿@{
+    ViewData["Title"] = "Admin Dashboard";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
+
 <h1>Admin Dashboard</h1>
 <p>Welcome, Admin! This page is only accessible to users with the Admin role.</p>
-<a class="nav-link" asp-controller="Admin" asp-action="QLMoPhong">Quản Lý Mô Phỏng</a>
+<button onclick="callProtectedApi()">Call Protected API</button>

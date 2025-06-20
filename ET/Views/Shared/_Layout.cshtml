@@ -17,7 +17,7 @@
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link href="~/assets/css/templatemo-seo-dream.css" rel="stylesheet" />
+    <link href="~/assets/css/templatemo-seo-dream.css" rel="stylesheet" />z
     <!-- Custom CSS -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Libs.styles.css" asp-append-version="true" />
@@ -79,6 +79,11 @@
                                         </a>
                                     </li>
                                     <li>
+                                        <a class="dropdown-item d-flex align-items-center" asp-area="" asp-controller="Share" asp-action="Share">
+                                            <i class="fas fa-history text-primary me-2"></i> Chia Sẽ
+                                        </a>
+                                    </li>
+                                    <li>
                                         <a class="dropdown-item d-flex align-items-center" asp-area="" asp-controller="LichSuThi" asp-action="DanhSachCauHoiSai">
                                             <i class="fas fa-exclamation-circle text-danger me-2"></i> Câu Hỏi Sai
                                         </a>
@@ -91,13 +96,19 @@
                                     <li><hr class="dropdown-divider"></li>
                                 </ul>
                             </li>
-
-
+                            <div class="navbar-nav">
+                                <form onsubmit="logout(event)" class="d-inline">
+                                    <button type="submit" class="nav-link btn btn-link">Logout</button>
+                                </form>
+                            </div>
+                        }else{
+							<li class="nav-item">
+								<a class="nav-link" asp-area="" asp-controller="Account" asp-action="Login">Đăng Nhập</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" asp-area="" asp-controller="Account" asp-action="Register">Đăng Ký</a>
+							</li>
                         }
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Share" asp-action="Share">Chia sẻ</a>
-                        <li class="nav-item">
-
                             @*  <li class="nav-item">
                             <partial name="_LoginPartial" />
                         </li>
@@ -154,6 +165,8 @@
             console.error(err.toString());
         });
     </script>
+    <script src="~/js/auth.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+

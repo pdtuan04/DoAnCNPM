@@ -1,112 +1,22 @@
 ﻿@{
-    ViewData["Title"] = "Đăng ký";
+    ViewData["Title"] = "Register";
+    Layout = "~/Views/Shared/_PublicLayout.cshtml";
 }
 
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
-            <div class="card shadow-sm">
-                <div class="card-body p-4">
-                    <h2 class="text-center mb-4">Đăng ký tài khoản</h2>
-                    <form id="registerForm">
-                        <div class="form-floating mb-3">
-                            <input type="text" class="form-control" id="username" placeholder="Tên đăng nhập" required>
-                            <label for="username">Tên đăng nhập</label>
-                        </div>
-                        <div class="form-floating mb-3">
-                            <input type="email" class="form-control" id="email" placeholder="Email" required>
-                            <label for="email">Email</label>
-                        </div>
-                        <div class="form-floating mb-3">
-                            <input type="password" class="form-control" id="password" placeholder="Mật khẩu" required>
-                            <label for="password">Mật khẩu</label>
-                            <div class="form-text">Mật khẩu phải có ít nhất 6 ký tự, bao gồm chữ hoa, chữ thường và số.</div>
-                        </div>
-                        <div class="form-floating mb-3">
-                            <input type="password" class="form-control" id="confirmPassword" placeholder="Xác nhận mật khẩu" required>
-                            <label for="confirmPassword">Xác nhận mật khẩu</label>
-                        </div>
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg" id="registerButton">
-                                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true" id="registerSpinner"></span>
-                                Đăng ký
-                            </button>
-                        </div>
-                        <div class="alert alert-danger mt-3 d-none" role="alert" id="registerError"></div>
-                        <div class="alert alert-success mt-3 d-none" role="alert" id="registerSuccess"></div>
-                    </form>
-                    <div class="text-center mt-4">
-                        <p>
-                            Đã có tài khoản?
-                            <a href="/Account/Login" class="text-decoration-none">Đăng nhập ngay</a>
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
+<h2>Register</h2>
+<form onsubmit="register(event)">
+    <div id="registerError" class="text-danger" style="display:none;"></div>
+    <div class="form-group">
+        <label for="Username">Username</label>
+        <input id="Username" class="form-control" required />
     </div>
-</div>
-
-@section Scripts {
-    <script>
-        $(document).ready(function() {
-            $("#registerForm").on("submit", function(e) {
-                e.preventDefault();
-
-                // Hiển thị spinner và vô hiệu hóa nút
-                $("#registerButton").prop("disabled", true);
-                $("#registerSpinner").removeClass("d-none");
-                $("#registerError").addClass("d-none");
-                $("#registerSuccess").addClass("d-none");
-
-                var username = $("#username").val();
-                var email = $("#email").val();
-                var password = $("#password").val();
-                var confirmPassword = $("#confirmPassword").val();
-
-                // Kiểm tra mật khẩu trùng khớp
-                if (password !== confirmPassword) {
-                    $("#registerError").removeClass("d-none").text("Mật khẩu xác nhận không khớp.");
-                    $("#registerButton").prop("disabled", false);
-                    $("#registerSpinner").addClass("d-none");
-                    return;
-                }
-
-                $.ajax({
-                    url: "/api/Authenticate/register",
-                    type: "POST",
-                    contentType: "application/json",
-                    data: JSON.stringify({
-                        username: username,
-                        email: email,
-                        password: password
-                    }),
-                    success: function(response) {
-                        // Ẩn spinner
-                        $("#registerSpinner").addClass("d-none");
-
-                        if (response.status === true) {
-                            // Hiển thị thông báo thành công
-                            $("#registerSuccess").removeClass("d-none").text("Đăng ký thành công! Bạn sẽ được chuyển đến trang đăng nhập.");
-
-                            // Chuyển hướng sau 2 giây
-                            setTimeout(function() {
-                                window.location.href = "/Account/Login";
-                            }, 2000);
-                        } else {
-                            // Hiển thị lỗi
-                            $("#registerButton").prop("disabled", false);
-                            $("#registerError").removeClass("d-none").text(response.message || "Đăng ký thất bại. Vui lòng thử lại.");
-                        }
-                    },
-                    error: function(xhr) {
-                        // Ẩn spinner và hiển thị lỗi
-                        $("#registerSpinner").addClass("d-none");
-                        $("#registerButton").prop("disabled", false);
-                        $("#registerError").removeClass("d-none").text("Đã xảy ra lỗi. Vui lòng thử lại sau.");
-                    }
-                });
-            });
-        });
-    </script>
-}
+    <div class="form-group">
+        <label for="Email">Email</label>
+        <input id="Email" class="form-control" type="email" required />
+    </div>
+    <div class="form-group">
+        <label for="Password">Password</label>
+        <input id="Password" class="form-control" type="password" required />
+    </div>
+    <button type="submit" class="btn btn-primary">Register</button>
+</form>
