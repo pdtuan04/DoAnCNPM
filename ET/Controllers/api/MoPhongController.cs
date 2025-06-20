@@ -1,4 +1,5 @@
 ﻿using ET.Models;
+using Libs.Entity;
 using Libs.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -11,14 +12,16 @@ namespace ET.Controllers.api
     public class MoPhongController : ControllerBase
     {
         private MoPhongService moPhongService;
+
         public MoPhongController(MoPhongService moPhongService)
         {
             this.moPhongService = moPhongService;
         }
+
         [HttpGet("get-mo-phong-by-loai-bang-lai")]
-        public IActionResult GetMoPhong(Guid id)
+        public async Task<IActionResult> GetMoPhong(Guid id)
         {
-            var result = moPhongService.GetMoPhongByLoaiBangLaiId(id);
+            var result = await moPhongService.GetMoPhongByLoaiBangLaiIdAsync(id);
 
             if (result == null || !result.Any())
             {
@@ -26,26 +29,83 @@ namespace ET.Controllers.api
             }
             return Ok(new { status = true, message = "Lấy mô phỏng thành công", data = result });
         }
+
         [Authorize(Roles = "Admin")]
         [HttpGet("get-all-mo-phong")]
-        public IActionResult GetAllMoPhong()
+        public async Task<IActionResult> GetAllMoPhong()
         {
-            var result = moPhongService.GetAllMoPhong();
+            var result = await moPhongService.GetAllMoPhongAsync();
             if (result == null || !result.Any())
             {
                 return Ok(new { status = false, message = "Không có mô phỏng nào" });
             }
             return Ok(new { status = true, message = "Lấy tất cả mô phỏng thành công", data = result });
         }
+
         [HttpGet("{id}")]
-        public IActionResult GetMoPhongById(Guid id)
+        public async Task<IActionResult> GetMoPhongById(Guid id)
         {
-            var result = moPhongService.GetMoPhongById(id);
+            var result = await moPhongService.GetMoPhongByIdAsync(id);
             if (result == null)
             {
                 return Ok(new { status = false, message = "Mô phỏng không tìm thấy" });
             }
             return Ok(new { status = true, message = "Lấy mô phỏng thành công", data = result });
+        }
+        [HttpGet("paged-mo-phongs")]
+        public async Task<IActionResult> GetPagedMoPhong(int page, int pageSize, string? search, string? sortCol, string? sortDir)
+        {
+            var result = await moPhongService.GetPagedMoPhong(page, pageSize, search, sortCol, sortDir);
+            return Ok(new
+            {
+                recordsTotal = result.TotalCount,
+                recordsFiltered = result.TotalCount,
+                data = result.Items
+            });
+        }
+        [Authorize(Roles = "Admin")]
+        [HttpPost("create")]
+        public async Task<IActionResult> CreateMoPhong(MoPhong moPhong)
+        {
+            var mo = moPhong;
+            if (!ModelState.IsValid)
+            {
+                return Ok(new { status = false, message = "Dữ liệu không hợp lệ" });
+            }
+
+            var result = await moPhongService.CreateMoPhongAsync(moPhong);
+            return Ok(new { status = true, message = "Thêm mô phỏng thành công", data = result });
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPut("update")]
+        public async Task<IActionResult> UpdateMoPhong(MoPhong moPhong)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { status = false, message = "Dữ liệu không hợp lệ" });
+            }
+
+            var result = await moPhongService.UpdateMoPhongAsync(moPhong);
+            if (result == null)
+            {
+                return NotFound(new { status = false, message = "Mô phỏng không tìm thấy" });
+            }
+
+            return Ok(new { status = true, message = "Cập nhật mô phỏng thành công", data = result });
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("delete/{id}")]
+        public async Task<IActionResult> DeleteMoPhong(Guid id)
+        {
+            var result = await moPhongService.DeleteMoPhongAsync(id);
+            if (!result)
+            {
+                return NotFound(new { status = false, message = "Mô phỏng không tìm thấy" });
+            }
+
+            return Ok(new { status = true, message = "Xóa mô phỏng thành công" });
         }
     }
 }

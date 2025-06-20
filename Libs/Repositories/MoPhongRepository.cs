@@ -1,13 +1,18 @@
 ﻿using Libs.Data;
 using Libs.Entity;
 using Libs;
+using Microsoft.EntityFrameworkCore;
+using Libs.Service;
 namespace Libs.Repositories
 {
     public interface IMoPhongRepository : IRepository<MoPhong>
     {
-        IEnumerable<MoPhong> GetMoPhongsByLoaiBangLaiId(Guid loaId);
-        IEnumerable<MoPhong> GetAllMoPhong();
-        MoPhong GetMoPhongById(Guid id);
+        Task<List<MoPhong>> GetMoPhongsByLoaiBangLaiIdAsync(Guid loaId);
+        Task<List<MoPhong>> GetAllMoPhongAsync();
+        Task<MoPhong> GetMoPhongByIdAsync(Guid id);
+        public Task<PageList<MoPhong>> GetPagedMoPhong(int pageNumber, int pageSize, string? search, string? sortCol, string? sortDir);
+
+
     }
 
     public class MoPhongRepository : RepositoryBase<MoPhong>, IMoPhongRepository
@@ -16,18 +21,47 @@ namespace Libs.Repositories
         {
         }
 
-        public IEnumerable<MoPhong> GetMoPhongsByLoaiBangLaiId(Guid loaiBangLaiId)
+        public async Task<List<MoPhong>> GetMoPhongsByLoaiBangLaiIdAsync(Guid loaiBangLaiId)
         {
-            return _dbContext.MoPhongs.Where(x => x.LoaiBangLaiId == loaiBangLaiId)
-                                      .ToList();
+            return await _dbContext.MoPhongs
+                .Where(x => x.LoaiBangLaiId == loaiBangLaiId)
+                .ToListAsync();
         }
-        public IEnumerable<MoPhong> GetAllMoPhong()
+
+        public async Task<List<MoPhong>> GetAllMoPhongAsync()
         {
-            return _dbContext.MoPhongs.ToList();
+            return await _dbContext.MoPhongs.ToListAsync();
         }
-        public MoPhong GetMoPhongById(Guid id)
+
+        public async Task<MoPhong> GetMoPhongByIdAsync(Guid id)
         {
-            return _dbContext.MoPhongs.FirstOrDefault(x => x.Id == id);
+            return await _dbContext.MoPhongs.FirstOrDefaultAsync(x => x.Id == id);
+        }
+        public async Task<PageList<MoPhong>> GetPagedMoPhong(int pageNumber, int pageSize, string? search, string? sortCol, string? sortDir)
+        {
+            IQueryable<MoPhong> mophongQuery = _dbContext.MoPhongs.AsQueryable();
+            if (!string.IsNullOrEmpty(search))
+            {
+                mophongQuery = mophongQuery.Where(p => p.NoiDung.Contains(search));
+            }
+            var entityProps = typeof(MoPhong)
+            .GetProperties()
+            .ToDictionary(p => p.Name.ToLower(), p => p.Name, StringComparer.OrdinalIgnoreCase);
+            if (!string.IsNullOrWhiteSpace(sortCol) && entityProps.ContainsKey(sortCol))
+            {
+                string actualCol = entityProps[sortCol];
+                bool isDescending = sortDir?.Equals("desc", StringComparison.OrdinalIgnoreCase) ?? false;
+
+                mophongQuery = isDescending
+                    ? mophongQuery.OrderByDescending(q => EF.Property<object>(q, actualCol))
+                    : mophongQuery.OrderBy(q => EF.Property<object>(q, actualCol));
+            }
+            else
+            {
+                mophongQuery = mophongQuery.OrderBy(q => q.Id);
+            }
+            var moPhongs = await PageList<MoPhong>.CreatePageAsync(mophongQuery, pageNumber, pageSize);
+            return moPhongs;
         }
     }
 }

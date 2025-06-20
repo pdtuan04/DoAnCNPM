@@ -15,7 +15,6 @@ namespace Libs.Entity
         public string TenLoai { get; set; }
 
         public string MoTa { get; set; }
-        //them 3 cai nay 
         public string LoaiXe { get; set; }
         public int ThoiGianThi { get; set; }
         public int DiemToiThieu { get; set; }
@@ -25,5 +24,7 @@ namespace Libs.Entity
         public ICollection<CauHoi> CauHois { get; set; }
         [ValidateNever]
         public ICollection<BaiSaHinh> BaiSaHinhs { get; set; }
+        [ValidateNever]
+        public ICollection<MoPhong> MoPhongs { get; set; } = new List<MoPhong>();
     }
 }

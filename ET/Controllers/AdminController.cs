@@ -18,5 +18,19 @@ namespace ET.Controllers
         {
             return View();
         }
+        public IActionResult CreateMoPhong()
+        {
+            return View();
+        }
+
+        public IActionResult EditMoPhong(Guid id)
+        {
+            return View(id);
+        }
+
+        public IActionResult DetailsMoPhong(Guid id)
+        {
+            return View(id);
+        }
     }
 }

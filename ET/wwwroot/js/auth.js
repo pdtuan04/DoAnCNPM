@@ -15,9 +15,24 @@ function showError(elementId, message) {
 // Đăng ký
 async function register(event) {
     event.preventDefault();
-    const username = document.getElementById('Username').value;
-    const email = document.getElementById('Email').value;
+
+    const username = document.getElementById('Username').value.trim();
+    const email = document.getElementById('Email').value.trim();
     const password = document.getElementById('Password').value;
+    const confirmPassword = document.getElementById('ConfirmPassword').value;
+
+    // Kiểm tra mật khẩu có tối thiểu 6 ký tự và có số
+    const passwordValid = password.length >= 6 && /\d/.test(password);
+    if (!passwordValid) {
+        showError('registerError', 'Mật khẩu phải có ít nhất 6 ký tự và chứa ít nhất một chữ số.');
+        return;
+    }
+
+    // Kiểm tra xác nhận mật khẩu
+    if (password !== confirmPassword) {
+        showError('registerError', 'Xác nhận mật khẩu không khớp.');
+        return;
+    }
 
     try {
         const response = await fetch('/api/authenticate/register', {
@@ -31,6 +46,7 @@ async function register(event) {
 
         const result = await response.json();
         if (result.status) {
+            window.alert('Đăng ký thành công! Vui lòng đăng nhập lại.');
             window.location.href = '/Home/Index';
         } else {
             showError('registerError', result.message || 'Đăng ký thất bại');
@@ -39,6 +55,7 @@ async function register(event) {
         showError('registerError', 'Lỗi kết nối server');
     }
 }
+
 
 // Đăng nhập
 async function login(event) {
@@ -82,7 +99,7 @@ async function logout(event) {
             },
             credentials: 'include'
         });
-        window.location.href = '/Home/Index';
+        window.location.href = '/Home/';
     } catch (error) {
         console.error('Lỗi đăng xuất:', error);
     }

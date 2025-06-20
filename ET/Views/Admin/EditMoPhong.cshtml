@@ -1,0 +1,396 @@
+﻿@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h2>Sửa mô phỏng</h2>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form id="moPhongForm">
+                <input type="hidden" id="moPhongId" />
+
+                <div class="mb-3">
+                    <label for="noiDung" class="form-label">Nội dung <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="noiDung" rows="4" required></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="videoFile" class="form-label">Video <span class="text-danger">*</span></label>
+                    <input type="file" class="form-control" id="videoFile" accept="video/mp4,video/webm,video/ogg,video/quicktime">
+                    <div class="form-text">Chọn file video mới nếu muốn thay đổi (MP4, WebM, OGG, MOV)</div>
+                    <input type="hidden" id="videoUrl">
+                    <div id="videoUploadProgress" class="progress mt-2" style="display: none;">
+                        <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <div id="videoPreviewContainer" class="mt-2">
+                        <video id="videoPreview" controls style="max-width: 100%; max-height: 300px;"></video>
+                        <p class="mt-1 text-muted" id="currentVideoText"></p>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="dapAn" class="form-label">Đáp án <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="dapAn" rows="3" required></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="loaiBangLaiId" class="form-label">Loại bằng lái <span class="text-danger">*</span></label>
+                    <select class="form-select" id="loaiBangLaiId" required></select>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="/Admin/QLMoPhong" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Quay lại
+                    </a>
+                    <button type="button" id="btnSave" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Lưu
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    $(document).ready(function () {
+        // Lấy id từ URL
+        const moPhongId = getMoPhongIdFromUrl();
+        $('#moPhongId').val(moPhongId);
+
+        // Tải thông tin mô phỏng
+        loadMoPhongData();
+
+        // Tải danh sách loại bằng lái
+        loadLoaiBangLai();
+
+        // Xử lý sự kiện nút Lưu
+        $('#btnSave').click(function() {
+            updateMoPhong();
+        });
+
+        // Xử lý sự kiện khi chọn file video
+        $('#videoFile').change(function() {
+            const file = this.files[0];
+            if (file) {
+                // Hiển thị preview
+                const videoUrl = URL.createObjectURL(file);
+                $('#videoPreview').attr('src', videoUrl);
+                $('#videoPreviewContainer').show();
+
+                // Upload file
+                uploadVideo(file);
+            }
+        });
+    });
+
+    // Hàm upload video
+    function uploadVideo(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        // Hiển thị thanh tiến trình
+        $('#videoUploadProgress').show();
+
+        $.ajax({
+            url: '/api/Upload/upload-video',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'Authorization': 'Bearer ' + getToken()
+            },
+            xhr: function() {
+                const xhr = $.ajaxSettings.xhr();
+                if (xhr.upload) {
+                    xhr.upload.addEventListener('progress', function(e) {
+                        if (e.lengthComputable) {
+                            const percent = Math.round((e.loaded / e.total) * 100);
+                            $('#videoUploadProgress .progress-bar').css('width', percent + '%');
+                            $('#videoUploadProgress .progress-bar').text(percent + '%');
+                        }
+                    }, false);
+                }
+                return xhr;
+            },
+            success: function(response) {
+                if (response.status) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Upload thành công',
+                        text: 'Video đã được tải lên thành công',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+
+                    // Lưu đường dẫn video vào trường ẩn
+                    $('#videoUrl').val(response.filePath);
+                    $('#currentVideoText').text('Video mới: ' + response.filePath);
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        text: response.message || 'Không thể upload video'
+                    });
+                }
+            },
+            error: function(xhr) {
+                let errorMsg = 'Đã xảy ra lỗi khi upload video';
+
+                try {
+                    const resp = JSON.parse(xhr.responseText);
+                    if (resp.message) {
+                        errorMsg = resp.message;
+                    }
+                } catch (e) {}
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: errorMsg
+                });
+            },
+            complete: function() {
+                // Ẩn thanh tiến trình sau khi hoàn thành
+                setTimeout(function() {
+                    $('#videoUploadProgress').hide();
+                }, 1000);
+            }
+        });
+    }
+
+    // Hàm lấy id từ URL
+    function getMoPhongIdFromUrl() {
+        // Lấy URL hiện tại
+        const url = window.location.pathname;
+        // URL có dạng /Admin/EditMoPhong/id
+        const parts = url.split('/');
+        // Id là phần tử cuối cùng
+        return parts[parts.length - 1];
+    }
+
+    // Hàm tải thông tin mô phỏng
+    function loadMoPhongData() {
+        const id = $('#moPhongId').val();
+
+        $.ajax({
+            url: '/api/mophong/' + id,
+            type: 'GET',
+            success: function(response) {
+                if (response.status && response.data) {
+                    const moPhong = response.data;
+
+                    $('#noiDung').val(moPhong.noiDung);
+                    $('#videoUrl').val(moPhong.videoUrl);
+                    $('#dapAn').val(moPhong.dapAn);
+
+                    // Hiển thị video hiện tại nếu có
+                    if (moPhong.videoUrl) {
+                        $('#videoPreview').attr('src', moPhong.videoUrl);
+                        $('#currentVideoText').text('Video hiện tại: ' + moPhong.videoUrl);
+                        $('#videoPreviewContainer').show();
+                    } else {
+                        $('#videoPreviewContainer').hide();
+                    }
+
+                    // Loại bằng lái sẽ được chọn sau khi dropdown được tải
+                    setTimeout(function() {
+                        $('#loaiBangLaiId').val(moPhong.loaiBangLaiId);
+                    }, 1000);
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        text: 'Không thể tải thông tin mô phỏng',
+                        confirmButtonText: 'OK'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '/Admin/QLMoPhong';
+                        }
+                    });
+                }
+            },
+            error: function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: 'Đã xảy ra lỗi khi tải thông tin mô phỏng',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '/Admin/QLMoPhong';
+                    }
+                });
+            }
+        });
+    }
+
+    // Hàm tải danh sách loại bằng lái
+    function loadLoaiBangLai() {
+        $.ajax({
+            url: '/api/loaibanglai/get-loai-bang-lai-list',
+            type: 'GET',
+            success: function(response) {
+                if (response.status && response.data) {
+                    $('#loaiBangLaiId').empty();
+                    $('#loaiBangLaiId').append('<option value="">-- Chọn loại bằng lái --</option>');
+
+                    $.each(response.data, function(index, item) {
+                        $('#loaiBangLaiId').append(`<option value="${item.id}">${item.tenLoai}</option>`);
+                    });
+
+                    // Cố gắng đặt lại giá trị loại bằng lái đã chọn
+                    const id = $('#moPhongId').val();
+                    $.ajax({
+                        url: '/api/mophong/' + id,
+                        type: 'GET',
+                        success: function(response) {
+                            if (response.status && response.data) {
+                                $('#loaiBangLaiId').val(response.data.loaiBangLaiId);
+                            }
+                        }
+                    });
+                }
+            },
+            error: function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: 'Không thể tải danh sách loại bằng lái'
+                });
+            }
+        });
+    }
+
+    // Hàm cập nhật mô phỏng
+    function updateMoPhong() {
+        // Kiểm tra dữ liệu nhập vào
+        if (!validateForm()) {
+            return;
+        }
+
+        const id = $('#moPhongId').val();
+        const moPhong = {
+            id: id,
+            noiDung: $('#noiDung').val(),
+            videoUrl: $('#videoUrl').val(),
+            dapAn: $('#dapAn').val(),
+            loaiBangLaiId: $('#loaiBangLaiId').val()
+        };
+
+        $.ajax({
+            url: '/api/mophong/update',
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(moPhong),
+            headers: {
+                'Authorization': 'Bearer ' + getToken()
+            },
+            success: function(response) {
+                if (response.status) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công',
+                        text: 'Cập nhật mô phỏng thành công',
+                        confirmButtonText: 'OK'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '/Admin/QLMoPhong';
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        text: response.message || 'Không thể cập nhật mô phỏng'
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Chi tiết lỗi:", xhr.responseText);
+
+                let errorMsg = 'Đã xảy ra lỗi khi cập nhật mô phỏng';
+
+                try {
+                    const resp = JSON.parse(xhr.responseText);
+                    if (resp.errors) {
+                        errorMsg = Object.entries(resp.errors)
+                            .map(([key, errors]) => `${key}: ${errors.join(', ')}`)
+                            .join('<br>');
+                    } else if (resp.message) {
+                        errorMsg = resp.message;
+                    }
+                } catch (e) {
+                    console.error("Không thể phân tích phản hồi lỗi:", e);
+                }
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    html: errorMsg
+                });
+            }
+        });
+    }
+
+    // Kiểm tra form
+    function validateForm() {
+        const noiDung = $('#noiDung').val();
+        const videoUrl = $('#videoUrl').val();
+        const dapAn = $('#dapAn').val();
+        const loaiBangLaiId = $('#loaiBangLaiId').val();
+
+        if (!noiDung) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Vui lòng nhập nội dung mô phỏng'
+            });
+            return false;
+        }
+
+        if (!videoUrl) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Chưa có video. Vui lòng chọn và upload video'
+            });
+            return false;
+        }
+
+        if (!dapAn) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Vui lòng nhập đáp án'
+            });
+            return false;
+        }
+
+        if (!loaiBangLaiId) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Vui lòng chọn loại bằng lái'
+            });
+            return false;
+        }
+
+        return true;
+    }
+
+    // Lấy JWT token từ localStorage hoặc nơi lưu trữ khác
+    function getToken() {
+        return localStorage.getItem('jwtToken') || '';
+    }
+</script>
