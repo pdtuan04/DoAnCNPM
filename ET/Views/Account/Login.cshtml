@@ -1,89 +1,18 @@
 ﻿@{
-    ViewData["Title"] = "Đăng nhập";
+    ViewData["Title"] = "Login";
+    Layout = "~/Views/Shared/_PublicLayout.cshtml";
 }
 
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
-            <div class="card shadow-sm">
-                <div class="card-body p-4">
-                    <h2 class="text-center mb-4">Đăng nhập</h2>
-                    <form id="loginForm">
-                        <div class="form-floating mb-3">
-                            <input type="text" class="form-control" id="username" placeholder="Tên đăng nhập">
-                            <label for="username">Tên đăng nhập</label>
-                        </div>
-                        <div class="form-floating mb-3">
-                            <input type="password" class="form-control" id="password" placeholder="Mật khẩu">
-                            <label for="password">Mật khẩu</label>
-                        </div>
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg" id="loginButton">
-                                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true" id="loginSpinner"></span>
-                                Đăng nhập
-                            </button>
-                        </div>
-                        <div class="alert alert-danger mt-3 d-none" role="alert" id="loginError"></div>
-                    </form>
-                    <div class="text-center mt-4">
-                        <p>
-                            Bạn chưa có tài khoản?
-                            <a href="/Account/Register" class="text-decoration-none">Đăng ký ngay</a>
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
+<h2>Login</h2>
+<form onsubmit="login(event)">
+    <div id="loginError" class="text-danger" style="display:none;"></div>
+    <div class="form-group">
+        <label for="Username">Username</label>
+        <input id="Username" class="form-control" required />
     </div>
-</div>
-
-@section Scripts {
-    <script>
-        $(document).ready(function() {
-            $("#loginForm").on("submit", function(e) {
-                e.preventDefault();
-                // Hiển thị spinner và vô hiệu hóa nút
-                $("#loginButton").prop("disabled", true);
-                $("#loginSpinner").removeClass("d-none");
-                $("#loginError").addClass("d-none");
-
-                var username = $("#username").val();
-                var password = $("#password").val();
-
-                $.ajax({
-                    url: "/api/Authenticate/login",
-                    type: "POST",
-                    contentType: "application/json",
-                    data: JSON.stringify({
-                        username: username,
-                        password: password,
-                        email: ""
-                    }),
-                    success: function(response) {
-                        // Ẩn spinner
-                        $("#loginSpinner").addClass("d-none");
-
-                        if (response.status === true && response.token) {
-                            // Lưu token JWT vào localStorage
-                            localStorage.setItem("jwtToken", response.token);
-                            localStorage.setItem("username", username);
-
-                            // Chuyển hướng đến trang chủ
-                            window.location.href = "/";
-                        } else {
-                            // Hiển thị lỗi
-                            $("#loginButton").prop("disabled", false);
-                            $("#loginError").removeClass("d-none").text(response.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.");
-                        }
-                    },
-                    error: function(xhr) {
-                        // Ẩn spinner và hiển thị lỗi
-                        $("#loginSpinner").addClass("d-none");
-                        $("#loginButton").prop("disabled", false);
-                        $("#loginError").removeClass("d-none").text("Đã xảy ra lỗi. Vui lòng thử lại sau.");
-                    }
-                });
-            });
-        });
-    </script>
-}
+    <div class="form-group">
+        <label for="Password">Password</label>
+        <input id="Password" class="form-control" type="password" required />
+    </div>
+    <button type="submit" class="btn btn-primary">Login</button>
+</form>

@@ -18,6 +18,11 @@ namespace ET.Controllers
 
         public IActionResult Index()
         {
+            if (HttpContext.User.Identity.IsAuthenticated)
+            {
+                if (HttpContext.User.IsInRole("Admin"))
+                    return RedirectToAction("Index", "Admin");
+            }
             return View();
         }
 
