@@ -1,0 +1,57 @@
+﻿@{
+    ViewData["Title"] = "Chọn chủ đề ôn tập";
+    var loaiBangLaiId = ViewBag.LoaiBangLaiId;
+}
+
+<div class="container2">
+    <h2 class="section-title">
+        Chọn chủ đề ôn tập - <span id="tenLoaiText"></span>
+    </h2>
+
+    <div id="chuDeContent">
+        <div class="text-center">Đang tải dữ liệu...</div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            const loaiBangLaiId = "@loaiBangLaiId";
+
+            fetch(`/api/LoaiBangLai/${loaiBangLaiId}/chu-de`)
+                .then(res => res.json())
+                .then(data => {
+                    if (!data || !data.chuDeList || data.chuDeList.length === 0) {
+                        $('#chuDeContent').html('<div class="alert-warning text-center">⚠️ Không có chủ đề nào cho loại bằng lái này.</div>');
+                        return;
+                    }
+
+                    $('#tenLoaiText').text(data.loai.tenLoai);
+
+                    let html = '<div class="grid-topic">';
+                    data.chuDeList.forEach(chuDe => {
+                        const soCau = chuDe.cauHois ? chuDe.cauHois.length : 0;
+                        const imgUrl = chuDe.imageUrl || '/images/default-topic.png';
+
+                        html += `
+                        <a href="/BaiThi/OnTapChuDe?loaiBangLaiId=${loaiBangLaiId}&chuDeId=${chuDe.id}">
+                            <div class="card-topic">
+                                <div class="badge-circle">${soCau} câu</div>
+                                <div class="icon-topic">
+                                    <img src="${imgUrl}" alt="${chuDe.tenChuDe}" />
+                                </div>
+                                <div class="title-topic">${chuDe.tenChuDe}</div>
+                            </div>
+                        </a>`;
+                    });
+
+                    html += '</div>';
+                    $('#chuDeContent').html(html);
+                })
+                .catch(error => {
+                    console.error(error);
+                    $('#chuDeContent').html('<div class="alert alert-danger text-center">Lỗi tải dữ liệu chủ đề.</div>');
+                });
+        });
+    </script>
+}

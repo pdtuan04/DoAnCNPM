@@ -1,84 +1,40 @@
-﻿using Libs.Entity;
+﻿using Microsoft.AspNetCore.Mvc;
 using Libs.Service;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Threading.Tasks;
 
-namespace ET.Controllers.api
+namespace YourProject.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class ChuDeController : ControllerBase
     {
-        private ChuDeService _chuDeService;
+        private readonly ChuDeService _chuDeService;
+
         public ChuDeController(ChuDeService chuDeService)
         {
-            this._chuDeService = chuDeService;
+            _chuDeService = chuDeService;
         }
 
-        [HttpGet("get-chu-de-list")]
-        public IActionResult GetChuDeList()
+        [HttpGet("danh-sach")]
+        public async Task<IActionResult> GetDanhSach()
         {
-            List<ChuDes> chuDeList = _chuDeService.GetAllChuDes();
-            return Ok(new { status = true, message = "Get Chu De Successfully", data = chuDeList });
+            var list = await _chuDeService.GetDanhSachChuDe();
+            return Ok(list);
         }
 
-        [HttpGet("get-chu-de-by-id/{id}")]
-        public IActionResult GetChuDeById(Guid id)
+        [HttpGet("cau-hoi")]
+        public async Task<IActionResult> GetCauHoiTheoChuDe(Guid loaiBangLaiId, Guid chuDeId)
         {
-            ChuDes chuDe = _chuDeService.GetChuDeById(id);
-            if (chuDe == null)
-            {
-                return NotFound(new { status = false, message = "Chu De not found" });
-            }
-            return Ok(new { status = true, message = "Get Chu De Successfully", data = chuDe });
+            var list = await _chuDeService.GetCauHoiTheoChuDe(loaiBangLaiId, chuDeId);
+            return Ok(list);
         }
 
-        [HttpGet("get-chu-de-with-questions")]
-        public IActionResult GetChuDeWithQuestions()
+        [HttpGet("ten/{chuDeId}")]
+        public async Task<IActionResult> GetTenChuDe(Guid chuDeId)
         {
-            List<ChuDes> chuDes = _chuDeService.GetChuDesWithQuestions();
-            return Ok(new { status = true, message = "Get Chu De With Questions Successfully", data = chuDes });
-        }
-
-        [HttpGet("get-chu-de-with-questions/{id}")]
-        public IActionResult GetChuDeWithQuestions(Guid id)
-        {
-            ChuDes chuDe = _chuDeService.GetChuDeWithQuestions(id);
-            if (chuDe == null)
-            {
-                return NotFound(new { status = false, message = "Chu De not found" });
-            }
-            return Ok(new { status = true, message = "Get Chu De With Questions Successfully", data = chuDe });
-        }
-
-        [HttpPost("create-chu-de")]
-        public IActionResult CreateChuDe(ChuDes chuDe)
-        {
-            _chuDeService.CreateChuDe(chuDe);
-            return Ok(new { status = true, message = "Create Chu De Successfully" });
-        }
-
-        [HttpPut("update-chu-de")]
-        public IActionResult UpdateChuDe(ChuDes chuDe)
-        {
-            if (!_chuDeService.IsChuDeExists(chuDe.Id))
-            {
-                return NotFound(new { status = false, message = "Chu De not found" });
-            }
-            _chuDeService.UpdateChuDe(chuDe);
-            return Ok(new { status = true, message = "Update Chu De Successfully" });
-        }
-
-        [HttpDelete("delete-chu-de/{id}")]
-        public IActionResult DeleteChuDe(Guid id)
-        {
-            if (!_chuDeService.IsChuDeExists(id))
-            {
-                return NotFound(new { status = false, message = "Chu De not found" });
-            }
-            _chuDeService.DeleteChuDe(id);
-            return Ok(new { status = true, message = "Delete Chu De Successfully" });
+            var ten = await _chuDeService.GetTenChuDeById(chuDeId);
+            return Ok(new { tenChuDe = ten });
         }
     }
 }

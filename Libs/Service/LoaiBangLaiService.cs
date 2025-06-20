@@ -1,91 +1,45 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Libs.Data;
-using Libs.Entity;
+﻿using Libs.Entity;
 using Libs.Repositories;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Libs.Service
 {
     public class LoaiBangLaiService
     {
-        private ApplicationDbContext _dbContext;
-        private IRepository<LoaiBangLais> _loaiBangLaiRepository;
+        private readonly ILoaiBangLaiRepository _loaiBangLaiRepository;
 
-        public LoaiBangLaiService(ApplicationDbContext dbContext)
+        public LoaiBangLaiService(ILoaiBangLaiRepository loaiBangLaiRepository)
         {
-            this._dbContext = dbContext;
-            this._loaiBangLaiRepository = new LoaiBangLaiRepository(dbContext);
+            _loaiBangLaiRepository = loaiBangLaiRepository;
         }
 
-        public List<LoaiBangLais> GetAllLoaiBangLais()
+        public async Task<List<LoaiBangLai>> GetXeMayAsync()
         {
-            return _loaiBangLaiRepository.GetAll().ToList();
+            return await _loaiBangLaiRepository.GetLoaiBangLaiXeMayAsync();
         }
 
-        public LoaiBangLais GetLoaiBangLaiById(Guid id)
+        public async Task<List<LoaiBangLai>> GetOToAsync()
         {
-            return _loaiBangLaiRepository.GetById(id);
+            return await _loaiBangLaiRepository.GetLoaiBangLaiOToAsync();
         }
 
-        public LoaiBangLais GetLoaiBangLaiByName(string tenLoaiBangLai)
+        public async Task<List<LoaiBangLai>> GetDanhSachLoaiBangLaiAsync()
         {
-            return _loaiBangLaiRepository.GetByCondition(l => l.TenLoaiBangLai == tenLoaiBangLai);
+            return await _loaiBangLaiRepository.GetDanhSachLoaiBangLaiAsync();
         }
 
-        public LoaiBangLais GetLoaiBangLaiByLoaiXe(string loaiXe)
+        public async Task<LoaiBangLai> GetByIdAsync(Guid id)
         {
-            return _loaiBangLaiRepository.GetByCondition(l => l.LoaiXe == loaiXe);
+            return await _loaiBangLaiRepository.GetLoaiBangLaiByIdAsync(id);
         }
 
-        public List<LoaiBangLais> GetLoaiBangLaisWithQuestions()
+        public async Task<(LoaiBangLai, List<ChuDe>)> GetChuDeByLoaiBangLaiAsync(Guid id)
         {
-            return _loaiBangLaiRepository.GetList(
-                includeProperties: "Questions"
-            ).ToList();
+            return await _loaiBangLaiRepository.GetChuDeByLoaiBangLaiAsync(id);
         }
 
-        public LoaiBangLais GetLoaiBangLaiWithQuestions(Guid id)
-        {
-            var loaiBangLai = _loaiBangLaiRepository.GetList(
-                filter: l => l.Id == id,
-                includeProperties: "Questions"
-            ).FirstOrDefault();
-
-            return loaiBangLai;
-        }
-
-        public void CreateLoaiBangLai(LoaiBangLais loaiBangLai)
-        {
-            if (loaiBangLai.Id == Guid.Empty)
-            {
-                loaiBangLai.Id = Guid.NewGuid();
-            }
-            _loaiBangLaiRepository.Add(loaiBangLai);
-            _loaiBangLaiRepository.Save();
-        }
-
-        public void UpdateLoaiBangLai(LoaiBangLais loaiBangLai)
-        {
-            _loaiBangLaiRepository.Update(loaiBangLai);
-            _loaiBangLaiRepository.Save();
-        }
-
-        public void DeleteLoaiBangLai(Guid id)
-        {
-            var loaiBangLai = _loaiBangLaiRepository.GetById(id);
-            if (loaiBangLai != null)
-            {
-                _loaiBangLaiRepository.Delete(loaiBangLai);
-                _loaiBangLaiRepository.Save();
-            }
-        }
-
-        public bool IsLoaiBangLaiExists(Guid id)
-        {
-            return _loaiBangLaiRepository.Any(l => l.Id == id);
-        }
+        
     }
 }

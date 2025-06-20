@@ -10,12 +10,10 @@ namespace ET.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly QuestionService _questionService;
 
-        public HomeController(ILogger<HomeController> logger, QuestionService questionService)
+        public HomeController(ILogger<HomeController> logger)
         {
             _logger = logger;
-            _questionService = questionService;
         }
 
         public IActionResult Index()
