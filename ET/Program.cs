@@ -1,11 +1,12 @@
-using System.Text;
 using Libs;
 using Libs.Entity;
+using Libs.Repositories;
 using Libs.Service;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -39,10 +40,15 @@ builder.Services.AddAuthentication(options =>
     };
 });
 builder.Services.AddControllersWithViews();
-builder.Services.AddTransient<QuestionService>();
 builder.Services.AddTransient<ChuDeService>();
 builder.Services.AddTransient<LoaiBangLaiService>();
 builder.Services.AddTransient<MoPhongService>();
+builder.Services.AddTransient<BaiThiService>();
+builder.Services.AddTransient<IChuDeRepository, ChuDeRepository>();
+builder.Services.AddTransient<ILoaiBangLaiRepository, LoaiBangLaiRepository>();
+builder.Services.AddTransient<IBaiThiRepository, BaiThiRepository>();
+
+
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
