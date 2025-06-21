@@ -8,6 +8,8 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using System.Configuration;
+using ET.Services;
+using Hangfire;
 
 namespace ETAuthApp.Controllers.api
 {
@@ -18,12 +20,15 @@ namespace ETAuthApp.Controllers.api
         private readonly UserManager<User> userManager;
         private readonly RoleManager<IdentityRole> roleManager;
         private readonly IConfiguration _configuration;
-
-        public AuthenticateController(UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration)
+        private IGmailSender gmailSender;
+        private readonly IBackgroundJobClient _backgroundJobClient;
+        public AuthenticateController(UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration, IBackgroundJobClient backgroundJobClient, IGmailSender gmailSender)
         {
             this.userManager = userManager;
             this.roleManager = roleManager;
             _configuration = configuration;
+            this.gmailSender = gmailSender;
+            _backgroundJobClient = backgroundJobClient;
         }
 
         [HttpPost("register")]
@@ -49,8 +54,7 @@ namespace ETAuthApp.Controllers.api
                 return Ok(new { status = false, message = "Đăng ký thất bại", errors });
             }
 
-            // Gán vai trò: Admin nếu username là "admin", còn lại là User
-            string role = model.Username.ToLower() == "admin" ? "Admin" : "User";
+            string role = "User";
             if (!await roleManager.RoleExistsAsync(role))
             {
                 var roleResult = await roleManager.CreateAsync(new IdentityRole(role));
@@ -60,7 +64,12 @@ namespace ETAuthApp.Controllers.api
             var addRoleResult = await userManager.AddToRoleAsync(user, role);
             if (!addRoleResult.Succeeded)
                 return Ok(new { status = false, message = "Gán vai trò thất bại", errors = addRoleResult.Errors.Select(e => e.Description) });
-
+            var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplates", "Welcome.html");
+            var template = await System.IO.File.ReadAllTextAsync(templatePath);
+            string body = template
+                .Replace("{user.UserName}", user.UserName)
+                .Replace("{user.FullName}", user.UserName);
+            _backgroundJobClient.Enqueue(() => gmailSender.SendEmailAsync(user.Email, "Chào mừng đến với ProTest!", body));
             return Ok(new { status = true, message = "Đăng ký tài khoản thành công", role });
         }
 

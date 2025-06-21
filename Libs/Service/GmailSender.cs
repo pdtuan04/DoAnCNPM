@@ -20,7 +20,7 @@ namespace sendMail.Service
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress("", smtpSection["Username"]));
             message.To.Add(new MailboxAddress("Chao ban ", to));
-            message.Subject = subject;//tieu de
+            message.Subject = subject;
             message.Body = new TextPart("html")
             {
                 Text = body
@@ -28,7 +28,6 @@ namespace sendMail.Service
             using (var client = new SmtpClient())
             {
                 client.Connect(smtpSection["Server"], int.Parse(smtpSection["Port"]), SecureSocketOptions.StartTls);
-                // Note: only needed if the SMTP server requires authentication
                 client.Authenticate(smtpSection["Username"], smtpSection["Password"]);//ten tk mk
                 client.Send(message);
                 client.Disconnect(true);
