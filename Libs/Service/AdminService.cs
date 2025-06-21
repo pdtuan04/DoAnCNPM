@@ -13,9 +13,11 @@ namespace Libs.Service
     {
         private ApplicationDbContext dbContext;
         private IMoPhongRepository moPhongRepository;
+        private UserRepository userRepository;
         public AdminService(ApplicationDbContext dbContext) {
             this.dbContext = dbContext;
             this.moPhongRepository = new MoPhongRepository(dbContext);
+            this.userRepository = new UserRepository(dbContext);
         }
         public void Save()
         {
@@ -24,6 +26,18 @@ namespace Libs.Service
         public async Task<PageList<MoPhong>> GetPagedMoPhong(int pageNumber, int pageSize, string? search, string? sortCol, string sortDir)
         {
             return await moPhongRepository.GetPagedMoPhong(pageNumber, pageSize, search, sortCol, sortDir);
+        }
+        public async Task<int> GetTotalUserCountAsync()
+        {
+            return await userRepository.GetAllUserCountByMonthAsync();
+        }
+        public async Task<Dictionary<int, int>> GetUserCountByMonthInCurrentYearAsync()
+        {
+            return await userRepository.GetUserCountByMonthInCurrentYearAsync();
+        }
+        public async Task<int> GetAllUsersCountAsync()
+        {
+            return await userRepository.GetAllUsersCountAsync();
         }
     }
 }

@@ -37,10 +37,12 @@ namespace ETAuthApp.Controllers.api
             if (!ModelState.IsValid)
                 return BadRequest(new { status = false, message = "Dữ liệu không hợp lệ" });
 
-            var userExists = await userManager.FindByNameAsync(model.Username);
-            if (userExists != null)
+            var userNameExists = await userManager.FindByNameAsync(model.Username);
+            if (userNameExists != null)
                 return Ok(new { status = false, message = "Tên đăng nhập đã tồn tại" });
-
+            var userEmailExists = await userManager.FindByEmailAsync(model.Email);
+            if (userEmailExists != null)
+                return Ok(new { status = false, message = "Email đã tồn tại" });
             User user = new()
             {
                 UserName = model.Username,

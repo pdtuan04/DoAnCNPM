@@ -30,7 +30,6 @@ namespace ET.Controllers.api
             return Ok(new { status = true, message = "Lấy mô phỏng thành công", data = result });
         }
 
-        [Authorize(Roles = "Admin")]
         [HttpGet("get-all-mo-phong")]
         public async Task<IActionResult> GetAllMoPhong()
         {
