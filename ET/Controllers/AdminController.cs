@@ -10,10 +10,6 @@ namespace ET.Controllers
         {
             return View();
         }
-        public IActionResult Dashboard()
-        {
-            return View();
-        }
         public IActionResult QLMoPhong()
         {
             return View();
