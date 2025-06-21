@@ -1,3 +1,5 @@
+using ET.Services;
+using Hangfire;
 using Libs;
 using Libs.Entity;
 using Libs.Repositories;
@@ -6,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using sendMail.Service;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -55,8 +58,21 @@ builder.Services.AddTransient<BaiThiService>();
 builder.Services.AddTransient<IChuDeRepository, ChuDeRepository>();
 builder.Services.AddTransient<ILoaiBangLaiRepository, LoaiBangLaiRepository>();
 builder.Services.AddTransient<IBaiThiRepository, BaiThiRepository>();
-
-
+builder.Services.AddTransient<IGmailSender, GmailSender>();
+builder.Services.AddHangfire(configuration => configuration
+        .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+        .UseSimpleAssemblyNameTypeSerializer()
+        .UseRecommendedSerializerSettings()
+        .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection"),
+        new Hangfire.SqlServer.SqlServerStorageOptions
+        {
+            SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+            QueuePollInterval = TimeSpan.Zero,
+            UseRecommendedIsolationLevel = true,
+            UsePageLocksOnDequeue = true,
+            DisableGlobalLocks = true
+        }));
+builder.Services.AddHangfireServer();
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));

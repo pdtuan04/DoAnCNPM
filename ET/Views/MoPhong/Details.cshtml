@@ -1,69 +1,164 @@
 ﻿@{
     ViewData["Title"] = "Chi tiết mô phỏng";
 }
+
 <style>
     .video-container {
         position: relative;
-        width: 50em;
-        max-width: 100%;
-        margin-bottom: 1em;
+        width: 100%;
+        max-width: 800px; /* Giới hạn chiều rộng tối đa */
+        margin: 0 auto 1.5em; /* Căn giữa và thêm khoảng cách dưới */
+        padding: 15px;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Thêm bóng đổ */
+        overflow: hidden;
     }
 
     video {
         width: 100%;
+        max-height: 400px; /* Tăng chiều cao tối đa để cân đối */
+        object-fit: contain;
         display: block;
+        border-radius: 8px; /* Bo góc cho video */
     }
 
-    canvas#timeline {
-        position: absolute;
-        left: 0;
-        bottom: 1.2em;
+    .progress-container {
+        align-items: center;
+        background: #f5f5f5; /* Màu nền sáng hơn */
+        padding: 0.75rem;
+        border-radius: 5px;
+        margin-top: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .markers-container {
+        position: relative;
         width: 100%;
         height: 20px;
-        /* Đã tăng chiều cao để có thể vẽ lá cờ lớn hơn */
+    }
+
+    #progress {
+        appearance: none;
+        border: none;
+        border-radius: 3px;
+        box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1) inset;
+        display: block;
+        height: 15px;
+        width: 100%;
+        margin: 0;
+    }
+
+        #progress::-webkit-progress-bar {
+            background-color: #e0e0e0;
+            border-radius: 3px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) inset;
+        }
+
+        #progress::-webkit-progress-value {
+            background-image: linear-gradient(to right, #ff6b6b, #ff8e53); /* Màu gradient đẹp hơn */
+            border-radius: 3px;
+            transition: width 0.2s ease;
+        }
+
+        #progress::-moz-progress-bar {
+            background-image: -moz-linear-gradient(to right, #ff6b6b, #ff8e53);
+            border-radius: 3px;
+            transition: width 0.2s ease;
+        }
+
+    #markers {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 15px;
         pointer-events: none;
-        background: transparent;
+    }
+
+    .marker {
+        position: absolute;
+        width: 2px;
+        height: 15px;
+        background-color: #ff4444; /* Màu đỏ tươi hơn */
+        transform: translateX(-50%);
+    }
+
+        .marker::after {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: -4px;
+            width: 10px;
+            height: 10px; /* Tăng kích thước điểm marker */
+            background-color: #fff;
+            border-radius: 50%;
+            border: 2px solid #ff4444;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+    #timer {
+        text-align: center;
+        display: block;
+        margin-bottom: 8px;
+        font-size: 1.1rem;
+        color: #333;
+        font-weight: 500;
     }
 
     .controls {
         text-align: center;
+        margin-top: 1.5em;
     }
 
     button {
-        background-color: #444;
+        background-color: #007bff; /* Màu xanh dương hiện đại */
         color: white;
         border: none;
-        padding: 10px 20px;
-        font-size: 16px;
+        padding: 10px 25px;
+        font-size: 1rem;
         cursor: pointer;
         border-radius: 5px;
-        transition: background-color 0.2s;
+        transition: background-color 0.2s, transform 0.1s;
     }
 
         button:hover {
-            background-color: #666;
+            background-color: #0056b3;
+            transform: translateY(-1px); /* Hiệu ứng nhấc lên */
         }
 
-    video::-webkit-media-controls-play-button {
-        display: none !important;
+        button:active {
+            transform: translateY(0);
+        }
+
+    .score-container {
+        text-align: center;
+        margin-top: 1.5em;
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #6b7280, #4b5563); /* Gradient xám */
+        color: white;
+        border-radius: 8px;
+        font-size: 1.25rem;
+        font-weight: 600;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        display: inline-block;
+        transition: transform 0.2s ease, opacity 0.2s ease;
     }
 
-    video::-webkit-media-controls-mute-button {
-        display: none !important;
-    }
+        .score-container.updated {
+            transform: scale(1.05); /* Hiệu ứng phóng to khi cập nhật */
+            opacity: 0.9;
+        }
 
-    video::-webkit-media-controls-volume-slider {
-        display: none !important;
-    }
-
-    video::-webkit-media-controls-fullscreen-button {
-        display: none !important;
-    }
-
+    video::-webkit-media-controls-play-button,
+    video::-webkit-media-controls-mute-button,
+    video::-webkit-media-controls-volume-slider,
+    video::-webkit-media-controls-fullscreen-button,
     video::-webkit-media-controls-time-remaining-display {
         display: none !important;
     }
 </style>
+
 <div class="container-xl">
     <div class="row" id="license-info-container">
         <div class="col-12">
@@ -102,17 +197,23 @@
                     <div id="contentArea">
                         <div class="loading">
                             <div class="loading-spinner"></div>
-                            <div class="video-container">
-                                <video id="video" controls autoplay muted>
-                                    Trình duyệt của bạn không hỗ trợ video.
-                                </video>
-                                <canvas id="timeline"></canvas>
+                        </div>
+                        <div class="video-container">
+                            <video id="video" controls autoplay muted>
+                                Trình duyệt của bạn không hỗ trợ video.
+                            </video>
+                            <div class="progress-container">
+                                <label id="timer" for="progress" role="timer">00:00</label>
+                                <div class="markers-container">
+                                    <progress id="progress" max="100" value="0">Progress</progress>
+                                    <div id="markers"></div>
+                                </div>
                             </div>
+                        </div>
+                        <div class="controls">
+                            <div class="score-container" id="score">Điểm Của Bạn: 0</div>
 
-                            <div class="controls">
-                                <button id="resetBtn">🔁 Làm lại</button>
-                            </div>
-                            <h1 id="score"></h1>
+                            <button id="resetBtn"><i class="bi bi-arrow-repeat"></i> Làm lại</button>
                         </div>
                     </div>
                 </div>
@@ -120,179 +221,204 @@
         </div>
     </div>
 </div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
-
-    const video = document.getElementById("video");
-    const canvas = document.getElementById("timeline");
-    const ctx = canvas.getContext("2d");
-    const resetBtn = document.getElementById("resetBtn");
-        const predefinedMarkers = [];
-
-    // Define the colors and scores you want to use
-    const colors = ['green', 'red', 'yellow', 'blue', 'purple'];
-    const scores = [5, 4, 3, 2, 1];
-    let readyToDraw = false;
-    let userMarked = false;
-        const id = new URLSearchParams(window.location.search).get("id"); // Lấy ID từ URL
+    $(document).ready(function () {
+        const video = document.getElementById("video");
+        const progress = document.getElementById("progress");
+        const timer = document.getElementById("timer");
+        const markersContainer = document.getElementById("markers");
+        const resetBtn = document.getElementById("resetBtn");
+        const scoreContainer = document.getElementById("score");
+        const colors = ['green', 'red', 'yellow', 'blue', 'purple'];
+        const scores = [5, 4, 3, 2, 1];
+        let predefinedMarkers = [];
+        let userMarkers = [];
+        let userScore = 0;
+        let readyToDraw = false;
+        let userMarked = false;
         const moPhongId = new URLSearchParams(window.location.search).get("moPhongId");
 
-    if (moPhongId) {
-      fetch(`/api/MoPhong/${moPhongId}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.status && data.data) {
-            const { noiDung, videoUrl ,dapAn} = data.data;
-            document.getElementById("video").src = videoUrl;
-                const numbers = dapAn.split(',').map(num => parseInt(num.trim()));
-    // Populate the predefinedMarkers array
-    for (let i = 0; i < numbers.length - 1; i++) {
-      predefinedMarkers.push({
-        start: numbers[i],
-        end: numbers[i + 1],
-        score: scores[i],
-        color: colors[i % colors.length]
-      });
-    }
-
-    console.log(predefinedMarkers);
-          } else {
-            console.warn("Không tìm thấy dữ liệu mô phỏng");
-          }
-        })
-        .catch(err => console.error("Lỗi khi tải mô phỏng:", err));
-    }
-    fetch(`/api/MoPhong/get-mo-phong-by-loai-bang-lai?id=${id}`)
-      .then(response => response.json())
-      .then(data => {
-        const moPhongList = data.data;
-        const moPhongListContainer = document.getElementById("moPhongList"); // Đảm bảo có thẻ này
-
-        if (moPhongList && moPhongList.length > 0) {
-          moPhongList.forEach(moPhong => {
-            const listItem = document.createElement("a");
-            listItem.href = `/MoPhong/Details?id=${id}&moPhongId=${moPhong.id}`;
-            listItem.className = "list-group-item list-group-item-action";
-            listItem.innerText = moPhong.noiDung || "Không có nội dung";
-            moPhongListContainer.appendChild(listItem);
-          });
-        } else {
-          moPhongListContainer.innerHTML = `<div class="p-3 text-muted">Không có mô phỏng nào</div>`;
+        // Cập nhật tiến trình video
+        function progressLoop() {
+            setInterval(function () {
+                if (video.duration > 0 && !isNaN(video.duration)) {
+                    progress.value = (video.currentTime / video.duration) * 100;
+                    const minutes = Math.floor(video.currentTime / 60);
+                    const seconds = Math.floor(video.currentTime % 60);
+                    timer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+            }, 100);
         }
-      })
-      .catch(error => {
-        console.error('Error fetching license name:', error);
-        document.getElementById("license-name").innerText = "Không thể tải tên loại bằng lái";
-      });
-    // // Các marker có sẵn
-    // const predefinedMarkers = [
-    //   { start: 2, end: 4, color: 'green', score: 1 },
-    //   { start: 4, end: 6, color: 'red', score: 2 },
-    //   { start: 6, end: 8, color: 'yellow', score: 3 },
-    //   { start: 8, end: 10, color: 'blue', score: 4 },
-    //   { start: 10, end: 12, color: 'purple', score: 5 }
-    // ];
-    let userScore = 0;
-    // Mảng để lưu các marker do người dùng tạo bằng phím Space
-    const userMarkers = [];
 
-    // Chỉ cần gọi 1 lần khi trang load
-    video.addEventListener("loadedmetadata", () => {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = 20; // Đảm bảo chiều cao đủ để vẽ lá cờ
-      readyToDraw = true;
-    });
+        // Tải dữ liệu mô phỏng
+        if (moPhongId) {
+            $.ajax({
+                url: `/api/MoPhong/${moPhongId}`,
+                type: 'GET',
+                success: function (response) {
+                    if (response.status && response.data) {
+                        const { noiDung, videoUrl, dapAn } = response.data;
+                        $('#video').attr('src', videoUrl);
+                        const numbers = dapAn.split(',').map(num => parseFloat(num.trim()));
+                        for (let i = 0; i < numbers.length - 1; i++) {
+                            predefinedMarkers.push({
+                                start: numbers[i],
+                                end: numbers[i + 1],
+                                score: scores[i],
+                                color: colors[i % colors.length]
+                            });
+                        }
+                        console.log("Predefined Markers:", predefinedMarkers);
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi',
+                            text: 'Không tìm thấy dữ liệu mô phỏng'
+                        });
+                    }
+                },
+                error: function (err) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        text: 'Lỗi khi tải mô phỏng'
+                    });
+                    console.error("Lỗi khi tải mô phỏng:", err);
+                }
+            });
+        }
 
-    // Cập nhật kích thước canvas khi cửa sổ thay đổi kích thước
-    window.addEventListener("resize", () => {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = 20;
-      if (readyToDraw) {
-        drawMarkers();
-      }
-    });
-
-    // Sau khi tua về đầu, cho phép vẽ lại
-    video.addEventListener("seeked", () => {
-      readyToDraw = true;
-    });
-
-    document.addEventListener("keydown", (e) => {
-      if (e.code === "Space") {
-        e.preventDefault();
-        if (readyToDraw) {
-          predefinedMarkers.forEach(marker => {
-            // Kiểm tra nếu thời gian hiện tại nằm trong khoảng của marker
-            if (video.currentTime >= marker.start && video.currentTime <= marker.end) {
-              userScore += marker.score; // Cộng điểm nếu có marker trùng khớp
+        // Tải danh sách mô phỏng
+        const id = new URLSearchParams(window.location.search).get("id");
+        $.ajax({
+            url: `/api/MoPhong/get-mo-phong-by-loai-bang-lai?id=${id}`,
+            type: 'GET',
+            success: function (response) {
+                const moPhongListContainer = $('#moPhongList');
+                moPhongListContainer.empty();
+                if (response.data && response.data.length > 0) {
+                    $.each(response.data, function (index, moPhong) {
+                        const listItem = `<a href="/MoPhong/Details?id=${id}&moPhongId=${moPhong.id}" class="list-group-item list-group-item-action">${moPhong.noiDung || "Không có nội dung"}</a>`;
+                        moPhongListContainer.append(listItem);
+                    });
+                } else {
+                    moPhongListContainer.html('<div class="p-3 text-muted">Không có mô phỏng nào</div>');
+                }
+            },
+            error: function (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: 'Không thể tải danh sách mô phỏng'
+                });
+                console.error('Error fetching mo phong list:', error);
             }
-          });
-          // Thêm marker mới tại vị trí hiện tại
-          addUserMarker(video.currentTime);
-          // Vẽ lại tất cả markers
-          drawMarkers();
-          userMarked = true;
-          document.getElementById("score").innerText = `Điểm Của Bạn: ${userScore}`;
+        });
+
+        // Khởi tạo video
+        video.addEventListener("loadedmetadata", () => {
+            readyToDraw = true;
+            progressLoop();
+        }, { once: true });
+
+        // Cập nhật khi cửa sổ thay đổi
+        window.addEventListener("resize", () => {
+            if (readyToDraw) {
+                drawMarkers();
+            }
+        });
+
+        // Xử lý sự kiện phím Space
+        document.addEventListener("keydown", (e) => {
+            if (e.code === "Space") {
+                e.preventDefault();
+                if (!readyToDraw) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Video chưa sẵn sàng',
+                        text: 'Vui lòng chờ video tải hoàn tất!'
+                    });
+                    return;
+                }
+                if (userMarkers.length >= 6) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Đã đủ mốc',
+                        text: 'Bạn đã chọn đủ 6 mốc thời gian!'
+                    });
+                    return;
+                }
+
+                const currentTime = video.currentTime;
+                userMarkers.push(currentTime);
+                userMarkers.sort((a, b) => a - b);
+                userMarked = true;
+
+                predefinedMarkers.forEach(marker => {
+                    if (currentTime >= marker.start && currentTime <= marker.end) {
+                        userScore += marker.score;
+                    }
+                });
+
+                scoreContainer.textContent = `Điểm Của Bạn: ${userScore}`;
+                scoreContainer.classList.add('updated');
+                setTimeout(() => scoreContainer.classList.remove('updated'), 300); // Xóa hiệu ứng sau 300ms
+                drawMarkers();
+            }
+        });
+
+        // Xử lý nút Reset
+        resetBtn.addEventListener("click", () => {
+            userMarkers = [];
+            userScore = 0;
+            userMarked = false;
+            scoreContainer.textContent = 'Điểm Của Bạn: 0';
+            markersContainer.innerHTML = '';
+            video.currentTime = 0;
+            video.play();
+            readyToDraw = true;
+            drawMarkers();
+        });
+
+        // Hàm vẽ các marker
+        function drawMarkers() {
+            const duration = video.duration || 1;
+            if (isNaN(duration) || duration <= 0) {
+                return;
+            }
+
+            markersContainer.innerHTML = '';
+
+            // Vẽ các predefinedMarkers chỉ khi đã nhấn Space
+            if (userMarked) {
+                predefinedMarkers.forEach(marker => {
+                    const range = document.createElement('div');
+                    range.style.position = 'absolute';
+                    range.style.backgroundColor = marker.color;
+                    range.style.opacity = '0.5';
+                    range.style.height = '5px';
+                    range.style.bottom = '0';
+                    const startPos = (marker.start / duration) * 100;
+                    const endPos = (marker.end / duration) * 100;
+                    range.style.left = `${startPos}%`;
+                    range.style.width = `${endPos - startPos}%`;
+                    markersContainer.appendChild(range);
+                });
+            }
+
+            // Vẽ các marker của người dùng
+            userMarkers.forEach(time => {
+                const marker = document.createElement('span');
+                marker.className = 'marker';
+                const position = (time / duration) * 100;
+                marker.style.left = `${position}%`;
+                markersContainer.appendChild(marker);
+            });
         }
-      }
-      if (userMarked) {
-        readyToDraw = false; // Ngăn không cho vẽ lại khi đã đánh dấu
-      }
     });
-
-    resetBtn.addEventListener("click", () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      readyToDraw = false;
-      video.currentTime = 0;
-      video.play();
-      // Xóa tất cả marker của người dùng
-      userScore = 0;
-      document.getElementById("score").innerText = ``;
-      userMarkers.length = 0;
-      userMarked = true;
-    });
-
-    function addUserMarker(time) {
-      // Thêm marker mới vào danh sách
-      userMarkers.push({
-        time: time,
-        color: '#FF0000'
-      });
-    }
-
-    function drawMarkers() {
-      const duration = video.duration;
-      const width = canvas.width;
-      const height = canvas.height;
-
-      ctx.clearRect(0, 0, width, height);
-
-      // Vẽ các marker có sẵn
-      predefinedMarkers.forEach(marker => {
-        const xStart = (marker.start / duration) * width;
-        const xEnd = (marker.end / duration) * width;
-        ctx.fillStyle = marker.color;
-        ctx.fillRect(xStart, height - 5, xEnd - xStart, 5); // Chỉ vẽ ở phần dưới của canvas
-      });
-
-      // Vẽ các marker người dùng đã đặt
-      userMarkers.forEach(marker => {
-        const x = (marker.time / duration) * width;
-        const flagColor = marker.color;
-
-        // Vẽ cột cờ
-        ctx.fillStyle = '#FF0000';
-        ctx.fillRect(x - 1, 0, 2, height - 5);
-
-        // Vẽ lá cờ (hình chữ nhật)
-        ctx.fillStyle = flagColor;
-        ctx.fillRect(x, 0, 15, 10);
-
-        // Đánh dấu điểm trên thanh timeline
-        ctx.fillStyle = '#FFFFFF';
-        ctx.beginPath();
-        ctx.arc(x, height - 2.5, 3, 0, Math.PI * 2);
-        ctx.fill();
-      });
-    }
-
 </script>
