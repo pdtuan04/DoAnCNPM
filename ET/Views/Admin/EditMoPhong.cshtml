@@ -389,29 +389,20 @@
 
                 $('#videoUploadProgress').show();
 
-                $.ajax({
-                    url: '/api/Upload/upload-video',
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
+                fetch('/api/Upload/upload-video', {
+                    method: 'POST',
+                    body: formData,
                     headers: {
                         'Authorization': 'Bearer ' + getToken()
-                    },
-                    xhr: function () {
-                        const xhr = $.ajaxSettings.xhr();
-                        if (xhr.upload) {
-                            xhr.upload.addEventListener('progress', function (e) {
-                                if (e.lengthComputable) {
-                                    const percent = Math.round((e.loaded / e.total) * 100);
-                                    $('#videoUploadProgress .progress-bar').css('width', percent + '%');
-                                    $('#videoUploadProgress .progress-bar').text(percent + '%');
-                                }
-                            }, false);
+                    }
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Lỗi khi upload video');
                         }
-                        return xhr;
-                    },
-                    success: function (response) {
+                        return response.json();
+                    })
+                    .then(response => {
                         console.log("Upload video response:", response); // Debug
                         if (response.status) {
                             Swal.fire({
@@ -430,28 +421,20 @@
                                 text: response.message || 'Không thể upload video'
                             });
                         }
-                    },
-                    error: function (xhr) {
-                        console.error("Upload video error:", xhr.responseText); // Debug
-                        let errorMsg = 'Đã xảy ra lỗi khi upload video';
-                        try {
-                            const resp = JSON.parse(xhr.responseText);
-                            if (resp.message) {
-                                errorMsg = resp.message;
-                            }
-                        } catch (e) {}
+                    })
+                    .catch(error => {
+                        console.error("Upload video error:", error); // Debug
                         Swal.fire({
                             icon: 'error',
                             title: 'Lỗi',
-                            text: errorMsg
+                            text: error.message || 'Đã xảy ra lỗi khi upload video'
                         });
-                    },
-                    complete: function () {
-                        setTimeout(function () {
+                    })
+                    .finally(() => {
+                        setTimeout(() => {
                             $('#videoUploadProgress').hide();
                         }, 1000);
-                    }
-                });
+                    });
             }
 
             // Hàm lấy id từ URL
@@ -467,13 +450,19 @@
                     const id = $('#moPhongId').val();
                     console.log("Đang tải mô phỏng với ID:", id); // Debug
 
-                    $.ajax({
-                        url: '/api/mophong/' + id,
-                        type: 'GET',
+                    fetch(`/api/mophong/${id}`, {
+                        method: 'GET',
                         headers: {
                             'Authorization': 'Bearer ' + getToken()
-                        },
-                        success: function (response) {
+                        }
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Không thể tải thông tin mô phỏng');
+                            }
+                            return response.json();
+                        })
+                        .then(response => {
                             console.log("Phản hồi API mô phỏng:", response); // Debug
                             if (response.status && response.data) {
                                 const moPhong = response.data;
@@ -553,33 +542,38 @@
                                 });
                                 reject(new Error('Không thể tải thông tin mô phỏng'));
                             }
-                        },
-                        error: function (xhr) {
-                            console.error("Lỗi API mô phỏng:", xhr.responseText); // Debug
+                        })
+                        .catch(error => {
+                            console.error("Lỗi API mô phỏng:", error); // Debug
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Lỗi',
-                                text: 'Đã xảy ra lỗi khi tải thông tin mô phỏng: ' + (xhr.responseJSON?.message || 'Lỗi không xác định')
+                                text: error.message || 'Đã xảy ra lỗi khi tải thông tin mô phỏng'
                             }).then((result) => {
                                 if (result.isConfirmed) {
                                     window.location.href = '/Admin/QLMoPhong';
                                 }
                             });
-                            reject(xhr);
-                        }
-                    });
+                            reject(error);
+                        });
                 });
             }
 
             // Hàm tải danh sách loại bằng lái
             function loadLoaiBangLai() {
-                $.ajax({
-                    url: '/api/loaibanglai/get-loai-bang-lai-list',
-                    type: 'GET',
+                fetch('/api/loaibanglai/get-loai-bang-lai-list', {
+                    method: 'GET',
                     headers: {
                         'Authorization': 'Bearer ' + getToken()
-                    },
-                    success: function (response) {
+                    }
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Không thể tải danh sách loại bằng lái');
+                        }
+                        return response.json();
+                    })
+                    .then(response => {
                         console.log("Phản hồi API loại bằng lái:", response); // Debug
                         if (response.status && response.data) {
                             $('#loaiBangLaiId').empty();
@@ -613,16 +607,15 @@
                                 text: 'Không thể tải danh sách loại bằng lái'
                             });
                         }
-                    },
-                    error: function (xhr) {
-                        console.error("Lỗi API loại bằng lái:", xhr.responseText); // Debug
+                    })
+                    .catch(error => {
+                        console.error("Lỗi API loại bằng lái:", error); // Debug
                         Swal.fire({
                             icon: 'error',
                             title: 'Lỗi',
-                            text: 'Không thể tải danh sách loại bằng lái'
+                            text: error.message || 'Không thể tải danh sách loại bằng lái'
                         });
-                    }
-                });
+                    });
             }
 
             // Hàm cập nhật mô phỏng
@@ -642,15 +635,21 @@
 
                 console.log("Dữ liệu gửi để cập nhật:", moPhong); // Debug
 
-                $.ajax({
-                    url: '/api/mophong/update',
-                    type: 'PUT',
-                    contentType: 'application/json',
-                    data: JSON.stringify(moPhong),
+                fetch('/api/mophong/update', {
+                    method: 'PUT',
                     headers: {
+                        'Content-Type': 'application/json',
                         'Authorization': 'Bearer ' + getToken()
                     },
-                    success: function (response) {
+                    body: JSON.stringify(moPhong)
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Không thể cập nhật mô phỏng');
+                        }
+                        return response.json();
+                    })
+                    .then(response => {
                         console.log("Cập nhật mô phỏng response:", response); // Debug
                         if (response.status) {
                             Swal.fire({
@@ -670,27 +669,16 @@
                                 text: response.message || 'Không thể cập nhật mô phỏng'
                             });
                         }
-                    },
-                    error: function (xhr) {
-                        console.error("Cập nhật mô phỏng error:", xhr.responseText); // Debug
-                        let errorMsg = 'Đã xảy ra lỗi khi cập nhật mô phỏng';
-                        try {
-                            const resp = JSON.parse(xhr.responseText);
-                            if (resp.errors) {
-                                errorMsg = Object.entries(resp.errors)
-                                    .map(([key, errors]) => `${key}: ${errors.join(', ')}`)
-                                    .join('<br>');
-                            } else if (resp.message) {
-                                errorMsg = resp.message;
-                            }
-                        } catch (e) {}
+                    })
+                    .catch(error => {
+                        console.error("Cập nhật mô phỏng error:", error); // Debug
+                        let errorMsg = error.message || 'Đã xảy ra lỗi khi cập nhật mô phỏng';
                         Swal.fire({
                             icon: 'error',
                             title: 'Lỗi',
                             html: errorMsg
                         });
-                    }
-                });
+                    });
             }
 
             // Kiểm tra form

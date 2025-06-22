@@ -28,5 +28,21 @@ namespace ET.Controllers
         {
             return View(id);
         }
+        public IActionResult QLCauHoi()
+        {
+            return View();
+        }
+        public IActionResult CreateCauHoi()
+        {
+            return View();
+        }
+        public IActionResult EditCauHoi(Guid id)
+        {
+            return View(id);
+        }
+        public IActionResult DetailsCauHoi(Guid id)
+        {
+            return View(id);
+        }
     }
 }
