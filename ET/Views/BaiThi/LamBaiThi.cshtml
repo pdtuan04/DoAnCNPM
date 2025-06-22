@@ -150,7 +150,6 @@
             btn.classList.remove("current-question");
         });
 
-        // Thêm class màu cam cho button của câu hiện tại
         const currentBtn = document.querySelector(`.question-button[data-question-id="${index}"]`);
         if (currentBtn) {
             currentBtn.classList.add("current-question");
@@ -169,12 +168,10 @@
 
 
                 function startTimer() {
-            // Chỉ giữ lại thời gian nếu người dùng F5 (reload)
             if (performance.navigation.type === 1) {
                 const savedTime = sessionStorage.getItem("savedTimeRemaining");
                 if (savedTime) timeRemaining = parseInt(savedTime);
             } else {
-                // Nếu không phải reload thì reset thời gian và đáp án
                 sessionStorage.removeItem("savedTimeRemaining");
                 sessionStorage.removeItem("autoSaveAnswers");
             }
@@ -242,7 +239,7 @@
 
     fetch('/api/BaiThi/nop-bai-thi', {
         method: 'POST',
-        credentials: 'include', // 🔑 Gửi cookie JWT kèm theo
+        credentials: 'include', 
         headers: {
             'Content-Type': 'application/json'
         },

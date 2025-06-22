@@ -79,17 +79,14 @@ namespace Libs.Repositories
             var (ketQuaList, diem, tongSoCau, diemToiThieu) = ChamDiem(baiThi, request.Answers);
             var ketQua = diem >= diemToiThieu ? "Đậu" : "Không Đạt";
 
-            // ✅ Tính đúng số câu làm đúng
             int soCauDung = ketQuaList.Count(kq => !kq.DungSai);
 
-            // Tính lỗi nghiêm trọng
             bool macLoiNghiemTrong = ketQuaList.Any(kq =>
                 kq.DungSai && baiThi.ChiTietBaiThis.First(ct => ct.CauHoiId == kq.CauHoiId).CauHoi.DiemLiet);
 
             int soCauLoiNghiemTrong = ketQuaList.Count(kq =>
                 kq.DungSai && baiThi.ChiTietBaiThis.First(ct => ct.CauHoiId == kq.CauHoiId).CauHoi.DiemLiet);
 
-            // Lưu lịch sử nếu có user đăng nhập
             if (!string.IsNullOrEmpty(userId))
                 await LuuLichSuThiAsync(userId, baiThi, ketQuaList, tongSoCau, diem, ketQua, macLoiNghiemTrong);
 
@@ -163,10 +160,14 @@ namespace Libs.Repositories
         public async Task<BaiThi> GetDeThiNgauNhien(Guid loaiBangLaiId)
         {
             return await _dbContext.BaiThis
-                .Where(bt => bt.ChiTietBaiThis.Any(ct => ct.CauHoi.LoaiBangLaiId == loaiBangLaiId))
+                .Where(bt => bt.ChiTietBaiThis
+                    .Any(ct => ct.CauHoi != null && ct.CauHoi.LoaiBangLaiId == loaiBangLaiId))
                 .OrderBy(x => Guid.NewGuid())
+                .Include(bt => bt.ChiTietBaiThis)
+                    .ThenInclude(ct => ct.CauHoi)
                 .FirstOrDefaultAsync();
         }
+
 
         public async Task<BaiThi> GetChiTietBaiThi(Guid id)
         {
