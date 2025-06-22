@@ -47,7 +47,7 @@ async function register(event) {
         const result = await response.json();
         if (result.status) {
             window.alert('Đăng ký thành công! Vui lòng đăng nhập lại.');
-            window.location.href = '/Home/Index';
+            window.location.href = '/';
         } else {
             showError('registerError', result.message || 'Đăng ký thất bại');
         }
@@ -99,7 +99,7 @@ async function logout(event) {
             },
             credentials: 'include'
         });
-        window.location.href = '/Home/';
+        window.location.href = '/';
     } catch (error) {
         console.error('Lỗi đăng xuất:', error);
     }
