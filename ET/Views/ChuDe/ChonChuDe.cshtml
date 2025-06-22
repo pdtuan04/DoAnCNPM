@@ -1,11 +1,10 @@
 ﻿@{
-    ViewData["Title"] = "Chọn chủ đề ôn tập";
-    var loaiBangLaiId = ViewBag.LoaiBangLaiId;
+    ViewData["Title"] = "Chọn Chủ Đề Ôn Tập";
 }
 
-<div class="container2">
-    <h2 class="section-title">
-        Chọn chủ đề ôn tập - <span id="tenLoaiText"></span>
+<div class="container2 mt-5">
+    <h2 class="section-title text-center mb-4">
+        Chọn chủ đề ôn tập - <span id="tenLoaiText" class="text-primary fw-bold"></span>
     </h2>
 
     <div id="chuDeContent">
@@ -13,44 +12,100 @@
     </div>
 </div>
 
+<style>
+    .grid-topic {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 20px;
+    }
+
+    .card-topic {
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 15px;
+        text-align: center;
+        transition: all 0.3s;
+        background: #fdfdfd;
+        position: relative;
+    }
+
+    .card-topic:hover {
+        box-shadow: 0 0 15px rgba(0,0,0,0.15);
+        transform: translateY(-5px);
+    }
+
+    .icon-topic img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+    .title-topic {
+        margin-top: 10px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .badge-circle {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #007bff;
+        color: #fff;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+    }
+</style>
+
 @section Scripts {
     <script>
-        $(document).ready(function () {
-            const loaiBangLaiId = "@loaiBangLaiId";
+        document.addEventListener("DOMContentLoaded", function () {
+            const params = new URLSearchParams(window.location.search);
+            const loaiBangLaiId = params.get("loaiBangLaiId");
 
-            fetch(`/api/LoaiBangLai/${loaiBangLaiId}/chu-de`)
+            if (!loaiBangLaiId) {
+                document.getElementById("chuDeContent").innerHTML =
+                    '<div class="alert alert-danger text-center">❌ Không tìm thấy loại bằng lái trong URL.</div>';
+                return;
+            }
+
+            fetch(`/api/ChuDe/${loaiBangLaiId}/chu-de`)
                 .then(res => res.json())
                 .then(data => {
                     if (!data || !data.chuDeList || data.chuDeList.length === 0) {
-                        $('#chuDeContent').html('<div class="alert-warning text-center">⚠️ Không có chủ đề nào cho loại bằng lái này.</div>');
+                        document.getElementById("chuDeContent").innerHTML =
+                            '<div class="alert alert-warning text-center">⚠️ Không có chủ đề nào cho loại bằng lái này.</div>';
                         return;
                     }
 
-                    $('#tenLoaiText').text(data.loai.tenLoai);
+                    document.getElementById("tenLoaiText").textContent = data.loai.tenLoai;
 
                     let html = '<div class="grid-topic">';
                     data.chuDeList.forEach(chuDe => {
-                        const soCau = chuDe.cauHois ? chuDe.cauHois.length : 0;
+                        const soCau = chuDe.soCau || 0;
                         const imgUrl = chuDe.imageUrl || '/images/default-topic.png';
 
                         html += `
-                        <a href="/BaiThi/OnTapChuDe?loaiBangLaiId=${loaiBangLaiId}&chuDeId=${chuDe.id}">
-                            <div class="card-topic">
-                                <div class="badge-circle">${soCau} câu</div>
-                                <div class="icon-topic">
-                                    <img src="${imgUrl}" alt="${chuDe.tenChuDe}" />
+                            <a href="/BaiThi/OnTapChuDe?loaiBangLaiId=${loaiBangLaiId}&chuDeId=${chuDe.id}">
+                                <div class="card-topic">
+                                    <div class="badge-circle">${soCau} câu</div>
+                                    <div class="icon-topic">
+                                        <img src="${imgUrl}" alt="${chuDe.tenChuDe}" />
+                                    </div>
+                                    <div class="title-topic">${chuDe.tenChuDe}</div>
                                 </div>
-                                <div class="title-topic">${chuDe.tenChuDe}</div>
-                            </div>
-                        </a>`;
+                            </a>`;
                     });
 
                     html += '</div>';
-                    $('#chuDeContent').html(html);
+                    document.getElementById("chuDeContent").innerHTML = html;
                 })
                 .catch(error => {
                     console.error(error);
-                    $('#chuDeContent').html('<div class="alert alert-danger text-center">Lỗi tải dữ liệu chủ đề.</div>');
+                    document.getElementById("chuDeContent").innerHTML =
+                        '<div class="alert alert-danger text-center">Lỗi tải dữ liệu chủ đề.</div>';
                 });
         });
     </script>

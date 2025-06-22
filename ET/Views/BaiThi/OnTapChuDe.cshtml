@@ -1,11 +1,10 @@
 ﻿@{
-    ViewData["Title"] = "Ôn Tập";
+    ViewData["Title"] = "Ôn Tập Theo Chủ Đề";
 }
 
 <div class="container mt-4" style="max-width: 900px;">
-    <h2 class="text-center fw-bold mb-4" style="color: #2C3E50;">
-        Ôn Tập - <span id="tenLoai" class="text-primary"></span>
-    </h2>
+    <h2 class="text-center fw-bold mb-2" style="color: #2C3E50;">Ôn Tập Chủ Đề</h2>
+    <h5 class="text-center text-muted mb-4" id="tenChuDeText">Đang tải tên chủ đề...</h5>
 
     <div id="cauHoiContainer">
         <div class="text-center text-muted">Đang tải câu hỏi...</div>
@@ -17,21 +16,24 @@
         document.addEventListener("DOMContentLoaded", function () {
             const params = new URLSearchParams(window.location.search);
             const loaiBangLaiId = params.get("loaiBangLaiId");
+            const chuDeId = params.get("chuDeId");
 
-            if (!loaiBangLaiId) {
+            if (!loaiBangLaiId || !chuDeId) {
                 document.getElementById("cauHoiContainer").innerHTML =
-                    '<div class="alert alert-danger text-center">❌ Thiếu tham số `loaiBangLaiId` trên URL.</div>';
+                    '<div class="alert alert-danger text-center">❌ Thiếu tham số `loaiBangLaiId` hoặc `chuDeId`.</div>';
                 return;
             }
 
-            fetch(`/api/BaiThi/on-tap/${loaiBangLaiId}`)
+            fetch(`/api/BaiThi/cau-hoi?loaiBangLaiId=${loaiBangLaiId}&chuDeId=${chuDeId}`)
                 .then(res => res.json())
                 .then(data => {
                     if (!Array.isArray(data) || data.length === 0) {
                         document.getElementById("cauHoiContainer").innerHTML =
-                            '<p class="text-muted text-center">🚫 Không có câu hỏi nào cho loại bằng lái này.</p>';
+                            '<p class="text-muted text-center">🚫 Không có câu hỏi nào cho chủ đề này.</p>';
                         return;
                     }
+
+                    document.getElementById("tenChuDeText").textContent = data[0]?.chuDe?.tenChuDe ?? "Chủ đề";
 
                     let html = '<div class="row g-3">';
                     data.forEach((cauHoi, index) => {
@@ -93,6 +95,7 @@
         }
     </script>
 }
+
 <style>
     body {
         background: #FAFAFA;

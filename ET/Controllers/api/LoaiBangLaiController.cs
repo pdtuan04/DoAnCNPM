@@ -46,29 +46,7 @@ namespace YourProject.Controllers
             return loai == null ? NotFound() : Ok(loai);
         }
 
-        [HttpGet("{id}/chu-de")]
-        public async Task<IActionResult> GetChuDeByLoaiBangLai(Guid id)
-        {
-            var (loai, chuDeList) = await _loaiBangLaiService.GetChuDeByLoaiBangLaiAsync(id);
-
-            var result = new
-            {
-                loai = new
-                {
-                    loai.Id,
-                    loai.TenLoai
-                },
-                chuDeList = chuDeList.Select(cd => new
-                {
-                    cd.Id,
-                    cd.TenChuDe,
-                    cd.ImageUrl,
-                    SoCau = cd.CauHois?.Count ?? 0
-                })
-            };
-
-            return Ok(result);
-        }
+       
         [HttpGet("get-loai-bang-lai-list")]
         public IActionResult GetLoaiBangLaiList()
         {

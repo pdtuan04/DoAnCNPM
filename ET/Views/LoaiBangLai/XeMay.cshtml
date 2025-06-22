@@ -67,7 +67,7 @@
             <div class="row">
                 <!-- Card 1 -->
                 <div class="col-lg-6 col-md-12 mb-4">
-                    <a href="/BaiThi/ThiDe?loaiBangLaiId=${item.id}" class="text-decoration-none">
+                    <a href="/BaiThi/DanhSachDeThi?loaiBangLaiId=${item.id}" class="text-decoration-none">
                         <div class="card border-0 shadow-sm rounded-4 p-4 h-100 custom-card-hover">
                             <div class="text-center p-4">
                                 <div class="d-inline-block mb-3">
@@ -91,7 +91,9 @@
 
                 <!-- Card 2 -->
                 <div class="col-lg-6 col-md-12 mb-4">
-                    <a href="/BaiThi/LamDeNgauNhien?loaiBangLaiId=${item.id}" class="text-decoration-none">
+                         <a href="javascript:void(0)" onclick="lamDeNgauNhien('${item.id}')" class="text-decoration-none">
+                         
+                                              
                         <div class="card border-0 shadow-sm rounded-4 p-4 h-100 custom-card-hover">
                             <div class="text-center p-4">
                                 <div class="d-inline-block mb-3">
@@ -183,5 +185,22 @@
                     console.error(err);
                 });
         });
+            async function lamDeNgauNhien(loaiBangLaiId) {
+            try {
+                const res = await fetch(`/api/BaiThi/de-thi-ngau-nhien/${loaiBangLaiId}`);
+                const data = await res.json();
+
+                if (!res.ok) {
+                    alert(data.message || "Không tìm thấy đề thi phù hợp!");
+                    return;
+                }
+
+                // Chuyển hướng sang trang làm bài thi
+                window.location.href = `/BaiThi/LamBaiThi?baiThiId=${data.id}`;
+            } catch (err) {
+                console.error(err);
+                alert("Lỗi khi lấy đề thi ngẫu nhiên.");
+            }
+        }
     </script>
 }
