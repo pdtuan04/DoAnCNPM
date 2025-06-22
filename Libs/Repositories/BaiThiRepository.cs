@@ -40,7 +40,6 @@ namespace Libs.Repositories
         public (List<KetQuaBaiThi> ketQuaList, float diem, int tongSoCau, int diemToiThieu) ChamDiem(BaiThi baiThi, Dictionary<Guid, string> answers)
         {
             var ketQuaList = new List<KetQuaBaiThi>();
-            int totalCorrect = 0;
 
             foreach (var ct in baiThi.ChiTietBaiThis)
             {
@@ -51,19 +50,22 @@ namespace Libs.Repositories
                 {
                     CauHoiId = ct.CauHoiId,
                     CauTraLoi = string.IsNullOrEmpty(userAnswer) ? ' ' : userAnswer[0],
+                    DapAnDung = ct.CauHoi.DapAnDung,
                     DungSai = !isCorrect
                 });
-
-                if (isCorrect) totalCorrect++;
             }
 
-            var diem = totalCorrect * 10f / baiThi.ChiTietBaiThis.Count;
-            var diemToiThieu = baiThi.ChiTietBaiThis.FirstOrDefault()?.CauHoi?.LoaiBangLai?.DiemToiThieu ?? 0;
+            int totalCorrect = ketQuaList.Count(kq => !kq.DungSai);
+            float diem = totalCorrect * 10f / baiThi.ChiTietBaiThis.Count;
+            int diemToiThieu = baiThi.ChiTietBaiThis.FirstOrDefault()?.CauHoi?.LoaiBangLai?.DiemToiThieu ?? 0;
 
             return (ketQuaList, diem, baiThi.ChiTietBaiThis.Count, diemToiThieu);
         }
 
-        public async Task<NopBaiThiResult> XuLyNopBaiThi(SubmitBaiThiRequest request, string userId)
+
+
+
+        public async Task<NopBaiThiResult> XuLyNopBaiThi(SubmitBaiThiRequest request, string? userId)
         {
             var baiThi = await _dbContext.BaiThis
                 .Include(b => b.ChiTietBaiThis)
@@ -77,12 +79,17 @@ namespace Libs.Repositories
             var (ketQuaList, diem, tongSoCau, diemToiThieu) = ChamDiem(baiThi, request.Answers);
             var ketQua = diem >= diemToiThieu ? "Đậu" : "Không Đạt";
 
+            // ✅ Tính đúng số câu làm đúng
+            int soCauDung = ketQuaList.Count(kq => !kq.DungSai);
+
+            // Tính lỗi nghiêm trọng
             bool macLoiNghiemTrong = ketQuaList.Any(kq =>
                 kq.DungSai && baiThi.ChiTietBaiThis.First(ct => ct.CauHoiId == kq.CauHoiId).CauHoi.DiemLiet);
 
             int soCauLoiNghiemTrong = ketQuaList.Count(kq =>
                 kq.DungSai && baiThi.ChiTietBaiThis.First(ct => ct.CauHoiId == kq.CauHoiId).CauHoi.DiemLiet);
 
+            // Lưu lịch sử nếu có user đăng nhập
             if (!string.IsNullOrEmpty(userId))
                 await LuuLichSuThiAsync(userId, baiThi, ketQuaList, tongSoCau, diem, ketQua, macLoiNghiemTrong);
 
@@ -91,14 +98,14 @@ namespace Libs.Repositories
                 Success = true,
                 BaiThiId = baiThi.Id,
                 KetQuaList = ketQuaList,
-                SoCauDung = (int)diem,
+                SoCauDung = soCauDung,               
                 TongSoCau = tongSoCau,
-                TongDiem = (int)diem,
                 KetQua = ketQua,
                 MacLoiNghiemTrong = macLoiNghiemTrong,
                 SoCauLoiNghiemTrong = soCauLoiNghiemTrong
             };
         }
+
 
         private async Task LuuLichSuThiAsync(string userId, BaiThi baiThi, List<KetQuaBaiThi> ketQuaList,
             int tongSoCau, float diem, string ketQua, bool macLoiNghiemTrong)

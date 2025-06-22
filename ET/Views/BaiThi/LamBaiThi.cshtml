@@ -8,7 +8,7 @@
                 <i class="fas fa-arrow-left"></i>
             </a>
             <h1 class="header-text">
-                Bài Thi: <span id="baiThiIdText">Đang tải...</span>
+                 <span id="baiThiIdText">Đang tải...</span>
             </h1>
             <input type="hidden" id="baiThiId" />
         </div>
@@ -50,7 +50,7 @@
 
         document.addEventListener("DOMContentLoaded", () => {
             const urlParams = new URLSearchParams(window.location.search);
-        baiThiId = urlParams.get("baiThiId");
+        baiThiId = urlParams.get("baiThiId") || urlParams.get("id");
 
             if (!baiThiId) {
                 alert("Không tìm thấy ID bài thi!");
@@ -90,7 +90,7 @@
                     chiTietList = data.chiTietBaiThis;
                     renderQuestions(chiTietList);
                     renderButtons(chiTietList.length);
-
+                     showQuestion(0);
                     const thoiGianThi = chiTietList[0]?.cauHoi?.loaiBangLai?.thoiGianThi ?? 20;
                     timeRemaining = thoiGianThi * 60;
                     updateTimerDisplay();
@@ -103,7 +103,7 @@
                 });
         }
 
-        function renderQuestions(list) {
+                function renderQuestions(list) {
             const container = document.getElementById("questionContainer");
             container.innerHTML = "";
 
@@ -111,17 +111,17 @@
                 const cauHoi = item.cauHoi;
                 const media = cauHoi.mediaUrl ? `<img src="${cauHoi.mediaUrl}" class="img-fluid" />` : "";
                 const optionC = cauHoi.luaChonC
-                    ? `<label class="option-item"><input name="answer_${cauHoi.id}" type="radio" value="C" /><span>C. ${cauHoi.luaChonC}</span></label>` : "";
+                    ? `<label class="option-item"><input name="answer_${item.id}" type="radio" value="C" /><span>C. ${cauHoi.luaChonC}</span></label>` : "";
                 const optionD = cauHoi.luaChonD
-                    ? `<label class="option-item"><input name="answer_${cauHoi.id}" type="radio" value="D" /><span>D. ${cauHoi.luaChonD}</span></label>` : "";
+                    ? `<label class="option-item"><input name="answer_${item.id}" type="radio" value="D" /><span>D. ${cauHoi.luaChonD}</span></label>` : "";
 
                 container.innerHTML += `
                     <div class="question-slide" id="question-${i}" style="display: ${i === 0 ? 'block' : 'none'}">
                         <p class="question-text"><strong>Câu ${i + 1}:</strong> ${cauHoi.noiDung}</p>
                         <div class="question-media mb-3">${media}</div>
                         <form class="question-options">
-                            <label class="option-item"><input name="answer_${cauHoi.id}" type="radio" value="A" /><span>A. ${cauHoi.luaChonA}</span></label>
-                            <label class="option-item"><input name="answer_${cauHoi.id}" type="radio" value="B" /><span>B. ${cauHoi.luaChonB}</span></label>
+                            <label class="option-item"><input name="answer_${item.id}" type="radio" value="A" /><span>A. ${cauHoi.luaChonA}</span></label>
+                            <label class="option-item"><input name="answer_${item.id}" type="radio" value="B" /><span>B. ${cauHoi.luaChonB}</span></label>
                             ${optionC}
                             ${optionD}
                         </form>
@@ -132,6 +132,7 @@
                     </div>`;
             });
         }
+
 
         function renderButtons(count) {
             const container = document.getElementById("questionButtons");
@@ -145,7 +146,17 @@
             document.querySelectorAll('.question-slide').forEach((slide, i) => {
                 slide.style.display = i === index ? 'block' : 'none';
             });
-            currentQuestionIndex = index;
+                document.querySelectorAll('.question-button').forEach(btn => {
+            btn.classList.remove("current-question");
+        });
+
+        // Thêm class màu cam cho button của câu hiện tại
+        const currentBtn = document.querySelector(`.question-button[data-question-id="${index}"]`);
+        if (currentBtn) {
+            currentBtn.classList.add("current-question");
+        }
+
+        currentQuestionIndex = index;
         }
 
         function previousQuestion() {
@@ -156,10 +167,17 @@
             if (currentQuestionIndex < chiTietList.length - 1) showQuestion(currentQuestionIndex + 1);
         }
 
-        
-        function startTimer() {
-            const savedTime = sessionStorage.getItem("savedTimeRemaining");
-            if (savedTime) timeRemaining = parseInt(savedTime);
+
+                function startTimer() {
+            // Chỉ giữ lại thời gian nếu người dùng F5 (reload)
+            if (performance.navigation.type === 1) {
+                const savedTime = sessionStorage.getItem("savedTimeRemaining");
+                if (savedTime) timeRemaining = parseInt(savedTime);
+            } else {
+                // Nếu không phải reload thì reset thời gian và đáp án
+                sessionStorage.removeItem("savedTimeRemaining");
+                sessionStorage.removeItem("autoSaveAnswers");
+            }
 
             timer = setInterval(() => {
                 if (timeRemaining > 0) {
@@ -175,6 +193,7 @@
                 }
             }, 1000);
         }
+
 
         function autoSaveAnswers() {
             const answers = getAnswersFromInputs();
@@ -218,64 +237,91 @@
         }
 
         function submitExam() {
-            clearInterval(timer);
-            const answers = getAnswersFromInputs();
+    clearInterval(timer);
+    const answers = getAnswersFromInputs();
 
-            fetch('/api/BaiThi/nop-bai-thi', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ baiThiId, answers })
-            })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        displayResult(data);
-                        document.querySelectorAll('input[type="radio"]').forEach(input => input.disabled = true);
-                        document.getElementById('submit-button').disabled = true;
-                        document.getElementById('submit-button').textContent = "Đã nộp bài";
-                    } else {
-                        alert(data.message || "Có lỗi xảy ra khi nộp bài.");
-                    }
-                })
-                .catch(err => {
-                    console.error("Lỗi:", err);
-                    alert("Không thể nộp bài.");
-                });
+    fetch('/api/BaiThi/nop-bai-thi', {
+        method: 'POST',
+        credentials: 'include', // 🔑 Gửi cookie JWT kèm theo
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ baiThiId, answers })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            sessionStorage.removeItem('savedTimeRemaining');
+            sessionStorage.removeItem('autoSaveAnswers');
+
+            displayResult(data);
+            document.querySelectorAll('input[type="radio"]').forEach(input => input.disabled = true);
+            document.getElementById('submit-button').disabled = true;
+            document.getElementById('submit-button').textContent = "Đã nộp bài";
+        } else {
+            alert(data.message || "Có lỗi xảy ra khi nộp bài.");
         }
+    })
+    .catch(err => {
+        console.error("Lỗi:", err);
+        alert("Không thể nộp bài.");
+    });
+}
 
-        function displayResult(data) {
-            document.getElementById("scoreDisplay").style.display = "block";
-            document.getElementById("tongDiem").textContent = data.tongDiem.toFixed(2);
-            document.getElementById("soCauDung").textContent = `${data.soCauDung} / ${data.tongSoCau}`;
+
+             function displayResult(data) {
+            const scoreDisplay = document.getElementById("scoreDisplay");
+            scoreDisplay.style.display = "block";
+            document.getElementById("tongDiem").innerText = data.tongDiem.toFixed(2);
+            document.getElementById("soCauDung").innerText = `${data.soCauDung} / ${data.tongSoCau}`;
+
             const ketQuaElement = document.getElementById("ketQua");
-            ketQuaElement.textContent = data.ketQua;
+            ketQuaElement.innerText = data.ketQua;
             ketQuaElement.style.color = data.ketQua === "Đậu" ? "green" : "red";
-            document.getElementById("soCauLoiNghiemTrong").textContent = data.soCauLoiNghiemTrong;
-                    data.ketQuaList.forEach((kq, index) => {
-            const slide = document.getElementById(`question-${index}`);
-            if (!slide) return;
 
-            const options = slide.querySelectorAll("label.option-item");
-            options.forEach(label => {
-                const input = label.querySelector("input");
-                label.classList.remove("bg-green-100", "bg-red-100", "font-bold");
+            const diemLietElement = document.getElementById("soCauLoiNghiemTrong");
+            diemLietElement.innerText = data.soCauLoiNghiemTrong;
+            diemLietElement.style.color = data.soCauLoiNghiemTrong > 0 ? "red" : "green";
 
-                if (input.value === kq.dapAnDung) {
-                    label.classList.add("bg-green-100", "font-bold");
+            data.ketQuaList.forEach((kq, index) => {
+                const slide = document.getElementById(`question-${index}`);
+                if (slide) {
+                    const options = slide.querySelectorAll("label.option-item");
+                    options.forEach(label => {
+                        const input = label.querySelector("input");
+                        label.classList.remove("bg-green-100", "bg-red-100", "font-bold");
+
+                        if (input.value === kq.dapAnDung) label.classList.add("bg-green-100", "font-bold");
+                        if (input.checked && input.value !== kq.dapAnDung) label.classList.add("bg-red-100", "font-bold");
+                    });
                 }
-                if (input.checked && input.value !== kq.dapAnDung) {
-                    label.classList.add("bg-red-100", "font-bold");
+
+                const questionButton = document.querySelector(`button[data-question-id="${index}"]`);
+                if (questionButton) {
+                    questionButton.classList.remove("btn-answered", "btn-correct", "btn-wrong", "current-question");
+                    questionButton.classList.add(kq.dungSai ? "btn-wrong" : "btn-correct");
+                }
+
+                if (!kq.cauTraLoi) {
+                    const slide = document.getElementById(`question-${index}`);
+                    if (slide) {
+                        const options = slide.querySelectorAll("label.option-item");
+                        options.forEach(label => {
+                            const input = label.querySelector("input");
+                            label.classList.remove("bg-green-100", "bg-red-100", "font-bold");
+                            if (input.value === kq.dapAnDung) label.classList.add("bg-green-100", "font-bold");
+                        });
+                    }
+
+                    const questionButton = document.querySelector(`button[data-question-id="${index}"]`);
+                    if (questionButton) {
+                        questionButton.classList.remove("btn-answered", "btn-correct", "btn-wrong", "current-question");
+                        questionButton.classList.add("btn-wrong");
+                    }
                 }
             });
-
-            const questionButton = document.querySelector(`button[data-question-id="${index}"]`);
-            if (questionButton) {
-                questionButton.classList.remove("btn-answered", "current-question", "btn-correct", "btn-wrong");
-                questionButton.classList.add(kq.dungSai ? "btn-wrong" : "btn-correct");
-            }
-        });
-
         }
+
     </script>
 }
 

@@ -4,13 +4,9 @@
     {
         public Guid Id { get; set; } = Guid.NewGuid();
 
-        public Guid BaiThiId { get; set; }            // ✅ Đổi sang Guid
-        public Guid CauHoiId { get; set; }            // ✅ Đổi sang Guid
-
-        public char? CauTraLoi { get; set; }
-        public bool? DungSai { get; set; }
-
-        // Navigation properties
+        public Guid BaiThiId { get; set; }           
+        public Guid CauHoiId { get; set; }           
+      
         public virtual BaiThi BaiThi { get; set; }
         public virtual CauHoi CauHoi { get; set; }
     }
