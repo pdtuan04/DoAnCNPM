@@ -10,10 +10,13 @@ namespace YourProject.Controllers
     public class ChuDeController : ControllerBase
     {
         private readonly ChuDeService _chuDeService;
+        private readonly LoaiBangLaiService _loaiBangLaiService;
 
-        public ChuDeController(ChuDeService chuDeService)
+
+        public ChuDeController(ChuDeService chuDeService, LoaiBangLaiService loaiBangLaiService)
         {
             _chuDeService = chuDeService;
+            _loaiBangLaiService = loaiBangLaiService;
         }
 
         [HttpGet("danh-sach")]
@@ -23,18 +26,35 @@ namespace YourProject.Controllers
             return Ok(list);
         }
 
-        [HttpGet("cau-hoi")]
-        public async Task<IActionResult> GetCauHoiTheoChuDe(Guid loaiBangLaiId, Guid chuDeId)
-        {
-            var list = await _chuDeService.GetCauHoiTheoChuDe(loaiBangLaiId, chuDeId);
-            return Ok(list);
-        }
-
+        
         [HttpGet("ten/{chuDeId}")]
         public async Task<IActionResult> GetTenChuDe(Guid chuDeId)
         {
             var ten = await _chuDeService.GetTenChuDeById(chuDeId);
             return Ok(new { tenChuDe = ten });
+        }
+        [HttpGet("{id}/chu-de")]
+        public async Task<IActionResult> GetChuDeByLoaiBangLai(Guid id)
+        {
+            var (loai, chuDeList) = await _loaiBangLaiService.GetChuDeByLoaiBangLaiAsync(id);
+
+            var result = new
+            {
+                loai = new
+                {
+                    loai.Id,
+                    loai.TenLoai
+                },
+                chuDeList = chuDeList.Select(cd => new
+                {
+                    cd.Id,
+                    cd.TenChuDe,
+                    cd.ImageUrl,
+                    SoCau = cd.CauHois?.Count ?? 0
+                })
+            };
+
+            return Ok(result);
         }
     }
 }

@@ -20,23 +20,13 @@ namespace ET.Controllers
 
         public async Task<IActionResult> LamBaiThi(Guid id, Dictionary<Guid, string> answers)
         {
-            var baiThi = await _baiThiService.GetBaiThiWithDetails(id);
-            if (baiThi == null)
-                return NotFound();
+           
 
-            var (ketQuaList, diem, tongSoCau, diemToiThieu) = _baiThiService.ChamDiem(baiThi, answers);
-
-            ViewBag.KetQuaList = ketQuaList;
-            ViewBag.TongSoCau = tongSoCau;
-            ViewBag.DiemToiThieu = diemToiThieu;
-            ViewBag.Diem = diem;
-
-            return View(baiThi);
+            return View();
         }
 
         public IActionResult ChonDeThi()
         {
-            // Nếu bạn có service cho lấy chủ đề và loại bằng lái, có thể thêm vào BaiThiService
             return View();
         }
 
@@ -53,28 +43,17 @@ namespace ET.Controllers
             return View(list);
         }
 
-        public async Task<IActionResult> DanhSachDeThi(string loaiXe)
-        {
-            var list = await _baiThiService.GetDanhSachDeThi(loaiXe);
-            return View(list);
-        }
+        //public async Task<IActionResult> DanhSachDeThi(string loaiXe)
+        //{
+        //    var list = await _baiThiService.GetDanhSachDeThi(loaiXe);
+        //    return View(list);
+        //}
 
-        public IActionResult LoaiBangLaiXeMay()
-        {
-            // Nếu có service cho phần này thì tách ra, tạm thời không dùng trong service
-            return View();
-        }
+      
 
-        public IActionResult LoaiBangLaiOTo()
+        public async Task<IActionResult> DanhSachDeThi(Guid loaiBangLaiId)
         {
             return View();
-        }
-
-        public async Task<IActionResult> ThiDe(Guid loaiBangLaiId)
-        {
-            // Giả sử GetDeThiByLoaiBangLai có trong service
-            var list = await _baiThiService.GetDeThiByLoaiBangLai(loaiBangLaiId);
-            return View(list);
         }
 
         public async Task<IActionResult> LamDeNgauNhien(Guid loaiBangLaiId)
@@ -85,37 +64,19 @@ namespace ET.Controllers
         }
 
         public async Task<IActionResult> OnTap(Guid loaiBangLaiId)
-        {
-            if (loaiBangLaiId == Guid.Empty)
-                return BadRequest("Thiếu ID loại bằng lái");
-
-            var loai = await _loaiBangLaiService.GetByIdAsync(loaiBangLaiId);
-            if (loai == null)
-                return NotFound("Không tìm thấy loại bằng lái");
-
-            ViewBag.LoaiBangLaiId = loai.Id;
-            ViewBag.TenLoai = loai.TenLoai;
-
-            return View(); // Không cần truyền model vì view dùng fetch
+        {        
+            return View(); 
         }
-
-
-
         public IActionResult OnTapChuDe(Guid loaiBangLaiId, int chuDeId)
         {
-            // Chức năng này chưa có trong service, nếu cần thì bổ sung thêm vào service
             return View();
         }
 
         public IActionResult ChonChuDe(Guid loaiBangLaiId)
         {
-            // Cũng chưa có trong service
             return View();
         }
 
-        public IActionResult DanhSachLoaiBangLai()
-        {
-            return View();
-        }
+        
     }
 }

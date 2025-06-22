@@ -15,13 +15,8 @@ namespace ET.Controllers
         }
 
         public async Task<IActionResult> ChonChuDe(Guid loaiBangLaiId)
-        {
-            var (loai, chuDeList) = await _loaiBangLaiService.GetChuDeByLoaiBangLaiAsync(loaiBangLaiId);
-            if (loai == null) return NotFound();
-
-            ViewBag.TenLoai = loai.TenLoai;
-            ViewBag.LoaiBangLaiId = loaiBangLaiId;
-            return View("ChonChuDe", chuDeList);
+        {         
+            return View();
         }
 
         public async Task<IActionResult> OnTapChuDe(Guid loaiBangLaiId, Guid chuDeId)

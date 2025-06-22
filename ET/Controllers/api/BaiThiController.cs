@@ -11,10 +11,13 @@ namespace ET.Controllers.api
     public class BaiThiController : ControllerBase
     {
         private readonly BaiThiService _baiThiService;
-
-        public BaiThiController(BaiThiService baiThiService)
+        private readonly ChuDeService _chuDeService;
+        private readonly LoaiBangLaiService _loaiBangLaiService;
+        public BaiThiController(BaiThiService baiThiService, ChuDeService chuDeService, LoaiBangLaiService loaiBangLaiService)
         {
             _baiThiService = baiThiService;
+            _chuDeService = chuDeService;
+            _loaiBangLaiService = loaiBangLaiService;
         }
 
         [HttpPost("nop-bai-thi")]
@@ -67,8 +70,37 @@ namespace ET.Controllers.api
             if (baiThi == null)
                 return NotFound(new { success = false, message = "Không tìm thấy bài thi!" });
 
-            return Ok(baiThi);
+            var result = new
+            {
+                baiThi.Id,
+                baiThi.TenBaiThi,
+                ChiTietBaiThis = baiThi.ChiTietBaiThis.Select(ct => new
+                {
+                    ct.Id,
+                    CauHoi = new
+                    {
+                        ct.CauHoi.Id,
+                        ct.CauHoi.NoiDung,
+                        ct.CauHoi.LuaChonA,
+                        ct.CauHoi.LuaChonB,
+                        ct.CauHoi.LuaChonC,
+                        ct.CauHoi.LuaChonD,
+                        ct.CauHoi.DapAnDung,
+                        ct.CauHoi.MediaUrl,
+                        LoaiBangLai = new
+                        {
+                            ct.CauHoi.LoaiBangLai.Id,
+                            ct.CauHoi.LoaiBangLai.TenLoai,
+                            ct.CauHoi.LoaiBangLai.ThoiGianThi,
+                            ct.CauHoi.LoaiBangLai.DiemToiThieu
+                        }
+                    }
+                }).ToList()
+            };
+
+            return Ok(result);
         }
+
 
         [HttpGet("danh-sach-bai-thi")]
         public async Task<IActionResult> GetDanhSachBaiThi()
@@ -100,5 +132,39 @@ namespace ET.Controllers.api
             var list = await _baiThiService.GetCauHoiOnTap(loaiBangLaiId);
             return Ok(list);
         }
+        [HttpGet("cau-hoi")]
+        public async Task<IActionResult> GetCauHoiTheoChuDe(Guid loaiBangLaiId, Guid chuDeId)
+        {
+            var list = await _chuDeService.GetCauHoiTheoChuDe(loaiBangLaiId, chuDeId);
+            return Ok(list);
+        }
+
+        [HttpGet("de-thi/{loaiBangLaiId}")]
+        public async Task<IActionResult> GetDeThiByLoaiBangLai(Guid loaiBangLaiId)
+        {
+            var loaiBangLai = await _loaiBangLaiService.GetByIdAsync(loaiBangLaiId);
+            if (loaiBangLai == null)
+                return NotFound("Không tìm thấy loại bằng lái.");
+
+            var danhSachDeThi = await _baiThiService.GetDeThiByLoaiBangLai(loaiBangLaiId);
+
+            var result = new
+            {
+                loai = new
+                {
+                    loaiBangLai.Id,
+                    loaiBangLai.TenLoai
+                },
+                danhSachDeThi = danhSachDeThi.Select(bt => new
+                {
+                    bt.Id,
+                    bt.TenBaiThi,
+                    SoCau = bt.ChiTietBaiThis?.Count ?? 0,                  
+                })
+            };
+
+            return Ok(result);
+        }
+
     }
 }
