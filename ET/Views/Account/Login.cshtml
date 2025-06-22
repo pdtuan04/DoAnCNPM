@@ -3,23 +3,31 @@
     Layout = "~/Views/Shared/_PublicLayout.cshtml";
 }
 
-<div class="auth-card">
-    <img src="~/images/hutech_logo.png" class="auth-logo" alt="HUTECH logo" />
-    <h2 class="auth-title">Đăng nhập</h2>
-
-    <form onsubmit="login(event)">
-        <div id="loginError" class="text-danger mb-2" style="display:none;"></div>
-
-        <div class="form-group mb-3">
-            <label for="Username">Tên đăng nhập</label>
-            <input id="Username" class="form-control" required />
+<div class="d-flex justify-content-center align-items-center min-vh-100 bg-light">
+    <div class="card shadow-lg p-4" style="width: 100%; max-width: 400px;">
+        <div class="text-center mb-3">
+            <img src="~/images/hutech_logo.png" alt="HUTECH logo" class="img-fluid mb-2" style="height: 60px;" />
+            <h4 class="fw-bold">Đăng nhập vào ProTest</h4>
         </div>
 
-        <div class="form-group mb-3">
-            <label for="Password">Mật khẩu</label>
-            <input id="Password" class="form-control" type="password" required />
-        </div>
+        <form onsubmit="login(event)">
+            <div id="loginError" class="text-danger mb-3" style="display: none;"></div>
 
-        <button type="submit" class="btn btn-primary w-100">Đăng nhập</button>
-    </form>
+            <div class="mb-3">
+                <label for="Username" class="form-label">Tên đăng nhập</label>
+                <input id="Username" class="form-control" placeholder="Nhập tên đăng nhập" required />
+            </div>
+
+            <div class="mb-3">
+                <label for="Password" class="form-label">Mật khẩu</label>
+                <input id="Password" type="password" class="form-control" placeholder="Nhập mật khẩu" required />
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Đăng nhập</button>
+        </form>
+        <hr class="my-4" />
+        <button onclick="googleLogin()" class="btn btn-outline-danger w-100">
+            <i class="bi bi-google me-2"></i> Đăng nhập bằng Google
+        </button>
+    </div>
 </div>

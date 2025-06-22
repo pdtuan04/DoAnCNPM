@@ -49,6 +49,11 @@ builder.Services.AddAuthentication(options =>
             return Task.CompletedTask;
         }
     };
+}).AddGoogle(options =>
+{
+    options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+    options.SignInScheme = IdentityConstants.ExternalScheme;
 });
 builder.Services.AddControllersWithViews();
 builder.Services.AddTransient<ChuDeService>();
@@ -95,7 +100,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
-
+app.UseHangfireDashboard();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
