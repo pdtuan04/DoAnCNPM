@@ -257,12 +257,16 @@
 
         // Tải dữ liệu mô phỏng
         if (moPhongId) {
-            $.ajax({
-                url: `/api/MoPhong/${moPhongId}`,
-                type: 'GET',
-                success: function (response) {
-                    if (response.status && response.data) {
-                        const { noiDung, videoUrl, dapAn } = response.data;
+            fetch(`/api/MoPhong/${moPhongId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Lỗi khi tải mô phỏng');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.status && data.data) {
+                        const { noiDung, videoUrl, dapAn } = data.data;
                         $('#video').attr('src', videoUrl);
                         const numbers = dapAn.split(',').map(num => parseFloat(num.trim()));
                         for (let i = 0; i < numbers.length - 1; i++) {
@@ -281,44 +285,46 @@
                             text: 'Không tìm thấy dữ liệu mô phỏng'
                         });
                     }
-                },
-                error: function (err) {
+                })
+                .catch(err => {
                     Swal.fire({
                         icon: 'error',
                         title: 'Lỗi',
                         text: 'Lỗi khi tải mô phỏng'
                     });
                     console.error("Lỗi khi tải mô phỏng:", err);
-                }
-            });
+                });
         }
 
         // Tải danh sách mô phỏng
         const id = new URLSearchParams(window.location.search).get("id");
-        $.ajax({
-            url: `/api/MoPhong/get-mo-phong-by-loai-bang-lai?id=${id}`,
-            type: 'GET',
-            success: function (response) {
+        fetch(`/api/MoPhong/get-mo-phong-by-loai-bang-lai?id=${id}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Lỗi khi tải danh sách mô phỏng');
+                }
+                return response.json();
+            })
+            .then(data => {
                 const moPhongListContainer = $('#moPhongList');
                 moPhongListContainer.empty();
-                if (response.data && response.data.length > 0) {
-                    $.each(response.data, function (index, moPhong) {
+                if (data.data && data.data.length > 0) {
+                    $.each(data.data, function (index, moPhong) {
                         const listItem = `<a href="/MoPhong/Details?id=${id}&moPhongId=${moPhong.id}" class="list-group-item list-group-item-action">${moPhong.noiDung || "Không có nội dung"}</a>`;
                         moPhongListContainer.append(listItem);
                     });
                 } else {
                     moPhongListContainer.html('<div class="p-3 text-muted">Không có mô phỏng nào</div>');
                 }
-            },
-            error: function (error) {
+            })
+            .catch(error => {
                 Swal.fire({
                     icon: 'error',
                     title: 'Lỗi',
                     text: 'Không thể tải danh sách mô phỏng'
                 });
                 console.error('Error fetching mo phong list:', error);
-            }
-        });
+            });
 
         // Khởi tạo video
         video.addEventListener("loadedmetadata", () => {

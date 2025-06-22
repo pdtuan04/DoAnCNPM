@@ -48,68 +48,85 @@
 
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-    $(document).ready(function () {
-        // Get JWT token
-        function getToken() {
-            return localStorage.getItem('jwtToken') || '';
-        }
 
-        // Fetch total users
-        $.ajax({
-            url: 'https://localhost:7240/api/statistics/count-all-user',
-            type: 'GET',
-            headers: { 'Authorization': 'Bearer ' + getToken() },
-            success: function (response) {
-                if (response.status) {
-                    $('#totalUsers').text(response.data);
-                } else {
-                    Swal.fire('Error', 'Cannot fetch total users', 'error');
-                }
-            },
-            error: function () {
-                Swal.fire('Error', 'Failed to fetch total users', 'error');
+    <script>
+        $(document).ready(function () {
+            // Get JWT token
+            function getToken() {
+                return localStorage.getItem('jwtToken') || '';
             }
-        });
 
-        // Fetch users per month
-        $.ajax({
-            url: 'https://localhost:7240/api/statistics/users-per-month',
-            type: 'GET',
-            headers: { 'Authorization': 'Bearer ' + getToken() },
-            success: function (response) {
-                if (response.status) {
-                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                    const userCounts = Object.values(response.data);
+            // Fetch total users
+            fetch('https://localhost:7240/api/statistics/count-all-user', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + getToken()
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch total users');
+                    }
+                    return response.json();
+                })
+                .then(response => {
+                    if (response.status) {
+                        $('#totalUsers').text(response.data);
+                    } else {
+                        Swal.fire('Error', 'Cannot fetch total users', 'error');
+                    }
+                })
+                .catch(error => {
+                    Swal.fire('Error', 'Failed to fetch total users', 'error');
+                    console.error('Error fetching total users:', error);
+                });
 
-                    new Chart(document.getElementById('usersPerMonthChart').getContext('2d'), {
-                        type: 'bar',
-                        data: {
-                            labels: months,
-                            datasets: [{
-                                label: 'Users Created',
-                                data: userCounts,
-                                backgroundColor: 'rgba(0, 123, 255, 0.5)',
-                                borderColor: 'rgba(0, 123, 255, 1)',
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            scales: {
-                                y: { beginAtZero: true, title: { display: true, text: 'Users' } },
-                                x: { title: { display: true, text: 'Month' } }
+            // Fetch users per month
+            fetch('https://localhost:7240/api/statistics/users-per-month', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + getToken()
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch users per month');
+                    }
+                    return response.json();
+                })
+                .then(response => {
+                    if (response.status) {
+                        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                        const userCounts = Object.values(response.data);
+
+                        new Chart(document.getElementById('usersPerMonthChart').getContext('2d'), {
+                            type: 'bar',
+                            data: {
+                                labels: months,
+                                datasets: [{
+                                    label: 'Users Created',
+                                    data: userCounts,
+                                    backgroundColor: 'rgba(0, 123, 255, 0.5)',
+                                    borderColor: 'rgba(0, 123, 255, 1)',
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                scales: {
+                                    y: { beginAtZero: true, title: { display: true, text: 'Users' } },
+                                    x: { title: { display: true, text: 'Month' } }
+                                }
                             }
-                        }
-                    });
-                } else {
-                    Swal.fire('Error', 'Cannot fetch users per month', 'error');
-                }
-            },
-            error: function () {
-                Swal.fire('Error', 'Failed to fetch users per month', 'error');
-            }
+                        });
+                    } else {
+                        Swal.fire('Error', 'Cannot fetch users per month', 'error');
+                    }
+                })
+                .catch(error => {
+                    Swal.fire('Error', 'Failed to fetch users per month', 'error');
+                    console.error('Error fetching users per month:', error);
+                });
         });
-    });
-</script>
+    </script>
 }

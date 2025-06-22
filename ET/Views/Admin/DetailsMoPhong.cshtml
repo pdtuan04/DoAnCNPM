@@ -86,10 +86,16 @@
 
     // Tải thông tin chi tiết mô phỏng
     function loadMoPhongDetails(id) {
-        $.ajax({
-            url: '/api/mophong/' + id,
-            type: 'GET',
-            success: function(response) {
+        fetch(`/api/mophong/${id}`, {
+            method: 'GET'
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Không thể tải thông tin mô phỏng');
+                }
+                return response.json();
+            })
+            .then(response => {
                 if (response.status && response.data) {
                     const moPhong = response.data;
 
@@ -107,7 +113,6 @@
                     } else {
                         $('#videoContainer').hide();
                     }
-
                 } else {
                     Swal.fire({
                         icon: 'error',
@@ -120,10 +125,9 @@
                         }
                     });
                 }
-            },
-            error: function(xhr, status, error) {
-                console.error("Chi tiết lỗi:", xhr.responseText);
-
+            })
+            .catch(error => {
+                console.error("Chi tiết lỗi:", error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Lỗi',
@@ -134,27 +138,32 @@
                         window.location.href = '/Admin/QLMoPhong';
                     }
                 });
-            }
-        });
+            });
     }
 
     // Tải thông tin loại bằng lái
-        function loadLoaiBangLaiInfo(loaiBangLaiId) {
-        $.ajax({
-            url: '/api/loaibanglai/' + loaiBangLaiId,
-            type: 'GET',
-            success: function(response) {
+    function loadLoaiBangLaiInfo(loaiBangLaiId) {
+        fetch(`/api/loaibanglai/${loaiBangLaiId}`, {
+            method: 'GET'
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Không thể tải thông tin loại bằng lái');
+                }
+                return response.json();
+            })
+            .then(response => {
                 // ❗ Nếu không có response.status, thì response chính là object LoaiBangLai
                 if (response && response.tenLoai) {
                     $('#loaiBangLai').text(response.tenLoai);
                 } else {
                     $('#loaiBangLai').text(loaiBangLaiId);
                 }
-            },
-            error: function() {
+            })
+            .catch(error => {
+                console.error("Lỗi tải loại bằng lái:", error);
                 $('#loaiBangLai').text(loaiBangLaiId);
-            }
-        });
+            });
     }
 
     // Định dạng văn bản để hiển thị xuống dòng
