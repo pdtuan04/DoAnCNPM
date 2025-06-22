@@ -42,12 +42,7 @@ namespace ET.Controllers
             return View();
         }
 
-        public async Task<IActionResult> LamDeNgauNhien(Guid loaiBangLaiId)
-        {
-            var deThi = await _baiThiService.GetDeThiNgauNhien(loaiBangLaiId);
-            if (deThi == null) return NotFound("Không có đề thi nào phù hợp.");
-            return RedirectToAction("LamBaiThi", new { id = deThi.Id });
-        }
+      
 
         public async Task<IActionResult> OnTap(Guid loaiBangLaiId)
         {        
