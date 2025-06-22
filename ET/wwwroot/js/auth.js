@@ -121,3 +121,11 @@ async function callProtectedApi() {
         console.error('Lỗi gọi API:', error);
     }
 }
+async function googleLogin() {
+    try {
+        // Navigate to the google-login endpoint to start the OAuth flow
+        window.location.href = '/api/authenticate/google-login';
+    } catch (error) {
+        showError('loginError', 'Lỗi khi bắt đầu đăng nhập Google');
+    }
+}
