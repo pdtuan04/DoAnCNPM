@@ -32,25 +32,11 @@ namespace ET.Controllers
 
         public async Task<IActionResult> ChiTietBaiThi(Guid id)
         {
-            var baiThi = await _baiThiService.GetChiTietBaiThi(id);
-            if (baiThi == null) return NotFound();
-            return View(baiThi);
+          
+            return View();
         }
 
-        public async Task<IActionResult> DanhSachBaiThi()
-        {
-            var list = await _baiThiService.GetDanhSachBaiThi();
-            return View(list);
-        }
-
-        //public async Task<IActionResult> DanhSachDeThi(string loaiXe)
-        //{
-        //    var list = await _baiThiService.GetDanhSachDeThi(loaiXe);
-        //    return View(list);
-        //}
-
-      
-
+       
         public async Task<IActionResult> DanhSachDeThi(Guid loaiBangLaiId)
         {
             return View();

@@ -165,6 +165,22 @@ namespace ET.Controllers.api
 
             return Ok(result);
         }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetChiTietBaiThi(Guid id)
+        {
+            if (id == Guid.Empty)
+            {
+                return BadRequest(new { success = false, message = "ID không hợp lệ!" });
+            }
 
+            var baiThi = await _baiThiService.GetChiTietBaiThi(id);
+
+            if (baiThi == null)
+            {
+                return NotFound(new { success = false, message = "Không tìm thấy bài thi." });
+            }
+
+            return Ok(new { success = true, data = baiThi });
+        }
     }
 }

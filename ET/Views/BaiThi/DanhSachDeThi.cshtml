@@ -43,7 +43,6 @@
                     const container = document.getElementById("danhSachDeThiContainer");
                     document.getElementById("tenLoaiTitle").innerText = `Đề thi ${data.loai.tenLoai}`;
 
-                    // Gợi ý: nếu biết tên loại là "Xe máy" hay "Ô tô", có thể dùng để đổi link quay lại
                     const backButton = document.getElementById("backButton");
                     backButton.href = data.loai.tenLoai.includes("A") ? "/LoaiBangLai/XeMay" : "/LoaiBangLai/OTo";
 

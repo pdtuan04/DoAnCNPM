@@ -20,6 +20,13 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 }, ServiceLifetime.Transient);
 // Add services to the container.
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddControllers()
+    .AddJsonOptions(opt =>
+    {
+        opt.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        opt.JsonSerializerOptions.WriteIndented = true;
+    });
+
 builder.Services.AddIdentity<User, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
