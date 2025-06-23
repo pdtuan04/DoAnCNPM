@@ -1,15 +1,15 @@
 ﻿namespace Libs.Models
 {
-    public class Sharereport
+    public class ShareReport
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
 
         // Cho phép báo cáo Share gốc
-        public int? ShareId { get; set; }
+        public Guid? ShareId { get; set; }
         public Share? Share { get; set; }
 
         // Cho phép báo cáo Reply
-        public int? ShareReplyId { get; set; }
+        public Guid? ShareReplyId { get; set; }
         public ShareReply? ShareReply { get; set; }
 
         public string Reason { get; set; }

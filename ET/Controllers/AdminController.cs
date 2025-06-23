@@ -44,5 +44,9 @@ namespace ET.Controllers
         {
             return View(id);
         }
+        public IActionResult QLbaocaochiase()
+        {
+            return View();
+        }
     }
 }
