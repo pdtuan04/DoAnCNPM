@@ -23,7 +23,6 @@
         <div class="side-panel">
             <p id="timerDisplay" class="timer-display">20 : 00</p>
             <div class="scoreDisplay" id="scoreDisplay" style="display: none;">
-                <p><strong>Điểm:</strong> <span id="tongDiem"></span></p>
                 <p><strong>Số câu đúng:</strong> <span id="soCauDung"></span></p>
                 <p><strong>Kết quả:</strong> <span id="ketQua"></span></p>
                 <p><strong>Số câu điểm liệt sai:</strong> <span id="soCauLoiNghiemTrong"></span></p>
@@ -269,7 +268,6 @@
              function displayResult(data) {
             const scoreDisplay = document.getElementById("scoreDisplay");
             scoreDisplay.style.display = "block";
-            document.getElementById("tongDiem").innerText = data.tongDiem.toFixed(2);
             document.getElementById("soCauDung").innerText = `${data.soCauDung} / ${data.tongSoCau}`;
 
             const ketQuaElement = document.getElementById("ketQua");
