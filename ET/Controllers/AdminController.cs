@@ -48,5 +48,24 @@ namespace ET.Controllers
         {
             return View();
         }
+        public IActionResult QLLoaiBangLai()
+        {
+            return View();
+        }
+
+        public IActionResult CreateLoaiBangLai()
+        {
+            return View();
+        }
+
+        public IActionResult EditLoaiBangLai(Guid id)
+        {
+            return View(id);
+        }
+
+        public IActionResult DetailsLoaiBangLai(Guid id)
+        {
+            return View(id);
+        }
     }
 }

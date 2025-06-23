@@ -1,6 +1,7 @@
 ﻿using Libs;
 using Libs.Data;
 using Libs.Entity;
+using Libs.Service;
 using Microsoft.EntityFrameworkCore;
 namespace Libs.Repositories
 {
@@ -11,6 +12,8 @@ namespace Libs.Repositories
         Task<List<LoaiBangLai>> GetDanhSachLoaiBangLaiAsync();
         Task<LoaiBangLai> GetLoaiBangLaiByIdAsync(Guid loaiBangLaiId);
         Task<(LoaiBangLai, List<ChuDe>)> GetChuDeByLoaiBangLaiAsync(Guid loaiBangLaiId);
+        public Task<PageList<LoaiBangLai>> GetPagedLoaiBangLai(int pageNumber, int pageSize, string? search, string? sortCol, string? sortDir);
+        Task<LoaiBangLai> GetLoaiBangLaiById(Guid id);
     }
 
     public class LoaiBangLaiRepository : RepositoryBase<LoaiBangLai>, ILoaiBangLaiRepository
@@ -59,6 +62,37 @@ namespace Libs.Repositories
                 .ToListAsync();
 
             return (loai, chuDeList);
+        }
+        public async Task<PageList<LoaiBangLai>> GetPagedLoaiBangLai(int pageNumber, int pageSize, string? search, string? sortCol, string? sortDir)
+        {
+            IQueryable<LoaiBangLai> LoaiBangLaiQuery = _dbContext.LoaiBangLais.AsQueryable();
+            if (!string.IsNullOrEmpty(search))
+            {
+                LoaiBangLaiQuery = LoaiBangLaiQuery.Where(p => p.TenLoai.Contains(search));
+            }
+            LoaiBangLaiQuery = LoaiBangLaiQuery.Where(x => !x.isDeleted);
+            var entityProps = typeof(LoaiBangLai)
+            .GetProperties()
+            .ToDictionary(p => p.Name.ToLower(), p => p.Name, StringComparer.OrdinalIgnoreCase);
+            if (!string.IsNullOrWhiteSpace(sortCol) && entityProps.ContainsKey(sortCol))
+            {
+                string actualCol = entityProps[sortCol];
+                bool isDescending = sortDir?.Equals("desc", StringComparison.OrdinalIgnoreCase) ?? false;
+
+                LoaiBangLaiQuery = isDescending
+                    ? LoaiBangLaiQuery.OrderByDescending(q => EF.Property<object>(q, actualCol))
+                    : LoaiBangLaiQuery.OrderBy(q => EF.Property<object>(q, actualCol));
+            }
+            else
+            {
+                LoaiBangLaiQuery = LoaiBangLaiQuery.OrderBy(q => q.Id);
+            }
+            var LoaiBangLais = await PageList<LoaiBangLai>.CreatePageAsync(LoaiBangLaiQuery, pageNumber, pageSize);
+            return LoaiBangLais;
+        }
+        public async Task<LoaiBangLai> GetLoaiBangLaiById(Guid id)
+        {
+            return await _dbContext.LoaiBangLais.FirstOrDefaultAsync(l => l.Id == id);
         }
     }
 }
