@@ -67,5 +67,21 @@ namespace ET.Controllers
         {
             return View(id);
         }
+        public IActionResult QLSaHinh()
+        {
+            return View();
+        }
+        public IActionResult CreateSaHinh()
+        {
+            return View();
+        }
+        public IActionResult EditSaHinh(Guid id)
+        {
+            return View(id);
+        }
+        public IActionResult DetailsSaHinh(Guid id)
+        {
+            return View(id);
+        }
     }
 }
