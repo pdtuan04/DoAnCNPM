@@ -75,7 +75,7 @@
 
             function fetchLicenseTypes() {
                 // Sử dụng endpoint API đã cung cấp
-                fetch('/api/LoaiBangLai/get-loai-bang-lai-list')
+                fetch('/api/LoaiBangLai/get-loai-bang-lai-has-mo-phong')
                     .then(response => response.json())
                     .then(data => {
                         if (data.status) {

@@ -113,5 +113,9 @@ namespace Libs.Service
             await _dbContext.SaveChangesAsync();
             return true;
         }
+        public async Task<List<LoaiBangLai>> GetLoaiBangLaiHasMoPhong()
+        {
+            return await _loaiBangLaiRepository.GetLoaiBangLaiHasMoPhong();
+        }
     }
 }

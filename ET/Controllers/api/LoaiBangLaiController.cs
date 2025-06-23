@@ -109,5 +109,16 @@ namespace ET.Controllers.api
                 data = result.Items
             });
         }
+        [HttpGet("get-loai-bang-lai-has-mo-phong")]
+        public async Task<IActionResult> GetLoaiBangLaiHasMoPhong()
+        {
+            var loaiBangLai = await _loaiBangLaiService.GetLoaiBangLaiHasMoPhong();
+            if (loaiBangLai == null)
+            {
+                return NotFound(new { status = false, message = "Loại bằng lái không tìm thấy" });
+            }
+            return Ok(new { status = true, message = "Lấy loại bằng lái thành công", data = loaiBangLai });
+        }
+
     }
 }
