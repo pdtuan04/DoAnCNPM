@@ -108,5 +108,10 @@ namespace Libs.Data
         {
             _dbContext.SaveChanges();
         }
+        public virtual async Task<T?> GetByIdAsync(Guid id)
+        {
+            return await _dbSet.FindAsync(id);
+        }
+
     }
 }

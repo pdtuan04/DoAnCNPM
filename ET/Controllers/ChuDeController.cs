@@ -1,4 +1,6 @@
-﻿using Libs.Service;
+﻿using Libs.Entity;
+using Libs.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ET.Controllers
@@ -13,8 +15,34 @@ namespace ET.Controllers
             _chuDeService = chuDeService;
             _loaiBangLaiService = loaiBangLaiService;
         }
+        [Authorize(Roles = "Admin")]
 
-        public async Task<IActionResult> ChonChuDe(Guid loaiBangLaiId)
+        public async Task<IActionResult> Index()
+        {
+            return View();
+        }
+        [Authorize(Roles = "Admin")]
+
+        public IActionResult Create()
+        {
+            return View();
+        }
+        [Authorize(Roles = "Admin")]
+
+        public async Task<IActionResult> Details()
+        { 
+            return View();
+        }
+        [Authorize(Roles = "Admin")]
+
+        public async Task<IActionResult> Edit()
+        { 
+
+            return View();
+        }
+
+        // phuc vu cho UI nguoi dung
+        public async Task<IActionResult> ChonChuDe()
         {         
             return View();
         }

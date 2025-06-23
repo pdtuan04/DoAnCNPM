@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Libs.Entity;
 using Libs.Service;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
 
-namespace YourProject.Controllers
+namespace ET.Controllers.api
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -19,6 +21,136 @@ namespace YourProject.Controllers
             _loaiBangLaiService = loaiBangLaiService;
         }
 
+
+        [HttpGet("get-all")]
+        public async Task<IActionResult> GetAll()
+        {
+            var list = await _chuDeService.GetAllAsync();
+            return Ok(new { success = true, data = list });
+        }
+
+        [HttpGet("get/{id}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var item = await _chuDeService.GetByIdAsync(id);
+            if (item == null)
+                return NotFound(new { success = false, message = "Không tìm thấy chủ đề" });
+
+            return Ok(new { success = true, data = item });
+        }
+        [Authorize(Roles = "Admin")]
+        [HttpPost("create")]
+        public async Task<IActionResult> Create([FromBody] ChuDe model)
+        {
+            await _chuDeService.AddAsync(model);
+            return Ok(new { success = true, message = "Tạo mới thành công" });
+        }
+        [Authorize(Roles = "Admin")]
+        [HttpPut("update")]
+        public async Task<IActionResult> Update([FromBody] ChuDe model)
+        {
+            await _chuDeService.UpdateAsync(model);
+            return Ok(new { success = true, message = "Cập nhật thành công" });
+        }
+        [Authorize(Roles = "Admin")]
+
+        [HttpDelete("delete/{id}")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            await _chuDeService.DeleteAsync(id);
+            return Ok(new { success = true, message = "Xoá thành công" });
+        }
+        [Authorize(Roles = "Admin")]
+
+        [HttpPost("toggle-active/{id}")]
+        public async Task<IActionResult> ToggleActive(Guid id)
+        {
+            var item = await _chuDeService.GetByIdAsync(id);
+            if (item == null)
+                return NotFound(new { success = false });
+
+            item.isDeleted = !item.isDeleted;
+            await _chuDeService.UpdateAsync(item);
+
+            return Ok(new { success = true, message = "Cập nhật trạng thái thành công", data = item });
+        }
+
+        [HttpPost("create-with-image")]
+        public async Task<IActionResult> CreateWithImage([FromForm] ChuDe model, IFormFile? imageUrl)
+        {
+            if (imageUrl != null && imageUrl.Length > 0)
+            {
+                var fileName = Guid.NewGuid() + Path.GetExtension(imageUrl.FileName);
+                var savePath = Path.Combine("wwwroot/images", fileName);
+                using var stream = new FileStream(savePath, FileMode.Create);
+                await imageUrl.CopyToAsync(stream);
+                model.ImageUrl = "/images/" + fileName;
+            }
+
+            await _chuDeService.AddAsync(model);
+            return Ok(new { success = true, message = "Tạo mới thành công" });
+        }
+
+
+        [HttpPost("edit")]
+        public async Task<IActionResult> EditChuDe([FromForm] ChuDe chuDe, [FromForm] IFormFile? imageUrl)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { success = false, message = "Dữ liệu không hợp lệ", errors = ModelState });
+            }
+
+            var existingChuDe = await _chuDeService.GetByIdAsync(chuDe.Id);
+            if (existingChuDe == null)
+            {
+                return NotFound(new { success = false, message = "Không tìm thấy chủ đề cần chỉnh sửa" });
+            }
+
+            // Cập nhật thông tin
+            existingChuDe.TenChuDe = chuDe.TenChuDe;
+            existingChuDe.MoTa = chuDe.MoTa;
+
+            if (imageUrl != null && imageUrl.Length > 0)
+            {
+                // Xoá ảnh cũ
+                if (!string.IsNullOrEmpty(existingChuDe.ImageUrl))
+                {
+                    var oldImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", existingChuDe.ImageUrl.TrimStart('/'));
+                    if (System.IO.File.Exists(oldImagePath))
+                    {
+                        System.IO.File.Delete(oldImagePath);
+                    }
+                }
+
+                // Lưu ảnh mới
+                existingChuDe.ImageUrl = await SaveImage(imageUrl);
+            }
+
+            await _chuDeService.UpdateAsync(existingChuDe);
+
+            return Ok(new { success = true, message = "Cập nhật chủ đề thành công", data = existingChuDe });
+        }
+        private async Task<string> SaveImage(IFormFile imageFile)
+        {
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images");
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            var uniqueFileName = Guid.NewGuid() + Path.GetExtension(imageFile.FileName);
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            using var stream = new FileStream(filePath, FileMode.Create);
+            await imageFile.CopyToAsync(stream);
+
+            return "/images/" + uniqueFileName;
+        }
+
+
+
+        //--------------//
+        ///lay phuc vu cho ui nguoi dung
         [HttpGet("danh-sach")]
         public async Task<IActionResult> GetDanhSach()
         {
