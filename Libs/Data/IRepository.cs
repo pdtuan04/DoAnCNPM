@@ -21,5 +21,7 @@ namespace Libs.Data
 
         bool Any(Expression<Func<T, bool>> where);
         void Save();
+        Task<T?> GetByIdAsync(Guid id);
+
     }
 }

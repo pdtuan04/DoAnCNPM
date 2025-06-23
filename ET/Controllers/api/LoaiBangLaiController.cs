@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace YourProject.Controllers
+namespace ET.Controllers.api
 {
     [ApiController]
     [Route("api/[controller]")]
