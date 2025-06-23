@@ -30,6 +30,7 @@ namespace Libs.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -135,8 +136,7 @@ namespace Libs.Migrations
                 name: "Shares",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Topic = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -351,18 +351,17 @@ namespace Libs.Migrations
                 name: "ShareReplies",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    ShareId = table.Column<int>(type: "int", nullable: false),
+                    id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ShareId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ParentReplyId = table.Column<int>(type: "int", nullable: true)
+                    ParentReplyId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ShareReplies", x => x.Id);
+                    table.PrimaryKey("PK_ShareReplies", x => x.id);
                     table.ForeignKey(
                         name: "FK_ShareReplies_Shares_ShareId",
                         column: x => x.ShareId,
@@ -397,9 +396,7 @@ namespace Libs.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     BaiThiId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CauHoiId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CauTraLoi = table.Column<string>(type: "nvarchar(1)", nullable: true),
-                    DungSai = table.Column<bool>(type: "bit", nullable: true)
+                    CauHoiId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -449,10 +446,9 @@ namespace Libs.Migrations
                 name: "ShareReports",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    ShareId = table.Column<int>(type: "int", nullable: true),
-                    ShareReplyId = table.Column<int>(type: "int", nullable: true),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ShareId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    ShareReplyId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     Reason = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(max)", nullable: false)
@@ -464,7 +460,7 @@ namespace Libs.Migrations
                         name: "FK_ShareReports_ShareReplies_ShareReplyId",
                         column: x => x.ShareReplyId,
                         principalTable: "ShareReplies",
-                        principalColumn: "Id");
+                        principalColumn: "id");
                     table.ForeignKey(
                         name: "FK_ShareReports_Shares_ShareId",
                         column: x => x.ShareId,

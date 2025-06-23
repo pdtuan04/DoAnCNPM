@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Libs.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250620172731_init")]
+    [Migration("20250623032032_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -162,12 +162,6 @@ namespace Libs.Migrations
 
                     b.Property<Guid>("CauHoiId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("CauTraLoi")
-                        .HasColumnType("nvarchar(1)");
-
-                    b.Property<bool?>("DungSai")
-                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 
@@ -372,6 +366,9 @@ namespace Libs.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -427,11 +424,9 @@ namespace Libs.Migrations
 
             modelBuilder.Entity("Libs.Models.Share", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Content")
                         .IsRequired()
@@ -458,11 +453,9 @@ namespace Libs.Migrations
 
             modelBuilder.Entity("Libs.Models.ShareReply", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Content")
                         .IsRequired()
@@ -471,11 +464,11 @@ namespace Libs.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("ParentReplyId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("ParentReplyId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("ShareId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("ShareId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -484,20 +477,18 @@ namespace Libs.Migrations
                     b.Property<string>("UserName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                    b.HasKey("id");
 
                     b.HasIndex("ShareId");
 
                     b.ToTable("ShareReplies");
                 });
 
-            modelBuilder.Entity("Libs.Models.Sharereport", b =>
+            modelBuilder.Entity("Libs.Models.ShareReport", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -506,11 +497,11 @@ namespace Libs.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("ShareId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("ShareId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("ShareReplyId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("ShareReplyId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -779,7 +770,7 @@ namespace Libs.Migrations
                     b.Navigation("Share");
                 });
 
-            modelBuilder.Entity("Libs.Models.Sharereport", b =>
+            modelBuilder.Entity("Libs.Models.ShareReport", b =>
                 {
                     b.HasOne("Libs.Models.Share", "Share")
                         .WithMany()
