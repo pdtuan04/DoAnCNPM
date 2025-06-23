@@ -15,13 +15,21 @@ namespace Libs.Repositories
         Task<BaiThi> GetBaiThiWithDetails(Guid id);
         (List<KetQuaBaiThi> ketQuaList, float diem, int tongSoCau, int diemToiThieu) ChamDiem(BaiThi baiThi, Dictionary<Guid, string> answers);
         Task<NopBaiThiResult> XuLyNopBaiThi(SubmitBaiThiRequest request, string userId);
-
         Task<BaiThi> GetDeThiNgauNhien(Guid loaiBangLaiId);
         Task<BaiThi> GetChiTietBaiThi(Guid id);
         Task<List<BaiThi>> GetDanhSachBaiThi();
         Task<List<BaiThi>> GetDanhSachDeThi(string loaiXe = null);
         Task<List<BaiThi>> GetDeThiByLoaiBangLai(Guid loaiBangLaiId);
         Task<List<CauHoi>> GetCauHoiOnTap(Guid loaiBangLaiId);
+        Task<BaiThi> CreateDeThiNgauNhienTheoChuDe(Guid loaiBangLaiId, Guid chuDeId, List<CauHoi> cauHois);
+        Task<BaiThi> GetDeThiNgauNhienTheoChuDe(Guid loaiBangLaiId, Guid chuDeId);
+        Task<List<CauHoi>> GetCauHoiTaoDeThiAsync(Guid loaiBangLaiId);
+
+        // Thêm các phương thức mới
+        void SaveChanges();
+        Task SaveChangesAsync();
+        Task<BaiThi> GetByIdAsync(Guid id);
+        ApplicationDbContext GetDbContext();
     }
 
     public class BaiThiRepository : RepositoryBase<BaiThi>, IBaiThiRepository
@@ -62,8 +70,140 @@ namespace Libs.Repositories
             return (ketQuaList, diem, baiThi.ChiTietBaiThis.Count, diemToiThieu);
         }
 
+        public async Task<BaiThi> CreateDeThiNgauNhienTheoChuDe(Guid loaiBangLaiId, Guid chuDeId, List<CauHoi> cauHois)
+        {
+            try
+            {
+                var loaiBangLai = await _dbContext.LoaiBangLais.FindAsync(loaiBangLaiId);
+                var chuDe = await _dbContext.ChuDes.FindAsync(chuDeId);
 
+                if (loaiBangLai == null || chuDe == null)
+                    return null;
 
+                // Create a new exam with random questions
+                var baiThiId = Guid.NewGuid();
+                var baiThi = new BaiThi
+                {
+                    Id = baiThiId,
+                    TenBaiThi = $"Đề ngẫu nhiên - {loaiBangLai.TenLoai} - {chuDe.TenChuDe} - {DateTime.Now:dd/MM/yyyy HH:mm}",
+                    ChiTietBaiThis = cauHois
+                        .OrderBy(c => Guid.NewGuid()) // Randomize questions
+                        .Take(Math.Min(cauHois.Count, 20)) // Take at most 20 questions or all available questions
+                        .Select(cauHoi => new ChiTietBaiThi
+                        {
+                            Id = Guid.NewGuid(),
+                            BaiThiId = baiThiId, // Set the BaiThiId explicitly
+                            CauHoiId = cauHoi.Id,
+                            CauHoi = cauHoi
+                        })
+                        .ToList()
+                };
+
+                // Save the exam to the database
+                await _dbContext.BaiThis.AddAsync(baiThi);
+                await _dbContext.SaveChangesAsync();
+
+                return baiThi;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in CreateDeThiNgauNhienTheoChuDe: {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<List<CauHoi>> GetCauHoiTaoDeThiAsync(Guid loaiBangLaiId)
+        {
+            try
+            {
+                // Get questions for this license type with all necessary includes
+                return await _dbContext.CauHois
+                    .Where(c => c.LoaiBangLaiId == loaiBangLaiId &&
+                                !c.isDeleted &&
+                                !c.LoaiBangLai.isDeleted)
+                    .Include(c => c.ChuDe)
+                    .Include(c => c.LoaiBangLai)
+                    .OrderBy(c => c.ChuDeId)
+                    .ThenByDescending(c => c.DiemLiet)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                // Log error
+                Console.WriteLine($"Error in BaiThiRepository.GetCauHoiTaoDeThiAsync: {ex.Message}");
+                Console.WriteLine($"StackTrace: {ex.StackTrace}");
+
+                // Return empty list rather than null
+                return new List<CauHoi>();
+            }
+        }
+
+        public async Task<BaiThi> GetDeThiNgauNhienTheoChuDe(Guid loaiBangLaiId, Guid chuDeId)
+        {
+            try
+            {
+                // Verify that both the license type and subject exist
+                var loaiBangLai = await _dbContext.LoaiBangLais.FindAsync(loaiBangLaiId);
+                var chuDe = await _dbContext.ChuDes.FindAsync(chuDeId);
+
+                if (loaiBangLai == null || chuDe == null)
+                    return null;
+
+                // Get questions for this license type and subject
+                var cauHois = await _dbContext.CauHois
+                    .Where(c => c.LoaiBangLaiId == loaiBangLaiId &&
+                                c.ChuDeId == chuDeId &&
+                                !c.isDeleted &&
+                                !c.LoaiBangLai.isDeleted &&
+                                !c.ChuDe.isDeleted)
+                    .ToListAsync();
+
+                if (cauHois == null || !cauHois.Any())
+                    return null;
+
+                // Create a new exam with random questions
+                var baiThiId = Guid.NewGuid();
+                var baiThi = new BaiThi
+                {
+                    Id = baiThiId,
+                    TenBaiThi = $"Đề ngẫu nhiên - {loaiBangLai.TenLoai} - {chuDe.TenChuDe} - {DateTime.Now:dd/MM/yyyy HH:mm}",
+                    ChiTietBaiThis = cauHois
+                        .OrderBy(c => Guid.NewGuid()) // Randomize questions
+                        .Take(Math.Min(cauHois.Count, 20)) // Take at most 20 questions or all available questions
+                        .Select(cauHoi => new ChiTietBaiThi
+                        {
+                            Id = Guid.NewGuid(),
+                            BaiThiId = baiThiId, // Set the BaiThiId explicitly
+                            CauHoiId = cauHoi.Id,
+                            CauHoi = cauHoi
+                        })
+                        .ToList()
+                };
+
+                // Save the exam to the database using a transaction
+                using (var transaction = _dbContext.Database.BeginTransaction())
+                {
+                    try
+                    {
+                        await _dbContext.BaiThis.AddAsync(baiThi);
+                        await _dbContext.SaveChangesAsync();
+                        transaction.Commit();
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
+                }
+
+                return baiThi;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetDeThiNgauNhienTheoChuDe: {ex.Message}");
+                throw;
+            }
+        }
 
         public async Task<NopBaiThiResult> XuLyNopBaiThi(SubmitBaiThiRequest request, string? userId)
         {
@@ -95,14 +235,14 @@ namespace Libs.Repositories
                 Success = true,
                 BaiThiId = baiThi.Id,
                 KetQuaList = ketQuaList,
-                SoCauDung = soCauDung,               
+                SoCauDung = soCauDung,
                 TongSoCau = tongSoCau,
                 KetQua = ketQua,
                 MacLoiNghiemTrong = macLoiNghiemTrong,
-                SoCauLoiNghiemTrong = soCauLoiNghiemTrong
+                SoCauLoiNghiemTrong = soCauLoiNghiemTrong,
+                TongDiem = (int)diem
             };
         }
-
 
         private async Task LuuLichSuThiAsync(string userId, BaiThi baiThi, List<KetQuaBaiThi> ketQuaList,
             int tongSoCau, float diem, string ketQua, bool macLoiNghiemTrong)
@@ -114,7 +254,7 @@ namespace Libs.Repositories
                 TenBaiThi = baiThi.TenBaiThi.Length > 100 ? baiThi.TenBaiThi[..100] : baiThi.TenBaiThi,
                 NgayThi = DateTime.Now,
                 TongSoCau = tongSoCau,
-                SoCauDung = (int)diem,
+                SoCauDung = ketQuaList.Count(k => !k.DungSai),
                 PhanTramDung = diem * 10,
                 Diem = (int)diem,
                 KetQua = ketQua.Length > 20 ? ketQua[..20] : ketQua,
@@ -167,7 +307,6 @@ namespace Libs.Repositories
                     .ThenInclude(ct => ct.CauHoi)
                 .FirstOrDefaultAsync();
         }
-
 
         public async Task<BaiThi> GetChiTietBaiThi(Guid id)
         {
@@ -224,12 +363,70 @@ namespace Libs.Repositories
 
         public async Task<List<CauHoi>> GetCauHoiOnTap(Guid loaiBangLaiId)
         {
-            return await _dbContext.CauHois
-                .Where(c => c.LoaiBangLaiId == loaiBangLaiId &&
-                            !c.LoaiBangLai.isDeleted &&
-                            !c.ChuDe.isDeleted)
-                .OrderBy(c => c.ChuDeId)
-                .ToListAsync();
+            try
+            {
+                // First, check if loaiBangLaiId is valid
+                var loaiBangLai = await _dbContext.LoaiBangLais
+                    .FirstOrDefaultAsync(l => l.Id == loaiBangLaiId && !l.isDeleted);
+
+                if (loaiBangLai == null)
+                {
+                    Console.WriteLine($"LoaiBangLai with ID {loaiBangLaiId} not found or is deleted");
+                    return new List<CauHoi>(); // Return empty list rather than null
+                }
+
+                // Use explicit loading pattern to prevent navigation property issues
+                var cauHois = await _dbContext.CauHois
+                    .Where(c => c.LoaiBangLaiId == loaiBangLaiId &&
+                                !c.isDeleted)
+                    .Include(c => c.ChuDe)
+                    .Include(c => c.LoaiBangLai)
+                    .OrderBy(c => c.ChuDeId)
+                    .ToListAsync();
+
+                // Filter out any questions with deleted related entities
+                cauHois = cauHois
+                    .Where(c => c.LoaiBangLai != null && !c.LoaiBangLai.isDeleted &&
+                                c.ChuDe != null && !c.ChuDe.isDeleted)
+                    .ToList();
+
+                // Log the count for debugging
+                Console.WriteLine($"Repository: Found {cauHois.Count} questions for loaiBangLaiId: {loaiBangLaiId}");
+
+                return cauHois;
+            }
+            catch (Exception ex)
+            {
+                // Log the exception with detailed information
+                Console.WriteLine($"Error in BaiThiRepository.GetCauHoiOnTap: {ex.Message}");
+                Console.WriteLine($"StackTrace: {ex.StackTrace}");
+                Console.WriteLine($"InnerException: {ex.InnerException?.Message}");
+
+                // Return an empty list rather than null
+                return new List<CauHoi>();
+            }
+        }
+
+        // Thêm các phương thức mới
+        public void SaveChanges()
+        {
+            _dbContext.SaveChanges();
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<BaiThi> GetByIdAsync(Guid id)
+        {
+            return await _dbContext.BaiThis
+                .FirstOrDefaultAsync(b => b.Id == id);
+        }
+
+        public ApplicationDbContext GetDbContext()
+        {
+            return _dbContext;
         }
     }
 }

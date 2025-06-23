@@ -68,35 +68,12 @@
 
                         @if (User.Identity.IsAuthenticated)
                         {
-                            <li class="nav-item dropdown">
-                                <a class="nav-link " href="#" id="navbarDropdown" role="button"
-                                   data-bs-toggle="dropdown" aria-expanded="false">
-                                    Lịch Sử Thi
-                                </a>
-                                <ul class="dropdown-menu shadow-sm rounded-3 border-0 dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                    <li>
-                                        <a class="dropdown-item d-flex align-items-center" asp-area="" asp-controller="LichSuThi" asp-action="LichSuThi">
-                                            <i class="fas fa-history text-primary me-2"></i> Lịch Sử Thi
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item d-flex align-items-center" asp-area="" asp-controller="Share" asp-action="Share">
-                                            <i class="fas fa-history text-primary me-2"></i> Chia Sẽ
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item d-flex align-items-center" asp-area="" asp-controller="LichSuThi" asp-action="DanhSachCauHoiSai">
-                                            <i class="fas fa-exclamation-circle text-danger me-2"></i> Câu Hỏi Sai
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item d-flex align-items-center" asp-area="" asp-controller="LichSuThi" asp-action="LuyenLaiCauSai">
-                                            <i class="fas fa-sync text-success me-2"></i> Luyện Tập Câu Sai
-                                        </a>
-                                    </li>
-                                    <li><hr class="dropdown-divider"></li>
-                                </ul>
+                           <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="LichSuThi" asp-action="Index">
+                                Lịch Sử Thi </a>
                             </li>
+                                    
+                            
                             <div class="navbar-nav">
                                 <form onsubmit="logout(event)" class="d-inline">
                                     <button type="submit" class="nav-link btn btn-link">Logout</button>

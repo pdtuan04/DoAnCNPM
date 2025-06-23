@@ -21,7 +21,77 @@ namespace ET.Controllers.api
             _loaiBangLaiService = loaiBangLaiService;
         }
 
+        [HttpGet("danh-sach")]
+        public async Task<IActionResult> GetDanhSach()
+        {
+            var list = await _chuDeService.GetDanhSachChuDe();
+            return Ok(list);
+        }
 
+
+        [HttpGet("ten/{chuDeId}")]
+        public async Task<IActionResult> GetTenChuDe(Guid chuDeId)
+        {
+            var ten = await _chuDeService.GetTenChuDeById(chuDeId);
+            return Ok(new { tenChuDe = ten });
+        }
+
+        [HttpGet("{id}/chu-de")]
+        public async Task<IActionResult> GetChuDeByLoaiBangLai(Guid id)
+        {
+            var (loai, chuDeList) = await _loaiBangLaiService.GetChuDeByLoaiBangLaiAsync(id);
+
+            var result = new
+            {
+                loai = new
+                {
+                    loai.Id,
+                    loai.TenLoai
+                },
+                chuDeList = chuDeList.Select(cd => new
+                {
+                    cd.Id,
+                    cd.TenChuDe,
+                    cd.ImageUrl,
+                    SoCau = cd.CauHois?.Count ?? 0
+                })
+            };
+
+            return Ok(result);
+        }
+
+        // Add this new endpoint that matches the URL called in ThemDeThi.cshtml
+        // In ChuDeController.cs if it doesn't already exist
+        [HttpGet("by-loai-bang-lai/{loaiBangLaiId}")]
+        public async Task<IActionResult> GetChuDeByLoaiBangLaiId(Guid loaiBangLaiId)
+        {
+            try
+            {
+                var (loai, chuDeList) = await _loaiBangLaiService.GetChuDeByLoaiBangLaiAsync(loaiBangLaiId);
+
+                if (loai == null)
+                {
+                    return NotFound(new { success = false, message = "Không tìm thấy loại bằng lái!" });
+                }
+
+                var result = chuDeList
+                    .Where(cd => !cd.isDeleted)
+                    .Select(cd => new
+                    {
+                        id = cd.Id,
+                        tenChuDe = cd.TenChuDe,
+                        moTa = cd.MoTa,
+                        imageUrl = cd.ImageUrl
+                    })
+                    .ToList();
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = "Lỗi khi tải danh sách chủ đề.", error = ex.Message });
+            }
+        }
         [HttpGet("get-all")]
         public async Task<IActionResult> GetAll()
         {
@@ -149,44 +219,6 @@ namespace ET.Controllers.api
 
 
 
-        //--------------//
-        ///lay phuc vu cho ui nguoi dung
-        [HttpGet("danh-sach")]
-        public async Task<IActionResult> GetDanhSach()
-        {
-            var list = await _chuDeService.GetDanhSachChuDe();
-            return Ok(list);
-        }
-
         
-        [HttpGet("ten/{chuDeId}")]
-        public async Task<IActionResult> GetTenChuDe(Guid chuDeId)
-        {
-            var ten = await _chuDeService.GetTenChuDeById(chuDeId);
-            return Ok(new { tenChuDe = ten });
-        }
-        [HttpGet("{id}/chu-de")]
-        public async Task<IActionResult> GetChuDeByLoaiBangLai(Guid id)
-        {
-            var (loai, chuDeList) = await _loaiBangLaiService.GetChuDeByLoaiBangLaiAsync(id);
-
-            var result = new
-            {
-                loai = new
-                {
-                    loai.Id,
-                    loai.TenLoai
-                },
-                chuDeList = chuDeList.Select(cd => new
-                {
-                    cd.Id,
-                    cd.TenChuDe,
-                    cd.ImageUrl,
-                    SoCau = cd.CauHois?.Count ?? 0
-                })
-            };
-
-            return Ok(result);
-        }
     }
 }

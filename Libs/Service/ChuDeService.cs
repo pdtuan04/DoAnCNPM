@@ -23,7 +23,18 @@ namespace Libs.Service
 
         public async Task<List<CauHoi>> GetCauHoiTheoChuDe(Guid loaiBangLaiId, Guid chuDeId)
         {
-            return await _chuDeRepository.GetCauHoiTheoChuDeAsync(loaiBangLaiId, chuDeId);
+            try
+            {
+                var result = await _chuDeRepository.GetCauHoiTheoChuDeAsync(loaiBangLaiId, chuDeId);
+                return result ?? new List<CauHoi>(); // Đảm bảo không trả về null
+            }
+            catch (Exception ex)
+            {
+                // Log lỗi
+                Console.WriteLine($"Error in ChuDeService.GetCauHoiTheoChuDe: {ex.Message}");
+                // Trả về empty list thay vì throw exception
+                return new List<CauHoi>();
+            }
         }
 
         public async Task<string> GetTenChuDeById(Guid chuDeId)

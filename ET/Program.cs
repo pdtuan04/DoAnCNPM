@@ -74,6 +74,8 @@ builder.Services.AddTransient<IChuDeRepository, ChuDeRepository>();
 builder.Services.AddTransient<ILoaiBangLaiRepository, LoaiBangLaiRepository>();
 builder.Services.AddTransient<IBaiThiRepository, BaiThiRepository>();
 builder.Services.AddTransient<IGmailSender, GmailSender>();
+builder.Services.AddTransient<ILichSuThiRepository, LichSuThiRepository>();
+builder.Services.AddTransient<LichSuThiService>();
 builder.Services.AddHangfire(configuration => configuration
         .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
         .UseSimpleAssemblyNameTypeSerializer()
