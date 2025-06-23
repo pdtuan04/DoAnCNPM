@@ -1,4 +1,5 @@
-﻿using Libs.Models;
+﻿using Libs.Entity;
+using Libs.Models;
 using Libs.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -225,6 +226,39 @@ namespace ET.Controllers.api
                 _logger.LogError(ex, $"Error deleting exam history for ID: {id}");
                 return StatusCode(500, new { status = false, message = "Lỗi khi xóa lịch sử thi: " + ex.Message });
             }
+        }
+        //------///
+        [HttpGet("luyen-lai-cau-sai")]
+        public async Task<IActionResult> LuyenLaiCauSai()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(new { status = false, message = "Không tìm thấy người dùng" });
+
+            var data = await _lichSuThiService.GetCauHoiLuyenLaiAsync(userId);
+
+            return Ok(new { status = true, data }); // <-- lúc này data là List<object>
+        }
+
+
+
+        // ✅ API 2: POST - Lưu kết quả luyện lại
+        [HttpPost("luu-ket-qua-luyen-lai")]
+        public async Task<IActionResult> LuuKetQuaLuyenLai([FromBody] LuyenLaiRequest request)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(new { status = false, message = "Không tìm thấy người dùng" });
+
+            if (request == null || request.CauHoiAnswers == null || !request.CauHoiAnswers.Any())
+                return BadRequest(new { status = false, message = "Dữ liệu gửi lên không hợp lệ" });
+
+            var result = await _lichSuThiService.LuuKetQuaLuyenLaiAsync(userId, request.CauHoiAnswers);
+            return Ok(new
+            {
+                status = true,
+                data = result // dạng List<KetQuaLuyenTapViewModel>
+            });
         }
     }
 }
