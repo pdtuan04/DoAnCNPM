@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace ET.Controllers
 {
     [Authorize]
-    public class LichSuThiController : Controller
+    public class LichSuThi1Controller : Controller
     {
         public IActionResult Index()
         {
@@ -16,5 +16,14 @@ namespace ET.Controllers
             ViewData["ExamId"] = id;
             return View();
         }
+        public IActionResult LuyenLaiCauSai()
+        {
+            return View();
+        }
+        public IActionResult KetQuaLuyLai()
+        {
+            return View();
+        }
+
     }
 }

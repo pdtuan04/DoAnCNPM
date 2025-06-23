@@ -21,6 +21,16 @@ namespace Libs.Repositories
         Task<bool> DeleteLichSuThiAsync(Guid lichSuThiId, string userId);
         Task<bool> SaveLichSuThiAsync(LichSuThi lichSuThi, List<ChiTietLichSuThi> chiTietList);
         ApplicationDbContext GetDbContext();
+
+        //------//
+        Task<bool> KiemTraDaThanhToanAsync(string userId);
+        Task<List<CauHoi>> GetCauHoiSaiByUserAsync(string userId);
+        Task<CauHoi?> GetCauHoiByIdAsync(Guid id);
+        Task<List<CauHoiSai>> GetCauHoiSaiListAsync(string userId, Guid cauHoiId);
+        Task XoaCauHoiSaisAsync(List<CauHoiSai> list);
+        Task AddCauHoiSaiAsync(CauHoiSai cauHoiSai);
+        Task SaveChangesAsync();
+
     }
 
     // Repository implementation
@@ -218,7 +228,49 @@ namespace Libs.Repositories
                 return false;
             }
         }
+        public async Task<bool> KiemTraDaThanhToanAsync(string userId)
+        {
+            return await _dbContext.GiaoDichs.AnyAsync(g => g.UserId == userId && g.DaThanhToan == true);
+        }
 
+        public async Task<List<CauHoi>> GetCauHoiSaiByUserAsync(string userId)
+        {
+            return await _dbContext.CauHoiSais
+                .Where(c => c.UserId == userId)
+                .Include(c => c.CauHoi)
+                .ThenInclude(ch => ch.ChuDe)
+                .Select(c => c.CauHoi)
+                .Distinct()
+                .ToListAsync();
+        }
+
+        public async Task<CauHoi?> GetCauHoiByIdAsync(Guid id)
+        {
+            return await _dbContext.CauHois.FirstOrDefaultAsync(c => c.Id == id);
+        }
+
+        public async Task<List<CauHoiSai>> GetCauHoiSaiListAsync(string userId, Guid cauHoiId)
+        {
+            return await _dbContext.CauHoiSais
+                .Where(c => c.UserId == userId && c.CauHoiId == cauHoiId)
+                .ToListAsync();
+        }
+
+        public async Task XoaCauHoiSaisAsync(List<CauHoiSai> list)
+        {
+            _dbContext.CauHoiSais.RemoveRange(list);
+            _dbContext.CauHoiSais.RemoveRange(list);
+        }
+
+        public async Task AddCauHoiSaiAsync(CauHoiSai cauHoiSai)
+        {
+            await _dbContext.CauHoiSais.AddAsync(cauHoiSai);
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await _dbContext.SaveChangesAsync();
+        }
         // Get database context
         public ApplicationDbContext GetDbContext()
         {
