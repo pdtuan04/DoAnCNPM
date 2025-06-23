@@ -14,6 +14,7 @@ namespace Libs.Repositories
         Task<(LoaiBangLai, List<ChuDe>)> GetChuDeByLoaiBangLaiAsync(Guid loaiBangLaiId);
         public Task<PageList<LoaiBangLai>> GetPagedLoaiBangLai(int pageNumber, int pageSize, string? search, string? sortCol, string? sortDir);
         Task<LoaiBangLai> GetLoaiBangLaiById(Guid id);
+        Task<List<LoaiBangLai>> GetLoaiBangLaiHasMoPhong();
     }
 
     public class LoaiBangLaiRepository : RepositoryBase<LoaiBangLai>, ILoaiBangLaiRepository
@@ -93,6 +94,12 @@ namespace Libs.Repositories
         public async Task<LoaiBangLai> GetLoaiBangLaiById(Guid id)
         {
             return await _dbContext.LoaiBangLais.FirstOrDefaultAsync(l => l.Id == id);
+        }
+        public async Task<List<LoaiBangLai>> GetLoaiBangLaiHasMoPhong()
+        {
+            return await _dbContext.LoaiBangLais
+                .Where(l => !l.isDeleted && l.MoPhongs.Any())
+                .ToListAsync();
         }
     }
 }
