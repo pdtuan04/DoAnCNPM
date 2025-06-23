@@ -2,6 +2,7 @@
 {
     public class BaiSaHinh
     {
+        public bool isDeleted { get; set; } = false;
         public Guid Id { get; set; } = Guid.NewGuid();
         public string TenBai { get; set; }
         public int Order { get; set; }
