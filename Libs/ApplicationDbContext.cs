@@ -19,7 +19,7 @@ namespace Libs
         public DbSet<ChiTietLichSuThi> ChiTietLichSuThis { get; set; }
         public DbSet<Share> Shares { get; set; }
         public DbSet<ShareReply> ShareReplies { get; set; }
-        public DbSet<Sharereport> ShareReports { get; set; }
+        public DbSet<ShareReport> ShareReports { get; set; }
         public DbSet<GiaoDich> GiaoDichs { get; set; } // Thêm DbSet cho GiaoDich
         public DbSet<VisitLog> VisitLogs { get; set; }
         public DbSet<MoPhong> MoPhongs { get; set; }
