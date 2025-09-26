@@ -1,6 +1,7 @@
 using ET.Services;
 using Hangfire;
 using Libs;
+using Libs.CacheService;
 using Libs.Entity;
 using Libs.Repositories;
 using Libs.Service;
@@ -18,6 +19,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     //options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 
 }, ServiceLifetime.Transient);
+builder.Services.AddStackExchangeRedisCache(options => {
+    options.Configuration = builder.Configuration.GetConnectionString("RedisCacheDoAn");
+});
 // Add services to the container.
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllers()
@@ -62,6 +66,7 @@ builder.Services.AddAuthentication(options =>
     options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
     options.SignInScheme = IdentityConstants.ExternalScheme;
 });
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddTransient<ChuDeService>();
 builder.Services.AddTransient<LoaiBangLaiService>();
@@ -70,6 +75,7 @@ builder.Services.AddTransient<BaiThiService>();
 builder.Services.AddTransient<AdminService>();
 builder.Services.AddTransient<CauHoiService>();
 builder.Services.AddTransient<SaHinhService>();
+builder.Services.AddTransient<BaiThiCache>();
 builder.Services.AddTransient<IChuDeRepository, ChuDeRepository>();
 builder.Services.AddTransient<ILoaiBangLaiRepository, LoaiBangLaiRepository>();
 builder.Services.AddTransient<IBaiThiRepository, BaiThiRepository>();

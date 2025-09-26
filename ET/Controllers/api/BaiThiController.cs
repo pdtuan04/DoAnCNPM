@@ -1,4 +1,5 @@
-﻿using Libs.Entity;
+﻿using Libs.CacheService;
+using Libs.Entity;
 using Libs.Models;
 using Libs.Service;
 using Microsoft.AspNetCore.Authorization;
@@ -16,12 +17,14 @@ namespace ET.Controllers.api
         private readonly ChuDeService _chuDeService;
         private readonly LoaiBangLaiService _loaiBangLaiService;
         private readonly LichSuThiService _lichSuThiService;
-        public BaiThiController(BaiThiService baiThiService, ChuDeService chuDeService, LoaiBangLaiService loaiBangLaiService, LichSuThiService lichSuThiService)
+        private readonly BaiThiCache _baiThiCache;
+        public BaiThiController(BaiThiService baiThiService, ChuDeService chuDeService, LoaiBangLaiService loaiBangLaiService, LichSuThiService lichSuThiService, BaiThiCache baiThiCache)
         {
             _baiThiService = baiThiService;
             _chuDeService = chuDeService;
             _loaiBangLaiService = loaiBangLaiService;
-            _lichSuThiService = lichSuThiService; 
+            _lichSuThiService = lichSuThiService;
+            _baiThiCache = baiThiCache;
         }
 
         [HttpPost("nop-bai-thi")]
@@ -70,7 +73,8 @@ namespace ET.Controllers.api
         [HttpGet("bai-thi/{id}")]
         public async Task<IActionResult> GetBaiThi(Guid id)
         {
-            var baiThi = await _baiThiService.GetBaiThiWithDetails(id);
+            //var baiThi = await _baiThiService.GetBaiThiWithDetails(id); //cu
+            var baiThi = await _baiThiCache.GetBaiThiByIdAsync(id);
             if (baiThi == null)
                 return NotFound(new { success = false, message = "Không tìm thấy bài thi!" });
 
