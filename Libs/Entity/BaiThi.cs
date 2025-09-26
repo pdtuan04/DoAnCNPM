@@ -8,6 +8,6 @@
 
 
         // Navigation properties
-        public virtual ICollection<ChiTietBaiThi> ChiTietBaiThis { get; set; }
+        public virtual ICollection<ChiTietBaiThi> ChiTietBaiThis { get; set; } = [];
     }
 }
