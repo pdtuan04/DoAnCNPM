@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using sendMail.Service;
 using System.Text;
+using Microsoft.Extensions.AI;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -82,6 +83,8 @@ builder.Services.AddTransient<IBaiThiRepository, BaiThiRepository>();
 builder.Services.AddTransient<IGmailSender, GmailSender>();
 builder.Services.AddTransient<ILichSuThiRepository, LichSuThiRepository>();
 builder.Services.AddTransient<LichSuThiService>();
+builder.Services.AddTransient<ChatBoxService>();
+builder.Services.AddChatClient(new OpenAI.Chat.ChatClient("gpt-4o-mini", builder.Configuration["OpenAIOptions:APIKey"]).AsIChatClient());
 builder.Services.AddHangfire(configuration => configuration
         .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
         .UseSimpleAssemblyNameTypeSerializer()
