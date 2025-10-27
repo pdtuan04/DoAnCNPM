@@ -21,6 +21,7 @@ namespace Libs.Service
             ReferenceHandler = ReferenceHandler.Preserve,
             WriteIndented = true
         };
+        private Guid sessionId;
         private readonly static string SYSTEM_DECRIPTION =
             """
             Bạn là một trợ lý am hiểu luật giao thông Việt Nam.
@@ -37,14 +38,30 @@ namespace Libs.Service
             };
             _conversation.Add(new ChatMessage(ChatRole.System, SYSTEM_DECRIPTION));
         }
+        public async Task<List<ChatMessage>>? GetConversationAsync(Guid sessionId)
+        {
+            this.sessionId = sessionId;
+            var cacheKey = $"ChatConversation-{sessionId}";
+            var cachedConversation = await _cache.GetStringAsync(cacheKey);
+            if (!string.IsNullOrEmpty(cachedConversation))
+            {
+                var conversation = JsonSerializer.Deserialize<List<ChatMessage>>(cachedConversation, _serializerOptions);
+                _conversation.AddRange(conversation!.Skip(1));
+                return _conversation;
+            }
+            return _conversation;
+        }
         public async Task<string> GetAIResponseAsync(string prompt)
         {
             if (string.IsNullOrWhiteSpace(prompt))
-            {
                 return string.Empty;
-            }
             _conversation.Add(new ChatMessage(ChatRole.User, prompt));
             var response = await _chatClient.GetResponseAsync(_conversation);
+            if(sessionId == Guid.Empty)
+                this.sessionId = Guid.NewGuid();
+            var cacheKey = $"ChatConversation-{this.sessionId}";
+            var cacheConverstion = JsonSerializer.Serialize<List<ChatMessage>>(_conversation, _serializerOptions);
+            await _cache.SetStringAsync(cacheKey, cacheConverstion, _cacheOption);
             return response.Text;
         }
     }
