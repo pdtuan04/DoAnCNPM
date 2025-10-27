@@ -140,6 +140,10 @@
     <script src="~/js/auth.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
     <!-- Chatbox Toggle Icon -->
+    <!-- Thêm hidden input để lưu sessionId, giá trị sẽ được JavaScript gán -->
+    <input type="hidden" id="chat-session-id" value="">
+
+    <!-- Chatbox Toggle Icon -->
     <div class="chatbox-icon" id="chatbox-icon">
         <i class="fas fa-comment-dots"></i>
     </div>

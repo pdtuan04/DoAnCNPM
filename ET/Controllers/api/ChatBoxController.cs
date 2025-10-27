@@ -14,8 +14,9 @@ namespace ET.Controllers.api
             _chatBoxService = aIChatBox;
         }
         [HttpGet("get-response")]
-        public async Task<IActionResult> GetAIResponse([FromQuery] string prompt)
+        public async Task<IActionResult> GetAIResponse([FromQuery] Guid id, string prompt)
         {
+            var lastConversation = await _chatBoxService.GetConversationAsync(id);
             var response = await _chatBoxService.GetAIResponseAsync(prompt);
             return Ok(response);
         }

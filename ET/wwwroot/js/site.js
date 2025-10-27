@@ -10,7 +10,7 @@ $(document).ready(function () {
 
         // Add introductory message if chatbox is empty
         if ($('#chatbox-messages').children().length === 0) {
-            appendMessage('Xin chào! Tôi là AI hỗ trợ luyện thi bằng lái xe. Bạn có thể hỏi tôi bất kỳ điều gì về giao thông. Tôi sẽ sẵn lòng giải đáp thắt mắt của bạn', 'ai');
+            appendMessage('Xin chào! Tôi là AI hỗ trợ luyện thi bằng lái xe. Bạn có thể hỏi tôi bất kỳ điều gì về giao thông. Tôi sẽ sẵn lòng giải đáp thắc mắc của bạn', 'ai');
         }
     });
 
@@ -29,14 +29,21 @@ $(document).ready(function () {
     function sendMessage() {
         const input = $('#chatbox-input');
         const message = input.val().trim();
+        let sessionId = $('#chat-session-id').val();
+
+        // Tạo sessionId mới nếu chưa có
+        if (!sessionId) {
+            sessionId = Guid.newGuid().toString(); // Sử dụng một thư viện GUID hoặc tạo thủ công
+            $('#chat-session-id').val(sessionId);
+        }
 
         if (message) {
             // Append user message
             appendMessage(message, 'user');
             input.val('');
 
-            // Call API to get AI response
-            $.get('/api/ChatBox/get-response', { prompt: message })
+            // Call API to get AI response with sessionId
+            $.get('/api/ChatBox/get-response', { id: sessionId, prompt: message })
                 .done(function (response) {
                     appendMessage(response, 'ai');
                 })
@@ -53,4 +60,15 @@ $(document).ready(function () {
         $('#chatbox-messages').append(messageElement);
         $('#chatbox-messages').scrollTop($('#chatbox-messages')[0].scrollHeight);
     }
+
+    // Hàm tạo GUID thủ công (nếu không dùng thư viện)
+    function generateGuid() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+
+    // Gán Guid vào window để sử dụng
+    window.Guid = { newGuid: generateGuid };
 });
