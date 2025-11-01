@@ -12,6 +12,7 @@ using Microsoft.IdentityModel.Tokens;
 using sendMail.Service;
 using System.Text;
 using Microsoft.Extensions.AI;
+using ET.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -106,11 +107,18 @@ builder.Services.AddAuthorization(options =>
 });
 var app = builder.Build();
 
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
+}
+else
+{
+    app.ApplyMigrations();
+    app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
 app.UseStaticFiles();

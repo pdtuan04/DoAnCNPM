@@ -1,5 +1,7 @@
 ﻿using Libs.Entity;
+using Libs.Extensions;
 using Libs.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,6 +28,12 @@ namespace Libs
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
+        }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            Console.WriteLine("🚀 Application is seeding data..............................................................");
+            modelBuilder.SeedingData();
         }
     }
 }
