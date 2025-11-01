@@ -13,32 +13,48 @@ namespace Libs.Extensions
     {
         public static void SeedingData(this ModelBuilder modelBuilder)
         {
-            string passwordTemp = "111AAAa@";
-            var passwordHasher = new PasswordHasher<User>();
-            var userRole = new IdentityRole("User");
-            userRole.NormalizedName = userRole.Name.ToUpper();
-            var adminRole = new IdentityRole("Admin");
-            adminRole.NormalizedName = adminRole.Name.ToUpper();
-            var listRole = new List<IdentityRole>()
+            var userRole = new IdentityRole
             {
-                userRole,
-                adminRole
+                Id = "05f2400b-5471-466a-8b7e-27752367e4d6",
+                Name = "User",
+                NormalizedName = "USER"
             };
-            modelBuilder.Entity<IdentityRole>().HasData(listRole);
+
+            var adminRole = new IdentityRole
+            {
+                Id = "10f2400b-5471-466a-8b7e-27752367e4d6",
+                Name = "Admin",
+                NormalizedName = "ADMIN"
+            };
+
+            modelBuilder.Entity<IdentityRole>().HasData(userRole, adminRole);
             var admin = new User()
             {
-                Id = "255f1a92-e5b8-4e9f-a502-fe24c968e369",
+                Id = "9ae1058d-b602-4025-ab1d-74e7bced8f3b",
+                CreatedAt = new DateTime(2025, 10, 31, 20, 53, 44),
                 UserName = "admin",
-                Email = "admin@gmail.com"
+                NormalizedUserName = "ADMIN",
+                Email = "admin@gmail.com",
+                NormalizedEmail = "ADMIN@GMAIL.COM",
+                EmailConfirmed = true,
+                PasswordHash = "AQAAAAIAAYagAAAAEFY87mzNg88TIJtuXRcRIeT0MXYto4NkcukxwFGpl+p5IHBJVqlPbyFx9UJIOmu7eA==",
+                SecurityStamp = "3XVVZIW5RPRWT7MKN3Y6VRNTHXY2JGK5",
+                ConcurrencyStamp = "6e66d8c1-89da-46df-bc24-ec54c7e7e7cf"
             };
-            admin.PasswordHash = passwordHasher.HashPassword(admin, passwordTemp);
+
             var user = new User()
             {
-                Id = "8f071085-401a-4bed-82a5-c13371c53b7b",
-                UserName = "cus",
-                Email = "user@gmail.com"
+                Id = "8d581a98-361e-4333-a651-74e88ef572a4",
+                CreatedAt = new DateTime(2025, 10, 31, 20, 54, 14),
+                UserName = "user",
+                NormalizedUserName = "USER",
+                Email = "user@gmail.com",
+                NormalizedEmail = "USER@GMAIL.COM",
+                EmailConfirmed = true,
+                PasswordHash = "AQAAAAIAAYagAAAAEN8TWXW9pNZ+VVyeftOLixsSfyDOtPTZpv84QtbFESyzd6kZ0i70eIPvnvNBKX0Q9Q==",
+                SecurityStamp = "DF7GIIY7UNBVCVLZD73QO6PGSVQXBSTW",
+                ConcurrencyStamp = "f67e2437-61a2-4458-ac14-de7ab48158b6"
             };
-            user.PasswordHash = passwordHasher.HashPassword(user, passwordTemp);
             List<User> userList = new List<User>()
             {
                 admin,
