@@ -49,7 +49,7 @@ namespace Libs.Migrations
 
                     b.HasIndex("LoaiBangLaiId");
 
-                    b.ToTable("BaiSaHinhs");
+                    b.ToTable("BaiSaHinhs", (string)null);
                 });
 
             modelBuilder.Entity("Libs.Entity.BaiThi", b =>
@@ -64,7 +64,7 @@ namespace Libs.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("BaiThis");
+                    b.ToTable("BaiThis", (string)null);
                 });
 
             modelBuilder.Entity("Libs.Entity.CauHoi", b =>
@@ -125,7 +125,7 @@ namespace Libs.Migrations
 
                     b.HasIndex("LoaiBangLaiId");
 
-                    b.ToTable("CauHois");
+                    b.ToTable("CauHois", (string)null);
                 });
 
             modelBuilder.Entity("Libs.Entity.CauHoiSai", b =>
@@ -148,7 +148,7 @@ namespace Libs.Migrations
 
                     b.HasIndex("CauHoiId");
 
-                    b.ToTable("CauHoiSais");
+                    b.ToTable("CauHoiSais", (string)null);
                 });
 
             modelBuilder.Entity("Libs.Entity.ChiTietBaiThi", b =>
@@ -169,7 +169,7 @@ namespace Libs.Migrations
 
                     b.HasIndex("CauHoiId");
 
-                    b.ToTable("ChiTietBaiThis");
+                    b.ToTable("ChiTietBaiThis", (string)null);
                 });
 
             modelBuilder.Entity("Libs.Entity.ChiTietLichSuThi", b =>
@@ -196,7 +196,7 @@ namespace Libs.Migrations
 
                     b.HasIndex("LichSuThiId");
 
-                    b.ToTable("ChiTietLichSuThis");
+                    b.ToTable("ChiTietLichSuThis", (string)null);
                 });
 
             modelBuilder.Entity("Libs.Entity.ChuDe", b =>
@@ -221,7 +221,7 @@ namespace Libs.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ChuDes");
+                    b.ToTable("ChuDes", (string)null);
                 });
 
             modelBuilder.Entity("Libs.Entity.GiaoDich", b =>
@@ -249,7 +249,7 @@ namespace Libs.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("GiaoDichs");
+                    b.ToTable("GiaoDichs", (string)null);
                 });
 
             modelBuilder.Entity("Libs.Entity.LichSuThi", b =>
@@ -292,7 +292,7 @@ namespace Libs.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("LichSuThis");
+                    b.ToTable("LichSuThis", (string)null);
                 });
 
             modelBuilder.Entity("Libs.Entity.LoaiBangLai", b =>
@@ -324,7 +324,7 @@ namespace Libs.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("LoaiBangLais");
+                    b.ToTable("LoaiBangLais", (string)null);
                 });
 
             modelBuilder.Entity("Libs.Entity.MoPhong", b =>
@@ -351,7 +351,7 @@ namespace Libs.Migrations
 
                     b.HasIndex("LoaiBangLaiId");
 
-                    b.ToTable("MoPhongs");
+                    b.ToTable("MoPhongs", (string)null);
                 });
 
             modelBuilder.Entity("Libs.Entity.User", b =>
@@ -448,7 +448,7 @@ namespace Libs.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Shares");
+                    b.ToTable("Shares", (string)null);
                 });
 
             modelBuilder.Entity("Libs.Models.ShareReply", b =>
@@ -481,7 +481,7 @@ namespace Libs.Migrations
 
                     b.HasIndex("ShareId");
 
-                    b.ToTable("ShareReplies");
+                    b.ToTable("ShareReplies", (string)null);
                 });
 
             modelBuilder.Entity("Libs.Models.ShareReport", b =>
@@ -513,7 +513,7 @@ namespace Libs.Migrations
 
                     b.HasIndex("ShareReplyId");
 
-                    b.ToTable("ShareReports");
+                    b.ToTable("ShareReports", (string)null);
                 });
 
             modelBuilder.Entity("Libs.Models.VisitLog", b =>
@@ -533,7 +533,7 @@ namespace Libs.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("VisitLogs");
+                    b.ToTable("VisitLogs", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
