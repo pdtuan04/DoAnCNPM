@@ -57,7 +57,7 @@
             }
 
             // Fetch total users
-            fetch('https://localhost:7240/api/statistics/count-all-user', {
+            fetch('/api/statistics/count-all-user', {
                 method: 'GET',
                 headers: {
                     'Authorization': 'Bearer ' + getToken()
@@ -82,7 +82,7 @@
                 });
 
             // Fetch users per month
-            fetch('https://localhost:7240/api/statistics/users-per-month', {
+            fetch('/api/statistics/users-per-month', {
                 method: 'GET',
                 headers: {
                     'Authorization': 'Bearer ' + getToken()

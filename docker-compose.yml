@@ -10,6 +10,8 @@ services:
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Server=sql-server;Database=Do_An_Chuyen_Nganh;User Id=sa;Password=111AAAa@;Encrypt=False;TrustServerCertificate=True
       - ConnectionStrings__RedisCacheDoAn=redis:6379
+      - JWTKey__ValidAudience=http://localhost:8888
+      - JWTKey__ValidIssuer=http://localhost:8888
     ports:
         - "8888:8080"
     depends_on:
@@ -18,6 +20,9 @@ services:
         redis:
             condition: service_started
     restart: always
+    volumes:
+      - uploaded_images:/app/wwwroot/images
+      - uploaded_videos:/app/wwwroot/videos
     networks:
       - do-an-chuyen-nganh-network
   redis:
@@ -58,6 +63,8 @@ services:
 volumes:
    redis_data:
    sql_data:
+   uploaded_images:
+   uploaded_videos:
 networks:
   do-an-chuyen-nganh-network:
     driver: bridge

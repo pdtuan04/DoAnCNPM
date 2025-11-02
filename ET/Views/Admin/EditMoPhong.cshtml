@@ -475,7 +475,7 @@
                                 $('#moPhongId').data('moPhong', moPhong); // Lưu dữ liệu để sử dụng sau
 
                                 if (moPhong.videoUrl) {
-                                    $('#videoPreview').attr('src', 'https://localhost:7240' + moPhong.videoUrl);
+                                    $('#videoPreview').attr('src', moPhong.videoUrl);
                                     $('#currentVideoText').text('Video hiện tại: ' + moPhong.videoUrl);
                                     $('#videoPreviewContainer').show();
                                     $('#resetMarkersBtn').show();
