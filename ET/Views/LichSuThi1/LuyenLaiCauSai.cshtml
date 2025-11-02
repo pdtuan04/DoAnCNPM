@@ -258,17 +258,19 @@
         if (btn) btn.classList.add('btn-answered');
     }
 
-   async function submitAnswers() {
-    const answers = {};
-    cauHoiList.forEach(q => {
-        const options = document.getElementsByName("cauHoi_" + q.id);
-        for (const opt of options) {
-            if (opt.checked) {
-                answers[q.id] = opt.value;
-                break;
+        async function submitAnswers() {
+        const answers = {};
+        cauHoiList.forEach(q => {
+            const options = document.getElementsByName("cauHoi_" + q.id);
+            let selected = null;
+            for (const opt of options) {
+                if (opt.checked) {
+                    selected = opt.value;
+                    break;
+                }
             }
-        }
-    });
+            answers[q.id] = selected;
+        });
 
     const token = localStorage.getItem("jwtToken");
 
