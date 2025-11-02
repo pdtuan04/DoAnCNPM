@@ -8,9 +8,12 @@ namespace ET.Extensions
         public static void ApplyMigrations(this IApplicationBuilder app)
         {
             using IServiceScope scope = app.ApplicationServices.CreateScope();
-            
             var dbcontext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            dbcontext.Database.Migrate();
+            var hasMigrations = dbcontext.Database.GetAppliedMigrations().Any();
+            if (!hasMigrations)
+            {
+                dbcontext.Database.Migrate();
+            }
         }
     }
 }

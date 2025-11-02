@@ -2,11 +2,14 @@
 
 # This stage is used when running from VS in fast mode (Default for Debug configuration)
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
-USER $APP_UID
+
 WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
 
+RUN mkdir -p /app/wwwroot/images /app/wwwroot/videos && \
+    chown -R $APP_UID:$APP_UID /app/wwwroot
+USER $APP_UID
 
 # This stage is used to build the service project
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
@@ -28,4 +31,8 @@ RUN dotnet publish "./ET.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseA
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+USER root
+RUN mkdir -p /app/wwwroot/images /app/wwwroot/videos && \
+    chown -R $APP_UID:$APP_UID /app/wwwroot
+USER $APP_UID
 ENTRYPOINT ["dotnet", "ET.dll"]
