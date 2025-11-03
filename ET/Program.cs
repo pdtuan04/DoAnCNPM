@@ -78,6 +78,7 @@ builder.Services.AddTransient<AdminService>();
 builder.Services.AddTransient<CauHoiService>();
 builder.Services.AddTransient<SaHinhService>();
 builder.Services.AddTransient<BaiThiCache>();
+builder.Services.AddTransient<ChuDeCache>();
 builder.Services.AddTransient<IChuDeRepository, ChuDeRepository>();
 builder.Services.AddTransient<ILoaiBangLaiRepository, LoaiBangLaiRepository>();
 builder.Services.AddTransient<IBaiThiRepository, BaiThiRepository>();
