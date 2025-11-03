@@ -209,6 +209,7 @@
                         deleteExam(lichSuThi.id);
                     }
                 });
+
             }
 
             function renderAnswersTable(chiTietList) {
@@ -272,7 +273,7 @@
                     success: function(response) {
                         if (response.status) {
                             alert('Xóa lịch sử thi thành công');
-                            window.location.href = '/LichSuThi';
+                            window.location.href = '/LichSuThi1';
                         } else {
                             alert('Xóa lịch sử thi thất bại: ' + response.message);
                         }
