@@ -30,7 +30,14 @@ namespace ET.Controllers
         {
             return View();
         }
-
+        public IActionResult QuanLyUser()
+        {
+            return View();
+        }
+        public IActionResult DetailsUser()
+        {
+            return View();
+        }
         public async Task<IActionResult> ChiTietDeThi(Guid id)
         {
             if (id == Guid.Empty)
