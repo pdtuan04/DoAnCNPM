@@ -4,6 +4,7 @@ using Libs.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Libs.CacheService;
 
 namespace ET.Controllers.api
 {
@@ -12,9 +13,11 @@ namespace ET.Controllers.api
     public class SaHinhController : ControllerBase
     {
         private readonly SaHinhService _saHinhService;
-        public SaHinhController(SaHinhService saHinhService)
+        private readonly SaHinhCache _saHinhCache;
+        public SaHinhController(SaHinhService saHinhService, SaHinhCache saHinhCache)
         {
             this._saHinhService = saHinhService;
+            _saHinhCache = saHinhCache;
         }
         [HttpGet("get-all-bai-sa-hinh")]
         public async Task<IActionResult> GetAllBaiSaHinh()
@@ -88,6 +91,16 @@ namespace ET.Controllers.api
             }
             return Ok(new { status = true, message = "Xóa bài sa hình thành công" });
 
+        }
+        [HttpGet("test-cache/{id}")]
+        public async Task<IActionResult> TestCache(Guid id)
+        {
+            var sahinh = await _saHinhCache.GetSaHinhByIdAsync(id);
+            if (sahinh == null)
+            {
+                return NotFound(new { status = false, message = "Loại mo phong không tìm thấy" });
+            }
+            return Ok(new { status = true, message = "Lấy mo phong từ cache thành công", data = sahinh });
         }
 
     }

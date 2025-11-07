@@ -222,8 +222,7 @@ namespace ET.Controllers.api
         [HttpGet("test-cache/{id}")]
         public async Task<IActionResult> TestCache(Guid id, [FromServices] ChuDeCache chuDeCache)
         {
-            var chuDe = await chuDeCache.GetChuDeByIdAsync(id);
-
+            var chuDe = await _chuDeCache.GetChuDeByIdAsync(id);
             if (chuDe == null)
                 return NotFound(new { success = false, message = "Không tìm thấy chủ đề" });
 
