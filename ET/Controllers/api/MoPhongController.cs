@@ -4,6 +4,7 @@ using Libs.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Libs.CacheService;
 
 namespace ET.Controllers.api
 {
@@ -12,10 +13,11 @@ namespace ET.Controllers.api
     public class MoPhongController : ControllerBase
     {
         private MoPhongService moPhongService;
-
-        public MoPhongController(MoPhongService moPhongService)
+        private readonly MoPhongcache _moPhongCache;
+        public MoPhongController(MoPhongService moPhongService, MoPhongcache moPhongcache)
         {
             this.moPhongService = moPhongService;
+            _moPhongCache = moPhongcache;
         }
 
         [HttpGet("get-mo-phong-by-loai-bang-lai")]
@@ -105,6 +107,16 @@ namespace ET.Controllers.api
             }
 
             return Ok(new { status = true, message = "Xóa mô phỏng thành công" });
+        }
+        [HttpGet("test-cache/{id}")]
+        public async Task<IActionResult> TestCache(Guid id)
+        {
+            var mophong = await _moPhongCache.GetMoPhongByIdAsync(id);
+            if (mophong == null)
+            {
+                return NotFound(new { status = false, message = "Loại mo phong không tìm thấy" });
+            }
+            return Ok(new { status = true, message = "Lấy mo phong từ cache thành công", data = mophong });
         }
     }
 }
