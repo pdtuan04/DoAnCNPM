@@ -1,10 +1,11 @@
-﻿using ET.Models;
+﻿using Libs.CacheService;
 using Libs.Entity;
+using Libs.Models;
 using Libs.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Libs.CacheService;
+using System.Security.Claims;
 
 namespace ET.Controllers.api
 {
@@ -42,15 +43,30 @@ namespace ET.Controllers.api
             }
             return Ok(new { status = true, message = "Lấy tất cả mô phỏng thành công", data = result });
         }
-
         [HttpGet("{id}")]
         public async Task<IActionResult> GetMoPhongById(Guid id)
-        {
-            var result = await moPhongService.GetMoPhongByIdAsync(id);
-            if (result == null)
+        {       
+            var moPhong = await _moPhongCache.GetMoPhongByIdAsync(id);
+            if (moPhong == null)
             {
                 return Ok(new { status = false, message = "Mô phỏng không tìm thấy" });
             }
+
+            var result = new
+            {
+                moPhong.Id,
+                moPhong.NoiDung,
+                moPhong.VideoUrl,
+                moPhong.DapAn,
+                LoaiBangLai = moPhong.LoaiBangLai == null ? null : new
+                {
+                    moPhong.LoaiBangLai.Id,
+                    moPhong.LoaiBangLai.TenLoai,
+                    moPhong.LoaiBangLai.ThoiGianThi,
+                    moPhong.LoaiBangLai.DiemToiThieu
+                }
+            };
+
             return Ok(new { status = true, message = "Lấy mô phỏng thành công", data = result });
         }
         [HttpGet("paged-mo-phongs")]
@@ -107,16 +123,6 @@ namespace ET.Controllers.api
             }
 
             return Ok(new { status = true, message = "Xóa mô phỏng thành công" });
-        }
-        [HttpGet("test-cache/{id}")]
-        public async Task<IActionResult> TestCache(Guid id)
-        {
-            var mophong = await _moPhongCache.GetMoPhongByIdAsync(id);
-            if (mophong == null)
-            {
-                return NotFound(new { status = false, message = "Loại mo phong không tìm thấy" });
-            }
-            return Ok(new { status = true, message = "Lấy mo phong từ cache thành công", data = mophong });
         }
     }
 }
