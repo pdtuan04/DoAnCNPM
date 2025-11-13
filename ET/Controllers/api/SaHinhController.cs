@@ -33,11 +33,25 @@ namespace ET.Controllers.api
         [HttpGet("{id}")]
         public async Task<IActionResult> GetBaiSaHinhById(Guid id)
         {
-            var result = await _saHinhService.GetBaiSaHinhByIdAsync(id);
-            if (result == null)
+            var saHinh = await _saHinhCache.GetSaHinhByIdAsync(id);
+            if (saHinh == null)
             {
                 return Ok(new { status = false, message = "Bài sa hình không tìm thấy" });
             }
+            var result = new
+            {
+                saHinh.Id,
+                saHinh.TenBai,
+                saHinh.Order,
+                saHinh.NoiDung,
+                LoaiBangLai = saHinh.LoaiBangLai == null ? null : new
+                {
+                    saHinh.LoaiBangLai.Id,
+                    saHinh.LoaiBangLai.TenLoai,
+                    saHinh.LoaiBangLai.ThoiGianThi,
+                    saHinh.LoaiBangLai.DiemToiThieu
+                }
+            };
             return Ok(new { status = true, message = "Lấy bài sa hình thành công", data = result });
         }
         [HttpGet("paged-bai-sa-hinh")]

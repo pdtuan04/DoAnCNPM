@@ -1,5 +1,4 @@
-﻿using Libs.CacheService;
-using Libs.Entity;
+﻿using Libs.Entity;
 using Libs.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,14 +13,14 @@ namespace ET.Controllers.api
     {
         private readonly ChuDeService _chuDeService;
         private readonly LoaiBangLaiService _loaiBangLaiService;
-        private readonly ChuDeCache _chuDeCache;
+ 
 
 
-        public ChuDeController(ChuDeService chuDeService, LoaiBangLaiService loaiBangLaiService, ChuDeCache chuDeCache)
+        public ChuDeController(ChuDeService chuDeService, LoaiBangLaiService loaiBangLaiService)
         {
             _chuDeService = chuDeService;
             _loaiBangLaiService = loaiBangLaiService;
-            _chuDeCache = chuDeCache;
+      
         }
 
         [HttpGet("danh-sach")]
@@ -219,19 +218,6 @@ namespace ET.Controllers.api
 
             return "/images/" + uniqueFileName;
         }
-        [HttpGet("test-cache/{id}")]
-        public async Task<IActionResult> TestCache(Guid id, [FromServices] ChuDeCache chuDeCache)
-        {
-            var chuDe = await _chuDeCache.GetChuDeByIdAsync(id);
-            if (chuDe == null)
-                return NotFound(new { success = false, message = "Không tìm thấy chủ đề" });
-
-            return Ok(new
-            {
-                success = true,
-                data = chuDe
-            });
-        }
-
+       
     }
 }

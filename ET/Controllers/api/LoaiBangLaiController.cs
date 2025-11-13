@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Libs.CacheService;
+
 
 namespace ET.Controllers.api
 {
@@ -14,12 +14,11 @@ namespace ET.Controllers.api
     public class LoaiBangLaiController : ControllerBase
     {
         private readonly LoaiBangLaiService _loaiBangLaiService;
-        private readonly LoaiBangLaiCache _loaiBangLaiCache;
 
-        public LoaiBangLaiController(LoaiBangLaiService loaiBangLaiService, LoaiBangLaiCache loaiBangLaiCache)
+
+        public LoaiBangLaiController(LoaiBangLaiService loaiBangLaiService)
         {
             _loaiBangLaiService = loaiBangLaiService;
-            _loaiBangLaiCache = loaiBangLaiCache;
         }
 
         [HttpGet("danh-sach")]
@@ -121,16 +120,6 @@ namespace ET.Controllers.api
                 return NotFound(new { status = false, message = "Loại bằng lái không tìm thấy" });
             }
             return Ok(new { status = true, message = "Lấy loại bằng lái thành công", data = loaiBangLai });
-        }
-        [HttpGet("test-cache/{id}")]
-        public async Task<IActionResult> TestCache(Guid id)
-        {
-            var loaiBangLai = await _loaiBangLaiCache.GetLoaiBangLaiByIdAsync(id);
-            if (loaiBangLai == null)
-            {
-                return NotFound(new { status = false, message = "Loại bằng lái không tìm thấy" });
-            }
-            return Ok(new { status = true, message = "Lấy loại bằng lái từ cache thành công", data = loaiBangLai });
         }
     }
 }

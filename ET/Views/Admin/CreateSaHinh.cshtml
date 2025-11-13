@@ -49,57 +49,43 @@
                     });
                 });
 
-            document.getElementById("createForm").addEventListener("submit", async function (e) {
+                document.getElementById("createForm").addEventListener("submit", async function (e) {
                 e.preventDefault();
 
                 const fileInput = document.getElementById("FileUpload");
                 if (fileInput.files.length === 0) {
-                    alert("Vui lòng chọn tệp ảnh hoặc video!");
+                    alert("Vui lòng chọn tệp!");
                     return;
                 }
 
                 const file = fileInput.files[0];
                 const fileType = file.type;
-
                 const formData = new FormData();
                 formData.append("file", file);
 
-                const uploadUrl = fileType.startsWith("video/")
-                    ? "/api/Upload/upload-video"
-                    : "/api/Upload/upload-image";
-
-                const uploadRes = await fetch(uploadUrl, {
-                    method: "POST",
-                    body: formData
-                });
-
+                const uploadUrl = fileType.startsWith("video/") ? "/api/Upload/upload-video" : "/api/Upload/upload-image";
+                const uploadRes = await fetch(uploadUrl, { method: "POST", body: formData });
                 const uploadResult = await uploadRes.json();
+
                 if (!uploadResult.status) {
                     alert("Upload thất bại: " + uploadResult.message);
                     return;
                 }
 
-                let htmlContent = "";
-                if (fileType.startsWith("video/")) {
-                    htmlContent = `<video controls src="${uploadResult.filePath}" style="max-width:100%"></video>`;
-                } else if (fileType.startsWith("image/")) {
-                    htmlContent = `<img src="${uploadResult.filePath}" alt="Hình minh họa" style="max-width:100%;" />`;
-                }
+                let htmlContent = fileType.startsWith("video/")
+                    ? `<video controls src="${uploadResult.filePath}" style="max-width:100%"></video>`
+                    : `<img src="${uploadResult.filePath}" alt="Hình minh họa" style="max-width:100%;" />`;
 
-                // Gán vào nội dung
-                document.getElementById("NoiDung").value = htmlContent;
-            const data = {
-                TenBai: document.getElementById("TenBai").value,
-                Order: parseInt(document.getElementById("Order").value),
-                NoiDung: document.getElementById("NoiDung").value,
-                LoaiBangLaiId: document.getElementById("LoaiBangLaiId").value
-            };
+                const data = {
+                    TenBai: document.getElementById("TenBai").value,
+                    Order: parseInt(document.getElementById("Order").value),
+                    NoiDung: htmlContent,
+                    LoaiBangLaiId: document.getElementById("LoaiBangLaiId").value
+                };
 
                 const resCreate = await fetch("/api/SaHinh/create", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(data)
                 });
 

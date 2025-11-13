@@ -4,7 +4,7 @@ using Libs.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Libs.CacheService;
+
 
 namespace ET.Controllers.api
 {
@@ -13,12 +13,12 @@ namespace ET.Controllers.api
     public class CauHoiController : ControllerBase
     {
         private readonly CauHoiService _cauHoiService;
-        private readonly CauHoiCache _cauHoiCache;
+  
 
-        public CauHoiController(CauHoiService cauHoiService, CauHoiCache cauHoiCache)
+        public CauHoiController(CauHoiService cauHoiService)
         {
             this._cauHoiService = cauHoiService;
-            _cauHoiCache = cauHoiCache;
+      
         }
 
         // GET: api/CauHoi/get-all-cau-hoi
@@ -102,15 +102,6 @@ namespace ET.Controllers.api
 
             return Ok(new { status = true, message = "Xóa câu hỏi thành công" });
         }
-        [HttpGet("test-cache/{id}")]
-        public async Task<IActionResult> TestCache(Guid id)
-        {
-            var cauhoi = await _cauHoiCache.GetCauHoiByIdAsync(id);
-            if (cauhoi == null)
-            {
-                return NotFound(new { status = false, message = "Loại cau hoi không tìm thấy" });
-            }
-            return Ok(new { status = true, message = "Lấy cau hoi từ cache thành công", data = cauhoi });
-        }
+     
     }
 }
