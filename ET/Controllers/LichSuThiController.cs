@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 
 namespace ET.Controllers
@@ -24,6 +24,26 @@ namespace ET.Controllers
         {
             return View();
         }
+        [AllowAnonymous]
+        public IActionResult PaymentProcessing(long orderId)
+        {
+            ViewData["OrderId"] = orderId;
+            return View();
+        }
+
+        [AllowAnonymous]
+        public IActionResult PaymentFailed(string? error)
+        {
+            ViewData["Error"] = error ?? "Có lỗi xảy ra trong quá trình thanh toán";
+            return View();
+        }
+
+        [AllowAnonymous]
+        public IActionResult PaymentSuccess()
+        {
+            return View();
+        }
 
     }
+
 }
