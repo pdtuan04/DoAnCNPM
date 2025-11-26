@@ -1,10 +1,14 @@
 ﻿using Libs.Entity;
 using Libs.Models;
 using Libs.Service;
+using Libs.ThanhToan.Abstractions;
+using Libs.ThanhToan.Providers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using PaymentMethod = Libs.Entity.PhuongThucThanhToan;
+
 
 namespace ET.Controllers.api
 {
@@ -15,11 +19,15 @@ namespace ET.Controllers.api
     {
         private readonly LichSuThiService _lichSuThiService;
         private readonly ILogger<LichSuThiController> _logger;
+        private readonly ITinhNangService _tinhNangSvc;
+        private readonly IThanhToanService _paymentSvc;
 
-        public LichSuThiController(LichSuThiService lichSuThiService, ILogger<LichSuThiController> logger)
+        public LichSuThiController(LichSuThiService lichSuThiService, ILogger<LichSuThiController> logger, ITinhNangService tinhNangSvc, IThanhToanService paymentSvc)
         {
             _lichSuThiService = lichSuThiService;
             _logger = logger;
+            _tinhNangSvc = tinhNangSvc;
+            _paymentSvc = paymentSvc;
         }
 
         [HttpGet("get-history")]
@@ -227,7 +235,7 @@ namespace ET.Controllers.api
                 return StatusCode(500, new { status = false, message = "Lỗi khi xóa lịch sử thi: " + ex.Message });
             }
         }
-        //------///
+        //------sua de thanh toan duoc///
         [HttpGet("luyen-lai-cau-sai")]
         public async Task<IActionResult> LuyenLaiCauSai()
         {
@@ -235,12 +243,21 @@ namespace ET.Controllers.api
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized(new { status = false, message = "Không tìm thấy người dùng" });
 
-            var data = await _lichSuThiService.GetCauHoiLuyenLaiAsync(userId);
+            var hasAccess = await _tinhNangSvc.KiemTraQuyenAsync(userId, "LuyenCauSai");
+            if (!hasAccess)
+                return StatusCode(403, new
+                {
+                    status = false,
+                    message = "Bạn cần mở khóa tính năng này bằng cách thanh toán 25,000 VNĐ",
+                    requiresPayment = true,
+                    price = 25000
+                });
 
-            return Ok(new { status = true, data }); // <-- lúc này data là List<object>
+            var data = await _lichSuThiService.GetCauHoiLuyenLaiAsync(userId);
+            return Ok(new { status = true, data });
         }
 
-
+        //sua de thanh toan duoc
 
         // ✅ API 2: POST - Lưu kết quả luyện lại
         [HttpPost("luu-ket-qua-luyen-lai")]
@@ -250,15 +267,121 @@ namespace ET.Controllers.api
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized(new { status = false, message = "Không tìm thấy người dùng" });
 
+            var hasAccess = await _tinhNangSvc.KiemTraQuyenAsync(userId, "LuyenCauSai");
+            if (!hasAccess)
+                return StatusCode(403, new
+                {
+                    status = false,
+                    message = "Bạn cần mở khóa tính năng này",
+                    requiresPayment = true
+                });
+
             if (request == null || request.CauHoiAnswers == null || !request.CauHoiAnswers.Any())
-                return BadRequest(new { status = false, message = "Dữ liệu gửi lên không hợp lệ" });
+                return BadRequest(new { status = false, message = "Dữ liệu không hợp lệ" });
 
             var result = await _lichSuThiService.LuuKetQuaLuyenLaiAsync(userId, request.CauHoiAnswers);
+            return Ok(new { status = true, data = result });
+        }
+
+
+        //thanh toan mo khoa
+        [HttpGet("check-premium-access")]
+        public async Task<IActionResult> CheckPremiumAccess()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(new { status = false, message = "Không tìm thấy người dùng" });
+
+            var hasAccess = await _tinhNangSvc.KiemTraQuyenAsync(userId, "LuyenCauSai");
             return Ok(new
             {
                 status = true,
-                data = result // dạng List<KetQuaLuyenTapViewModel>
+                hasAccess,
+                price = 25000,
+                message = hasAccess ? "Bạn đã mở khóa tính năng" : "Tính năng cần thanh toán 25,000 VNĐ"
             });
         }
+        [HttpPost("create-payment-session")]
+        public async Task<IActionResult> CreatePaymentSession([FromBody] CreatePaymentSessionDto dto, CancellationToken ct)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(new { status = false, message = "Không tìm thấy người dùng" });
+
+            // 1️⃣ Nếu user chọn PayPal → chỉ tạo order → KHÔNG redirect
+            if (dto.Method == PaymentMethod.PayPal)
+            {
+                var orderId = await _tinhNangSvc.TaoDonHangChoTinhNangAsync(userId, "LuyenCauSai", 25000, ct);
+
+                return Ok(new
+                {
+                    status = true,
+                    orderId,
+                    redirectUrl = ""  // FE PayPal Smart Button lo
+                });
+            }
+
+            // 2️⃣ Momo: giữ nguyên code cũ
+            var hasAccess = await _tinhNangSvc.KiemTraQuyenAsync(userId, "LuyenCauSai", ct);
+            if (hasAccess)
+                return BadRequest(new { status = false, message = "Bạn đã mở khóa tính năng này rồi" });
+
+            var orderIdMomo = await _tinhNangSvc.TaoDonHangChoTinhNangAsync(userId, "LuyenCauSai", 25000, ct);
+            var returnUrl = $"{Request.Scheme}://{Request.Host}/api/lichsuthi/payment-return?orderId={orderIdMomo}";
+
+            var result = await _paymentSvc.TaoThanhToanAsync(new(orderIdMomo, dto.Method, returnUrl), ct);
+
+            if (!result.Ok)
+                return BadRequest(new { status = false, message = result.Error });
+
+            return Ok(new { status = true, orderId = orderIdMomo, result.RedirectUrl });
+        }
+
+        // Return URL sau khi cổng thanh toán redirect về
+        [HttpGet("payment-return")]
+        [AllowAnonymous]
+        public IActionResult PaymentReturn([FromQuery] long orderId, [FromQuery] string? error)
+        {
+            if (!string.IsNullOrEmpty(error))
+                return Redirect($"/LichSuThi1/PaymentFailed?error={Uri.EscapeDataString(error)}");
+
+            // Trang chờ xử lý (MoMo/PayPal sẽ gọi webhook để kích hoạt)
+            return Redirect($"/LichSuThi1/PaymentProcessing?orderId={orderId}");
+        }
+
+
+        // ===================================================
+        // WEBHOOK XỬ LÝ THANH TOÁN
+        // ===================================================
+        [HttpPost("webhook/{gateway}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> PaymentWebhook([FromRoute] string gateway, CancellationToken ct)
+        {
+            try
+            {
+                if (!string.Equals(gateway, "momo", StringComparison.OrdinalIgnoreCase))
+                    return BadRequest(new { status = false, message = "Gateway không hỗ trợ webhook hoặc không dùng webhook" });
+
+                var cong = HttpContext.RequestServices.GetRequiredService<CongMoMo>();
+                var ok = await cong.XuLyWebhookAsync(Request, ct);
+
+                return ok ? Ok(new { status = true })
+                          : BadRequest(new { status = false, message = "Invalid webhook" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi xử lý webhook MoMo");
+                return StatusCode(500, new { status = false, message = ex.Message });
+            }
+        }
+
+        public class CreatePaymentSessionDto
+        {
+            public PaymentMethod Method { get; set; } // 1 = MoMo, 2 = PayPal
+        }
+
+
     }
+
+
 }

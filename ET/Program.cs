@@ -1,3 +1,4 @@
+﻿using ET.Extensions;
 using ET.Services;
 using Hangfire;
 using Libs;
@@ -5,14 +6,17 @@ using Libs.CacheService;
 using Libs.Entity;
 using Libs.Repositories;
 using Libs.Service;
+using Libs.ThanhToan;
+using Libs.ThanhToan.Abstractions;
+using Libs.ThanhToan.Options;
+using Libs.ThanhToan.Providers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.AI;
 using Microsoft.IdentityModel.Tokens;
 using sendMail.Service;
 using System.Text;
-using Microsoft.Extensions.AI;
-using ET.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -70,6 +74,26 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddControllersWithViews();
+//them thanh toan
+// options
+builder.Services.Configure<MoMoTuyChon>(builder.Configuration.GetSection("MoMo"));
+builder.Services.Configure<PayPalTuyChon>(builder.Configuration.GetSection("PayPal"));
+
+// gateways + service
+builder.Services.AddScoped<CongMoMo>();
+builder.Services.AddScoped<ICongThanhToanFactory, CongThanhToanFactory>();
+builder.Services.AddScoped<IThanhToanService, ThanhToanService>();
+builder.Services.AddScoped<IDonHangRepository, DonHangRepository>();
+builder.Services.AddScoped<IGiaoDichThanhToanRepository, GiaoDichThanhToanRepository>();
+builder.Services.AddScoped<ITinhNangMoKhoaRepository, TinhNangMoKhoaRepository>();
+builder.Services.AddScoped<ITinhNangService, TinhNangService>();
+
+builder.Services.AddScoped<IDoanhThuRepository, DoanhThuRepository>();
+builder.Services.AddScoped<DoanhThuService>();
+
+builder.Services.AddHttpClient();
+
+
 builder.Services.AddTransient<ChuDeService>();
 builder.Services.AddTransient<LoaiBangLaiService>();
 builder.Services.AddTransient<MoPhongService>();
@@ -108,6 +132,11 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("UserPolicy", policy => policy.RequireRole("User"));
 });
 var app = builder.Build();
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();   //
+}
 
 app.ApplyMigrations();
 // Configure the HTTP request pipeline.

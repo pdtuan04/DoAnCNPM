@@ -23,7 +23,6 @@ namespace Libs.Repositories
         ApplicationDbContext GetDbContext();
 
         //------//
-        Task<bool> KiemTraDaThanhToanAsync(string userId);
         Task<List<CauHoi>> GetCauHoiSaiByUserAsync(string userId);
         Task<CauHoi?> GetCauHoiByIdAsync(Guid id);
         Task<List<CauHoiSai>> GetCauHoiSaiListAsync(string userId, Guid cauHoiId);
@@ -228,10 +227,7 @@ namespace Libs.Repositories
                 return false;
             }
         }
-        public async Task<bool> KiemTraDaThanhToanAsync(string userId)
-        {
-            return await _dbContext.GiaoDichs.AnyAsync(g => g.UserId == userId && g.DaThanhToan == true);
-        }
+
 
         public async Task<List<CauHoi>> GetCauHoiSaiByUserAsync(string userId)
         {
