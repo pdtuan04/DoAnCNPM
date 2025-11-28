@@ -12,63 +12,64 @@ namespace Libs.Service
 
         // CẤU HÌNH YOLO11 (Thường là 640x640)
         private const int ImgSize = 640;
-        private const float ConfidenceThreshold = 0.25f; // Giảm xuống 0.25 để bắt nhạy hơn
+        private const float ConfidenceThreshold = 0.5f; // Giảm xuống 0.25 để bắt nhạy hơn
         private const float IouThreshold = 0.45f;      // Ngưỡng lọc trùng
 
         // DANH SÁCH 51 CLASS CỦA BẠN
         private readonly string[] _labels = new string[]
         {
-            "Ben xe buyt",
-            "Bien gop lan duong theo phuong tien",
-            "Cac xe chi duoc re trai",
-            "Cam di nguoc chieu",
-            "Cam di thang va re phai",
-            "Cam do xe",
-            "Cam dung va do xe",
-            "Cam mo to va xe may",
-            "Cam o to",
-            "Cam o to khach va o to tai",
-            "Cam o to quay dau xe -duoc re trai-",
-            "Cam quay dau",
-            "Cam re phai",
-            "Cam re phai va quay dau",
-            "Cam re trai",
-            "Cam re trai va phai",
-            "Cam re trai va quay dau xe",
-            "Cam xe hai va ba banh",
-            "Cam xe so-mi ro-mooc",
-            "Cam xe tai",
-            "Chi danh cho xe may-",
-            "Chi danh cho xe tai-",
-            "Chieu cao tinh khong thuc te",
-            "Cho ngoat nguy hiem vong ben phai",
-            "Cho ngoat nguy hiem vong ben trai",
-            "Cho quay xe",
-            "Chu y chuong ngai vat - vong tranh sang ben phai",
-            "Chuong ngoai vat phia truoc",
-            "Di cham",
-            "Duong bi thu hep ve phia phai",
-            "Duong bi thu hep ve phia trai",
-            "Duong co camera giam sat",
-            "Duong giao nhau -nga ba ben phai-",
-            "Duong giao nhau -nga ba ben trai-",
-            "Duong mot chieu",
-            "Duong nguoi di bo cat ngang",
-            "Giao nhau voi duong dong cap",
-            "Giao nhau voi duong khong uu tien",
-            "Giao nhau voi duong sat co rao chan",
-            "Gioi han chieu cao",
-            "Gioi han toc do -40km-h-",
-            "Gioi han toc do -50km-h-",
-            "Gioi han toc do -60km-h-",
-            "Gioi han toc do -80km-h-",
-            "Go giam toc phia truoc",
-            "Kiem tra",
-            "Nguy hiem khac",
-            "Noi giao nhau chay theo vong xuyen",
-            "Phai di vong sang ben phai",
-            "Tre em",
-            "Xe tai va xe cong-"
+            "Đường người đi bộ cắt ngang",                // 0
+            "Đường giao nhau (ngã ba bên phải)",          // 1
+            "Cấm đi ngược chiều",                         // 2
+            "Phải đi vòng sang bên phải",                 // 3
+            "Giao nhau với đường đồng cấp",               // 4
+            "Giao nhau với đường không ưu tiên",          // 5
+            "Chỗ ngoặt nguy hiểm vòng bên trái",          // 6
+            "Cấm rẽ trái",                                // 7
+            "Bến xe buýt",                                // 8
+            "Nơi giao nhau chạy theo vòng xuyến",         // 9
+            "Cấm dừng và đỗ xe",                          // 10
+            "Chỗ quay xe",                                // 11
+            "Biển gộp làn đường theo phương tiện",        // 12
+            "Đi chậm",                                    // 13
+            "Cấm xe tải",                                 // 14
+            "Đường bị thu hẹp về phía phải",              // 15
+            "Giới hạn chiều cao",                         // 16
+            "Cấm quay đầu",                               // 17
+            "Cấm ô tô khách và ô tô tải",                 // 18
+            "Cấm rẽ phải và quay đầu",                    // 19
+            "Cấm ô tô",                                   // 20
+            "Đường bị thu hẹp về phía trái",              // 21
+            "Gồ giảm tốc phía trước",                     // 22
+            "Cấm xe hai và ba bánh",                      // 23
+            "Kiểm tra",                                   // 24
+            "Chỉ dành cho xe máy*",                       // 25
+            "Chướng ngoại vật phía trước",                // 26
+            "Trẻ em",                                     // 27
+            "Xe tải và xe công*",                         // 28
+            "Cấm mô tô và xe máy",                        // 29
+            "Chỉ dành cho xe tải*",                       // 30
+            "Đường có camera giám sát",                   // 31
+            "Cấm rẽ phải",                                // 32
+            "Nhiều chỗ ngoặt nguy hiểm liên tiếp, chỗ đầu tiên sang phải", // 33
+            "Cấm xe sơ-mi rơ-moóc",                       // 34
+            "Cấm rẽ trái và phải",                        // 35
+            "Cấm đi thẳng và rẽ phải",                    // 36
+            "Đường giao nhau (ngã ba bên trái)",          // 37
+            "Giới hạn tốc độ",                   // 38
+            "Giới hạn tốc độ",                   // 39
+            "Giới hạn tốc độ",                   // 40
+            "Giới hạn tốc độ",                   // 41
+            "Các xe chỉ được rẽ trái",                    // 42
+            "Chiều cao tĩnh không thực tế",               // 43
+            "Nguy hiểm khác",                             // 44
+            "Đường một chiều",                            // 45
+            "Cấm đỗ xe",                                  // 46
+            "Cấm ô tô quay đầu xe (được rẽ trái)",        // 47
+            "Giao nhau với đường sắt có rào chắn",        // 48
+            "Cấm rẽ trái và quay đầu xe",                 // 49
+            "Chỗ ngoặt nguy hiểm vòng bên phải",          // 50
+            "Chú ý chướng ngại vật – vòng tránh sang bên phải" // 51
         };
 
         public YoloService()
