@@ -1,0 +1,175 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+@* <h1 class="fw-bold text-dark mb-2" id="tenLoaiTitle"
+    style="font-size: 2.5rem; background: linear-gradient(to right, #007bff, #00c6ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+    Nhận Diện Biển Báo
+</h1>
+<canvas id="canvas"></canvas>
+
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Load ảnh
+    const img = new Image();
+    img.src = '/images/img_0027.jpg';
+    img.onload = async () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+
+        // Lấy kết quả detect từ API
+        const response = await fetch('/api/detect/test');
+        const result = await response.json();
+        const detections = result.data;
+
+        // Tạo map nhãn -> màu
+        const colors = {};
+        function getRandomColor() {
+            return 'hsl(' + Math.floor(Math.random() * 360) + ', 100%, 50%)';
+        }
+
+        detections.forEach(d => {
+            if (!colors[d.label]) {
+                colors[d.label] = getRandomColor();
+            }
+            const color = colors[d.label];
+
+            // Vẽ bounding box
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 3;
+            ctx.strokeRect(d.bBox.x, d.bBox.y, d.bBox.width, d.bBox.height);
+
+            // Vẽ chữ đậm rõ
+            const text = `${d.label} (${(d.confidence*100).toFixed(1)}%)`;
+            ctx.font = "bold 18px Arial";
+            ctx.fillStyle = color;
+            ctx.strokeStyle = "black"; // viền đen để nổi bật
+            ctx.lineWidth = 3;
+            ctx.strokeText(text, d.bBox.x, d.bBox.y - 5); // vẽ viền
+            ctx.fillText(text, d.bBox.x, d.bBox.y - 5);   // vẽ chữ chính
+        });
+    };
+</script> *@
+
+<style>
+    #canvasContainer {
+        width: 600px;
+        border: 1px solid #ccc;
+        margin-top: 15px;
+    }
+
+    #canvas {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+</style>
+
+<h2>Nhận Diện Biển Báo</h2>
+
+<input type="file" id="fileInput" accept="image/*" />
+<button id="btnDetect">Detect</button>
+
+<div id="canvasContainer">
+    <canvas id="canvas"></canvas>
+</div>
+
+<script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    let uploadedImage = null;
+
+    function randomColor() {
+        return "hsl(" + Math.floor(Math.random() * 360) + ", 90%, 50%)";
+    }
+
+    function drawDetections(image, detections) {
+        // Set canvas to *real resolution* của ảnh, không phải 600px
+        canvas.width = image.naturalWidth;
+        canvas.height = image.naturalHeight;
+
+        ctx.drawImage(image, 0, 0);
+
+        detections.forEach(d => {
+            const color = randomColor();
+
+            const x = d.bBox.x;
+            const y = d.bBox.y;
+            const w = d.bBox.width;
+            const h = d.bBox.height;
+
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 3;
+            ctx.strokeRect(x, y, w, h);
+
+            const text = `${d.label} (${(d.confidence * 100).toFixed(1)}%)`;
+
+            ctx.font = "bold 22px Arial";
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = "black";
+            ctx.strokeText(text, x, y - 7);
+
+            ctx.fillStyle = color;
+            ctx.fillText(text, x, y - 7);
+        });
+    }
+
+    document.getElementById("fileInput").addEventListener("change", event => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const url = URL.createObjectURL(file);
+
+        uploadedImage = new Image();
+        uploadedImage.src = url;
+
+        uploadedImage.onload = () => {
+            canvas.width = uploadedImage.naturalWidth;
+            canvas.height = uploadedImage.naturalHeight;
+            ctx.drawImage(uploadedImage, 0, 0);
+        };
+    });
+
+    document.getElementById("btnDetect").addEventListener("click", () => {
+        const file = document.getElementById("fileInput").files[0];
+        if (!file) {
+            alert("Vui lòng chọn ảnh.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        fetch("/api/detect/detect-sign", {
+            method: "POST",
+            body: formData
+        })
+            .then(async res => {
+                if (!res.ok) {
+                    throw new Error("API Error: " + await res.text());
+                }
+
+                const text = await res.text();
+                if (!text.trim()) throw new Error("API trả về rỗng!");
+
+                return JSON.parse(text);
+            })
+            .then(json => {
+                if (!json.data || json.data.length === 0) {
+                    alert("Không phát hiện vật thể nào.");
+                    return;
+                }
+
+                drawDetections(uploadedImage, json.data);
+            })
+            .catch(err => {
+                alert("Lỗi API detect: " + err.message);
+            });
+    });
+</script>

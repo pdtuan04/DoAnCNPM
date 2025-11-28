@@ -15,7 +15,7 @@ namespace ET.Controllers.api
             _yoloService = yoloService;
         }
 
-        [HttpPost]
+        [HttpPost("detect-sign")]
         public IActionResult Post(IFormFile file)
         {
             if (file == null || file.Length == 0)
