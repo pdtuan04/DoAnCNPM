@@ -36,8 +36,7 @@ namespace Libs
         {
            
             base.OnModelCreating(modelBuilder);
-
-        
+            Console.WriteLine("🚀 Application is seeding data...");
             modelBuilder.Entity<DonHang>()
                 .Property(x => x.TongTien)
                 .HasPrecision(18, 2);
@@ -46,7 +45,7 @@ namespace Libs
                 .Property(x => x.SoTienDaTra)
                 .HasPrecision(18, 2);
 
-          
+
             modelBuilder.Entity<TinhNangMoKhoa>()
                 .HasIndex(x => new { x.UserId, x.TenTinhNang, x.DangHoatDong })
                 .HasDatabaseName("UX_User_TinhNang_Active");
@@ -72,9 +71,11 @@ namespace Libs
                 .Property(x => x.NgayTao)
                 .HasDefaultValueSql("GETUTCDATE()");
 
-          
-            Console.WriteLine("🚀 Application is seeding data...");
             modelBuilder.SeedingData();
+
+            
+
+          
         }
     }
 }

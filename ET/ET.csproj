@@ -27,4 +27,10 @@
     <ProjectReference Include="..\Libs\Libs.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="best.onnx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
