@@ -2448,6 +2448,30 @@ namespace Libs.Migrations
                         .HasDatabaseName("UX_User_TinhNang_Active");
 
                     b.ToTable("TinhNangMoKhoas");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1L,
+                            DangHoatDong = true,
+                            HetHanLuc = new DateTimeOffset(new DateTime(2029, 12, 5, 12, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 7, 0, 0, 0)),
+                            KichHoatLuc = new DateTimeOffset(new DateTime(2025, 11, 28, 12, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 7, 0, 0, 0)),
+                            NgayTao = new DateTimeOffset(new DateTime(2025, 11, 28, 12, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 7, 0, 0, 0)),
+                            SoTienDaTra = 1000m,
+                            TenTinhNang = "LuyenCauSai",
+                            UserId = "9ae1058d-b602-4025-ab1d-74e7bced8f3b"
+                        },
+                        new
+                        {
+                            Id = 2L,
+                            DangHoatDong = false,
+                            HetHanLuc = new DateTimeOffset(new DateTime(2029, 12, 2, 12, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 7, 0, 0, 0)),
+                            KichHoatLuc = new DateTimeOffset(new DateTime(2025, 11, 25, 12, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 7, 0, 0, 0)),
+                            NgayTao = new DateTimeOffset(new DateTime(2025, 11, 25, 12, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 7, 0, 0, 0)),
+                            SoTienDaTra = 500m,
+                            TenTinhNang = "LuyenCauDung",
+                            UserId = "8d581a98-361e-4333-a651-74e88ef572a4"
+                        });
                 });
 
             modelBuilder.Entity("Libs.Entity.User", b =>

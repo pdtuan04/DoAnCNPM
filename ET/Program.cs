@@ -93,7 +93,7 @@ builder.Services.AddScoped<DoanhThuService>();
 
 builder.Services.AddHttpClient();
 
-
+builder.Services.AddTransient<YoloService>();
 builder.Services.AddTransient<ChuDeService>();
 builder.Services.AddTransient<LoaiBangLaiService>();
 builder.Services.AddTransient<MoPhongService>();
@@ -135,7 +135,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.Migrate();   //
+    db.Database.Migrate();//
 }
 
 app.ApplyMigrations();
