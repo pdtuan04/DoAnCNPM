@@ -17,14 +17,11 @@
             <input type="number" id="Order" class="form-control" required />
         </div>
 
+        <!-- CKEditor thay thế upload ảnh/video giống CreateSaHinh -->
         <div class="form-group">
-            <label for="FileUpload">Nội dung *</label>
-            <input type="file" id="FileUpload" accept=".mp4,.webm,.ogg,.mov,.jpg,.jpeg,.png,.gif" class="form-control" />
-            <small class="form-text text-muted">Chọn tệp (ảnh hoặc video, nếu muốn thay đổi)</small>
+            <label for="NoiDung">Nội dung *</label>
+            <textarea id="NoiDung" class="form-control"></textarea>
         </div>
-
-        <!-- Ẩn: Nội dung thực tế -->
-        <textarea id="NoiDung" hidden></textarea>
 
         <div class="form-group">
             <label for="LoaiBangLaiId">Loại bằng lái</label>
@@ -36,6 +33,9 @@
 </div>
 
 @section Scripts {
+    <!-- CKEditor -->
+    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+
     <script>
         // Load danh sách loại bằng lái
         fetch('/api/LoaiBangLai/get-loai-bang-lai-list')
@@ -50,6 +50,66 @@
                 });
             });
 
+        // CUSTOM UPLOAD ADAPTER (Upload ảnh & video) - giống CreateSaHinh
+        class UploadAdapter {
+            constructor(loader) {
+                this.loader = loader;
+            }
+
+            upload() {
+                return this.loader.file.then(file => new Promise((resolve, reject) => {
+                    const formData = new FormData();
+                    formData.append("file", file);
+
+                    let uploadUrl = file.type.startsWith("video/")
+                        ? "/api/Upload/upload-video"
+                        : "/api/Upload/upload-image";
+
+                    fetch(uploadUrl, {
+                        method: "POST",
+                        body: formData
+                    })
+                        .then(res => res.json())
+                        .then(result => {
+                            if (!result.status) {
+                                reject(result.message);
+                                return;
+                            }
+
+                            resolve({
+                                default: result.filePath
+                            });
+                        })
+                        .catch(err => reject(err));
+                }));
+            }
+
+            abort() { }
+        }
+
+        function CustomUploadAdapterPlugin(editor) {
+            editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
+                return new UploadAdapter(loader);
+            };
+        }
+
+        let editorInstance;
+        let initialNoiDung = '';
+
+        // Khởi tạo CKEditor trước — khi load data xong sẽ gọi setData nếu cần
+        ClassicEditor
+            .create(document.querySelector('#NoiDung'), {
+                extraPlugins: [CustomUploadAdapterPlugin],
+                mediaEmbed: { previewsInData: true }
+            })
+            .then(editor => {
+                editorInstance = editor;
+                if (initialNoiDung && initialNoiDung.length > 0) {
+                    editorInstance.setData(initialNoiDung);
+                }
+            })
+            .catch(err => console.error(err));
+
         // Load dữ liệu bài sa hình
         document.addEventListener("DOMContentLoaded", async function () {
             const id = window.location.pathname.split('/').pop();
@@ -57,54 +117,30 @@
             const result = await res.json();
             if (result.status && result.data) {
                 const bai = result.data;
-                document.getElementById("Id").value = bai.id;
-                document.getElementById("TenBai").value = bai.tenBai;
-                document.getElementById("Order").value = bai.order;
-                document.getElementById("NoiDung").value = bai.noiDung;
-                document.getElementById("LoaiBangLaiId").value = bai.loaiBangLaiId;
+                document.getElementById("Id").value = bai.id ?? bai.Id;
+                document.getElementById("TenBai").value = bai.tenBai ?? bai.TenBai;
+                document.getElementById("Order").value = bai.order ?? bai.Order;
+                // lưu tạm nội dung để set vào editor khi editor sẵn sàng
+                initialNoiDung = bai.noiDung ?? bai.NoiDung ?? '';
+                // nếu editor đã khởi tạo thì setData ngay
+                if (editorInstance) {
+                    editorInstance.setData(initialNoiDung);
+                }
+                // chọn loại bằng lái (có thể là ten trường khác)
+                const loaiId = bai.loaiBangLaiId ?? bai.LoaiBangLai?.id ?? bai.LoaiBangLai?.Id ?? '';
+                if (loaiId) {
+                    // gán sau một tick để đảm bảo select đã được populate nếu fetch trước chưa xong
+                    setTimeout(() => {
+                        document.getElementById("LoaiBangLaiId").value = loaiId;
+                    }, 200);
+                }
             } else {
                 alert("Không tìm thấy bài sa hình!");
                 window.location.href = "/Admin/QLSaHinh";
             }
         });
 
-        // Xử lý upload file và submit
-        document.getElementById("FileUpload").addEventListener("change", async function () {
-            const fileInput = document.getElementById("FileUpload");
-            if (fileInput.files.length === 0) return;
-
-            const file = fileInput.files[0];
-            const fileType = file.type;
-
-            const formData = new FormData();
-            formData.append("file", file);
-
-            const uploadUrl = fileType.startsWith("video/")
-                ? "/api/Upload/upload-video"
-                : "/api/Upload/upload-image";
-
-            const uploadRes = await fetch(uploadUrl, {
-                method: "POST",
-                body: formData
-            });
-
-            const uploadResult = await uploadRes.json();
-            if (!uploadResult.status) {
-                alert("Upload thất bại: " + uploadResult.message);
-                return;
-            }
-
-            let htmlContent = "";
-            if (fileType.startsWith("video/")) {
-                htmlContent = `<video controls src="${uploadResult.filePath}" style="max-width:100%"></video>`;
-            } else if (fileType.startsWith("image/")) {
-                htmlContent = `<img src="${uploadResult.filePath}" alt="Hình minh họa" style="max-width:100%;" />`;
-            }
-
-            // Gán vào nội dung
-            document.getElementById("NoiDung").value = htmlContent;
-        });
-
+        // Submit form
         document.getElementById("editForm").addEventListener("submit", async function (e) {
             e.preventDefault();
 
@@ -112,7 +148,7 @@
                 Id: document.getElementById("Id").value,
                 TenBai: document.getElementById("TenBai").value,
                 Order: parseInt(document.getElementById("Order").value),
-                NoiDung: document.getElementById("NoiDung").value,
+                NoiDung: (editorInstance ? editorInstance.getData() : document.getElementById("NoiDung").value),
                 LoaiBangLaiId: document.getElementById("LoaiBangLaiId").value
             };
 

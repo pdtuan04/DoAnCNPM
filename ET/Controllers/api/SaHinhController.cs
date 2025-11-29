@@ -75,6 +75,17 @@ namespace ET.Controllers.api
                 return BadRequest(new { status = false, message = "Dữ liệu bài sa hình không hợp lệ" });
             }
             var createdBaiSaHinh = await _saHinhService.CreateBaiSaHinhAsync(baiSaHinh);
+
+            // Invalidate cache (nếu có) để client đọc dữ liệu mới
+            try
+            {
+                await _saHinhCache.RemoveAsync(createdBaiSaHinh.Id);
+            }
+            catch
+            {
+                // ignore cache errors
+            }
+
             return Ok(new { status = true, message = "Tạo bài sa hình thành công", data = createdBaiSaHinh });
         }
         // PUT: api/SaHinh/update
@@ -91,6 +102,17 @@ namespace ET.Controllers.api
             {
                 return NotFound(new { status = false, message = "Bài sa hình không tìm thấy" });
             }
+
+            // Invalidate cache để client lấy nội dung mới ngay
+            try
+            {
+                await _saHinhCache.RemoveAsync(updatedBaiSaHinh.Id);
+            }
+            catch
+            {
+                // ignore cache errors
+            }
+
             return Ok(new { status = true, message = "Cập nhật bài sa hình thành công", data = updatedBaiSaHinh });
         }
         // DELETE: api/SaHinh/delete/{id}
