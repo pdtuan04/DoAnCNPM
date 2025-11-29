@@ -72,9 +72,6 @@ namespace Libs
                 .HasDefaultValueSql("GETUTCDATE()");
 
             modelBuilder.SeedingData();
-
-            
-
           
         }
     }

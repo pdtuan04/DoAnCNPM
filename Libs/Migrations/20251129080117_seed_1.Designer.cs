@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Libs.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251128135231_seed_2")]
-    partial class seed_2
+    [Migration("20251129080117_seed_1")]
+    partial class seed_1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

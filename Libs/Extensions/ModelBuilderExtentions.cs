@@ -82,11 +82,11 @@ namespace Libs.Extensions
                 UserId = "9ae1058d-b602-4025-ab1d-74e7bced8f3b",
                 TenTinhNang = "LuyenCauSai",
                 DangHoatDong = true,
-                KichHoatLuc = new DateTime(2025, 11, 28, 12, 0, 0),
-                HetHanLuc = new DateTime(2029, 12, 5, 12, 0, 0),
+                KichHoatLuc = new DateTimeOffset(new DateTime(2025, 11, 28, 12, 0, 0), new TimeSpan(0, 7, 0, 0, 0)),
+                HetHanLuc = new DateTimeOffset(new DateTime(2029, 12, 5, 12, 0, 0), new TimeSpan(0, 7, 0, 0, 0)),
                 DonHangId = null,
                 SoTienDaTra = 1000m,
-                NgayTao = new DateTime(2025, 11, 28, 12, 0, 0)
+                NgayTao = new DateTimeOffset(new DateTime(2025, 11, 28, 12, 0, 0), new TimeSpan(0, 7, 0, 0, 0))
             },
             new TinhNangMoKhoa
             {
@@ -94,11 +94,11 @@ namespace Libs.Extensions
                 UserId = "8d581a98-361e-4333-a651-74e88ef572a4",
                 TenTinhNang = "LuyenCauDung",
                 DangHoatDong = false,
-                KichHoatLuc = new DateTime(2025, 11, 25, 12, 0, 0),
-                HetHanLuc = new DateTime(2029, 12, 2, 12, 0, 0),
+                KichHoatLuc = new DateTimeOffset(new DateTime(2025, 11, 25, 12, 0, 0), new TimeSpan(0, 7, 0, 0, 0)),
+                HetHanLuc = new DateTimeOffset(new DateTime(2029, 12, 2, 12, 0, 0), new TimeSpan(0, 7, 0, 0, 0)),
                 DonHangId = null,
                 SoTienDaTra = 500m,
-                NgayTao = new DateTime(2025, 11, 25, 12, 0, 0)
+                NgayTao = new DateTimeOffset(new DateTime(2025, 11, 25, 12, 0, 0), new TimeSpan(0, 7, 0, 0, 0))
             }
         );
             var loaiBangLais = new List<LoaiBangLai>()
