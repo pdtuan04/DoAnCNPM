@@ -4,63 +4,49 @@
 @{
 }
 
-@* <h1 class="fw-bold text-dark mb-2" id="tenLoaiTitle"
-    style="font-size: 2.5rem; background: linear-gradient(to right, #007bff, #00c6ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-    Nhận Diện Biển Báo
-</h1>
-<canvas id="canvas"></canvas>
+<style>
+    #mainContainer {
+        display: flex;
+        align-items: flex-start;
+        margin-top: 15px;
+    }
 
-<script>
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
+    #legend {
+        width: 250px;
+        margin-right: 20px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        background-color: #f9f9f9;
+        min-height: 400px; /* Thêm min-height để cao hơn lúc mới load */
+        max-height: 300px; /* Tăng max-height một chút để dài ra */
+        overflow-y: auto;
+    }
 
-    // Load ảnh
-    const img = new Image();
-    img.src = '/images/img_0027.jpg';
-    img.onload = async () => {
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
-
-        // Lấy kết quả detect từ API
-        const response = await fetch('/api/detect/test');
-        const result = await response.json();
-        const detections = result.data;
-
-        // Tạo map nhãn -> màu
-        const colors = {};
-        function getRandomColor() {
-            return 'hsl(' + Math.floor(Math.random() * 360) + ', 100%, 50%)';
+        #legend ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
         }
 
-        detections.forEach(d => {
-            if (!colors[d.label]) {
-                colors[d.label] = getRandomColor();
-            }
-            const color = colors[d.label];
+        #legend li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 16px;
+            font-weight: bold;
+        }
 
-            // Vẽ bounding box
-            ctx.strokeStyle = color;
-            ctx.lineWidth = 3;
-            ctx.strokeRect(d.bBox.x, d.bBox.y, d.bBox.width, d.bBox.height);
+        #legend .color-box {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border: 1px solid #000;
+        }
 
-            // Vẽ chữ đậm rõ
-            const text = `${d.label} (${(d.confidence*100).toFixed(1)}%)`;
-            ctx.font = "bold 18px Arial";
-            ctx.fillStyle = color;
-            ctx.strokeStyle = "black"; // viền đen để nổi bật
-            ctx.lineWidth = 3;
-            ctx.strokeText(text, d.bBox.x, d.bBox.y - 5); // vẽ viền
-            ctx.fillText(text, d.bBox.x, d.bBox.y - 5);   // vẽ chữ chính
-        });
-    };
-</script> *@
-
-<style>
     #canvasContainer {
         width: 600px;
         border: 1px solid #ccc;
-        margin-top: 15px;
     }
 
     #canvas {
@@ -75,13 +61,18 @@
 <input type="file" id="fileInput" accept="image/*" />
 <button id="btnDetect">Detect</button>
 
-<div id="canvasContainer">
-    <canvas id="canvas"></canvas>
+<div id="mainContainer">
+    <div id="legend"></div>
+    <div id="canvasContainer">
+        <canvas id="canvas"></canvas>
+    </div>
 </div>
 
 <script>
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
+    const legend = document.getElementById("legend");
+    const canvasContainer = document.getElementById("canvasContainer");
 
     let uploadedImage = null;
 
@@ -90,14 +81,42 @@
     }
 
     function drawDetections(image, detections) {
-        // Set canvas to *real resolution* của ảnh, không phải 600px
+        // Set canvas to *real resolution* của ảnh
         canvas.width = image.naturalWidth;
         canvas.height = image.naturalHeight;
 
+        // Tính scale factor (display width / canvas width)
+        const displayWidth = canvasContainer.offsetWidth;
+        const scale = displayWidth / canvas.width;
+
+        // Desired sizes in screen pixels
+        const desiredBoxLineWidth = 3;
+        const desiredFontSize = 22;
+        const desiredTextLineWidth = 4;
+        const desiredXOffset = 5;
+        const desiredYOffset = desiredFontSize; // Để chữ nằm ngay dưới cạnh trên
+
+        // Scale to canvas coordinates
+        const boxLineWidth = desiredBoxLineWidth / scale;
+        const fontSize = desiredFontSize / scale;
+        const textLineWidth = desiredTextLineWidth / scale;
+        const xOffset = desiredXOffset / scale;
+        const yOffset = desiredYOffset / scale;
+
         ctx.drawImage(image, 0, 0);
 
+        // Tạo map label -> color để thống nhất màu cho cùng label
+        const colors = {};
         detections.forEach(d => {
-            const color = randomColor();
+            if (!colors[d.label]) {
+                colors[d.label] = randomColor();
+            }
+        });
+
+        // Vẽ bounding boxes và số
+        detections.forEach((d, index) => {
+            const num = index + 1;
+            const color = colors[d.label];
 
             const x = d.bBox.x;
             const y = d.bBox.y;
@@ -105,18 +124,32 @@
             const h = d.bBox.height;
 
             ctx.strokeStyle = color;
-            ctx.lineWidth = 3;
+            ctx.lineWidth = boxLineWidth;
             ctx.strokeRect(x, y, w, h);
 
-            const text = `${d.label} (${(d.confidence * 100).toFixed(1)}%)`;
-
-            ctx.font = "bold 22px Arial";
-            ctx.lineWidth = 4;
+            // Vẽ số bên trong box, góc trên trái
+            ctx.font = `bold ${fontSize}px Arial`;
+            ctx.lineWidth = textLineWidth;
             ctx.strokeStyle = "black";
-            ctx.strokeText(text, x, y - 7);
+            ctx.strokeText(num, x + xOffset, y + yOffset);
 
             ctx.fillStyle = color;
-            ctx.fillText(text, x, y - 7);
+            ctx.fillText(num, x + xOffset, y + yOffset);
+        });
+
+        // Xóa legend cũ và tạo mới
+        legend.innerHTML = '<h3>Detected Objects</h3><ul></ul>';
+        const ul = legend.querySelector('ul');
+
+        // List detections với số
+        detections.forEach((d, index) => {
+            const num = index + 1;
+            const color = colors[d.label];
+            const text = `${d.label} (${(d.confidence * 100).toFixed(1)}%)`;
+
+            const li = document.createElement('li');
+            li.innerHTML = `<span class="color-box" style="background-color: ${color};"></span> ${num}. ${text}`;
+            ul.appendChild(li);
         });
     }
 
@@ -133,6 +166,8 @@
             canvas.width = uploadedImage.naturalWidth;
             canvas.height = uploadedImage.naturalHeight;
             ctx.drawImage(uploadedImage, 0, 0);
+            // Xóa legend khi upload ảnh mới
+            legend.innerHTML = '';
         };
     });
 
