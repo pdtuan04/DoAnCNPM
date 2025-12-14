@@ -943,7 +943,7 @@ namespace Libs.Migrations
                             LuaChonA = "1",
                             LuaChonB = "1",
                             LuaChonC = "1",
-                            MediaUrl = "/images/d3fe7cfb-08ad-4626-9736-c53189250a7b.png",
+                            MediaUrl = "/images/bienbao.png",
                             MeoGhiNho = "nội dung 1",
                             NoiDung = "nội dung 1",
                             isDeleted = true
@@ -973,7 +973,7 @@ namespace Libs.Migrations
                             LuaChonB = "Biển 2.",
                             LuaChonC = "Biển 1 và 3.",
                             LuaChonD = "Cả ba biển.",
-                            MediaUrl = "/images/20250515231400_4fe4816e_h2.jpg",
+                            MediaUrl = "/images/h2.jpg",
                             NoiDung = "Yêu cầu của kính chắn gió, chọn \"Loại kính an toàn\".",
                             isDeleted = false
                         },
@@ -1124,7 +1124,7 @@ namespace Libs.Migrations
                             LuaChonB = "Xe công an, xe khách, xe con, xe tải.",
                             LuaChonC = "Xe công an, xe con, xe tải, xe khách.",
                             LuaChonD = "Xe công an, xe tải, xe khách, xe con",
-                            MediaUrl = "/images/h7.webp",
+                            MediaUrl = "/images/h7.jpeg",
                             NoiDung = "Theo hướng mũi tên, thứ tự các xe đi như thế nào là đúng quy tắc giao thông?",
                             isDeleted = false
                         },
@@ -2043,7 +2043,7 @@ namespace Libs.Migrations
                         new
                         {
                             Id = new Guid("78627311-083d-42f9-a921-168e88e5f187"),
-                            ImageUrl = "/images/30f08b72-5724-4e94-94a5-c8211d05d547.png",
+                            ImageUrl = "/images/laixe.png",
                             MoTa = "Khái niệm và quy tắc",
                             TenChuDe = "Khái niệm và quy tắc",
                             isDeleted = false
