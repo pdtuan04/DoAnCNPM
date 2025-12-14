@@ -15,66 +15,18 @@ namespace Libs.Service
         private const float ConfidenceThreshold = 0.5f; // Giảm xuống 0.25 để bắt nhạy hơn
         private const float IouThreshold = 0.45f;      // Ngưỡng lọc trùng
 
-        // DANH SÁCH 51 CLASS CỦA BẠN
         private readonly string[] _labels = new string[]
         {
-            "Đường người đi bộ cắt ngang",                // 0
-            "Đường giao nhau (ngã ba bên phải)",          // 1
-            "Cấm đi ngược chiều",                         // 2
-            "Phải đi vòng sang bên phải",                 // 3
-            "Giao nhau với đường đồng cấp",               // 4
-            "Giao nhau với đường không ưu tiên",          // 5
-            "Chỗ ngoặt nguy hiểm vòng bên trái",          // 6
-            "Cấm rẽ trái",                                // 7
-            "Bến xe buýt",                                // 8
-            "Nơi giao nhau chạy theo vòng xuyến",         // 9
-            "Cấm dừng và đỗ xe",                          // 10
-            "Chỗ quay xe",                                // 11
-            "Biển gộp làn đường theo phương tiện",        // 12
-            "Đi chậm",                                    // 13
-            "Cấm xe tải",                                 // 14
-            "Đường bị thu hẹp về phía phải",              // 15
-            "Giới hạn chiều cao",                         // 16
-            "Cấm quay đầu",                               // 17
-            "Cấm ô tô khách và ô tô tải",                 // 18
-            "Cấm rẽ phải và quay đầu",                    // 19
-            "Cấm ô tô",                                   // 20
-            "Đường bị thu hẹp về phía trái",              // 21
-            "Gồ giảm tốc phía trước",                     // 22
-            "Cấm xe hai và ba bánh",                      // 23
-            "Kiểm tra",                                   // 24
-            "Chỉ dành cho xe máy*",                       // 25
-            "Chướng ngoại vật phía trước",                // 26
-            "Trẻ em",                                     // 27
-            "Xe tải và xe công*",                         // 28
-            "Cấm mô tô và xe máy",                        // 29
-            "Chỉ dành cho xe tải*",                       // 30
-            "Đường có camera giám sát",                   // 31
-            "Cấm rẽ phải",                                // 32
-            "Nhiều chỗ ngoặt nguy hiểm liên tiếp, chỗ đầu tiên sang phải", // 33
-            "Cấm xe sơ-mi rơ-moóc",                       // 34
-            "Cấm rẽ trái và phải",                        // 35
-            "Cấm đi thẳng và rẽ phải",                    // 36
-            "Đường giao nhau (ngã ba bên trái)",          // 37
-            "Giới hạn tốc độ",                   // 38
-            "Giới hạn tốc độ",                   // 39
-            "Giới hạn tốc độ",                   // 40
-            "Giới hạn tốc độ",                   // 41
-            "Các xe chỉ được rẽ trái",                    // 42
-            "Chiều cao tĩnh không thực tế",               // 43
-            "Nguy hiểm khác",                             // 44
-            "Đường một chiều",                            // 45
-            "Cấm đỗ xe",                                  // 46
-            "Cấm ô tô quay đầu xe (được rẽ trái)",        // 47
-            "Giao nhau với đường sắt có rào chắn",        // 48
-            "Cấm rẽ trái và quay đầu xe",                 // 49
-            "Chỗ ngoặt nguy hiểm vòng bên phải",          // 50
-            "Chú ý chướng ngại vật – vòng tránh sang bên phải" // 51
+            "BenXeBuyt",
+            "BienMotChieu",
+            "CamDiNguocChieu",
+            "CamDungCamDo",
+            "CamXeHaiBaBanh"
         };
 
         public YoloService()
         {
-            var modelPath = Path.Combine(Directory.GetCurrentDirectory(), "best.onnx");
+            var modelPath = Path.Combine(Directory.GetCurrentDirectory(), "last_final.onnx");
             _session = new InferenceSession(modelPath);
         }
 
@@ -116,17 +68,18 @@ namespace Libs.Service
         {
             var boxes = new List<YoloPrediction>();
 
-            // Output YOLO: [1, 4 + 51, 8400]
-            int dimensions = output.Dimensions[1]; // 55
-            int anchors = output.Dimensions[2];    // 8400
+            // Kiểm tra output shape
+            int dimensions = output.Dimensions[1]; // Nên là 4 + _labels.Length
+            int anchors = output.Dimensions[2];
 
             for (int i = 0; i < anchors; i++)
             {
                 float maxScore = 0;
                 int maxClassId = -1;
 
-                // Loop từ index 4 đến 54 (51 classes)
-                for (int j = 4; j < dimensions; j++)
+                // Chỉ loop qua số class thực tế
+                int numClasses = Math.Min(dimensions - 4, _labels.Length);
+                for (int j = 4; j < 4 + numClasses; j++)
                 {
                     float score = output[0, j, i];
                     if (score > maxScore)
@@ -136,25 +89,30 @@ namespace Libs.Service
                     }
                 }
 
-                if (maxScore < ConfidenceThreshold) continue;
+                if (maxScore < ConfidenceThreshold || maxClassId >= _labels.Length)
+                    continue;
 
                 float cx = output[0, 0, i];
                 float cy = output[0, 1, i];
                 float w = output[0, 2, i];
                 float h = output[0, 3, i];
 
-                float x = cx - (w / 2);
-                float y = cy - (h / 2);
+                float x = Math.Max(0, cx - (w / 2));
+                float y = Math.Max(0, cy - (h / 2));
 
                 float xFactor = (float)orgW / ImgSize;
                 float yFactor = (float)orgH / ImgSize;
 
-                // Sửa lỗi RectangleF bằng cách dùng constructor tường minh
                 boxes.Add(new YoloPrediction
                 {
                     Label = _labels[maxClassId],
                     Confidence = maxScore,
-                    BBox = new RectangleF(x * xFactor, y * yFactor, w * xFactor, h * yFactor)
+                    BBox = new RectangleF(
+                        x * xFactor,
+                        y * yFactor,
+                        Math.Min(w * xFactor, orgW - x * xFactor),
+                        Math.Min(h * yFactor, orgH - y * yFactor)
+                    )
                 });
             }
 
