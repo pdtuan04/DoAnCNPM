@@ -70,25 +70,22 @@
             return;
         }
 
-        const d = json.data;
+        const d = json.data ?? {};
 
-        // --- Map dữ liệu chính xác theo JSON API ---
         document.getElementById("gd-id").innerText = d.id ?? "";
         document.getElementById("gd-order").innerText = d.donHangId ?? "";
 
-        // API không có số tiền → tạm lấy maDonCong nếu cần
-        document.getElementById("gd-amount").innerText = d.maDonCong ?? "";
+        // ✅ ĐÚNG FIELD: API trả soTien
+        document.getElementById("gd-amount").innerText = formatMoney(d.soTien);
 
         document.getElementById("gd-gateway").innerText = d.congThanhToan ?? "";
         document.getElementById("gd-status").innerText = convertStatus(d.trangThai);
         document.getElementById("gd-created").innerText = formatDate(d.ngayTao);
         document.getElementById("gd-updated").innerText = formatDate(d.ngayCapNhat);
-
-        // API không trả userId → để trống
         document.getElementById("gd-user").innerText = d.userId ?? "";
 
-        // Ghi chú từ API = thongBaoLoi
-        document.getElementById("gd-note").innerText = d.thongBaoLoi ?? "";
+        // ✅ ĐÚNG FIELD: API trả ghiChu
+        document.getElementById("gd-note").innerText = d.ghiChu ?? "";
     }
 
     function convertStatus(status) {
@@ -103,5 +100,12 @@
     function formatDate(dateString) {
         if (!dateString) return "";
         return new Date(dateString).toLocaleString("vi-VN");
+    }
+
+    function formatMoney(amount) {
+        if (amount == null || amount === "") return "";
+        const n = Number(amount);
+        if (Number.isNaN(n)) return String(amount);
+        return n.toLocaleString("vi-VN") + " đ";
     }
 </script>
