@@ -203,10 +203,11 @@
                         data: "ngayTao",
                         render: d => d ? new Date(d).toLocaleString("vi-VN") : ""
                     },
-                    {
-                        data: "tongTien",
-                        render: d => (d ? Number(d).toLocaleString("vi-VN") : "0") + " VNĐ"
-                    },
+                            {
+                         data: "soTien",
+                         render: d => (d ? Number(d).toLocaleString("vi-VN") : "0") + " VNĐ"
+                        },
+
                     {
                         data: "id",
                          render: id => `<a href="/Admin/ChiTiet/${id}" class="btn btn-sm btn-primary">Xem</a>`
