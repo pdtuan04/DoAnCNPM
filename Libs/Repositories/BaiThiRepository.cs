@@ -1,6 +1,7 @@
 ﻿using Libs.Data;
 using Libs.Entity;
 using Libs.Models;
+using Libs.Service;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -24,6 +25,7 @@ namespace Libs.Repositories
         Task<BaiThi> CreateDeThiNgauNhienTheoChuDe(Guid loaiBangLaiId, Guid chuDeId, List<CauHoi> cauHois);
         Task<BaiThi> GetDeThiNgauNhienTheoChuDe(Guid loaiBangLaiId, Guid chuDeId);
         Task<List<CauHoi>> GetCauHoiTaoDeThiAsync(Guid loaiBangLaiId);
+
 
         // Thêm các phương thức mới
         void SaveChanges();
@@ -287,15 +289,26 @@ namespace Libs.Repositories
                 .FirstOrDefaultAsync(x => x.UserId == userId && x.CauHoiId == cauHoiId);
 
             if (existing != null)
+            {
                 existing.NgaySai = DateTime.Now;
+
+                // tăng số lần sai
+                var current = existing.SoLanSai;
+                if (current < 1) current = 1;  // phòng trường hợp data cũ bị 0/null map
+                existing.SoLanSai = current + 1;
+            }
             else
+            {
                 await _dbContext.CauHoiSais.AddAsync(new CauHoiSai
                 {
                     UserId = userId,
                     CauHoiId = cauHoiId,
-                    NgaySai = DateTime.Now
+                    NgaySai = DateTime.Now,
+                    SoLanSai = 1
                 });
+            }
         }
+
 
         public async Task<BaiThi> GetDeThiNgauNhien(Guid loaiBangLaiId)
         {

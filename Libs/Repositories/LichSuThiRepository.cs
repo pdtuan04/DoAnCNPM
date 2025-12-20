@@ -1,17 +1,15 @@
 ﻿using Libs.Data;
 using Libs.Entity;
 using Libs.Models;
-using Libs.Service; // Add this for PageList
+using Libs.Service; // PageList
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions; // Add this for Expression<Func<T, bool>>
 using System.Threading.Tasks;
 
 namespace Libs.Repositories
 {
-    // Interface definition for LichSuThiRepository
     public interface ILichSuThiRepository : IRepository<LichSuThi>
     {
         Task<PageList<LichSuThi>> GetLichSuThiByUserAsync(string userId, int pageNumber = 1, int pageSize = 10);
@@ -22,23 +20,21 @@ namespace Libs.Repositories
         Task<bool> SaveLichSuThiAsync(LichSuThi lichSuThi, List<ChiTietLichSuThi> chiTietList);
         ApplicationDbContext GetDbContext();
 
-        //------//
         Task<List<CauHoi>> GetCauHoiSaiByUserAsync(string userId);
         Task<CauHoi?> GetCauHoiByIdAsync(Guid id);
         Task<List<CauHoiSai>> GetCauHoiSaiListAsync(string userId, Guid cauHoiId);
         Task XoaCauHoiSaisAsync(List<CauHoiSai> list);
         Task AddCauHoiSaiAsync(CauHoiSai cauHoiSai);
         Task SaveChangesAsync();
+        Task<PageList<LichSuThi>> GetLichSuThiByUserAsync(string userId, int pageNumber = 1, int pageSize = 10, string? result = null);
 
     }
 
-    // Repository implementation
     public class LichSuThiRepository : RepositoryBase<LichSuThi>, ILichSuThiRepository
     {
-        // Constructor calling base constructor
         public LichSuThiRepository(ApplicationDbContext context) : base(context) { }
 
-        // Get user's exam history with pagination
+
         public async Task<PageList<LichSuThi>> GetLichSuThiByUserAsync(string userId, int pageNumber = 1, int pageSize = 10)
         {
             var query = _dbContext.LichSuThis
@@ -48,18 +44,33 @@ namespace Libs.Repositories
 
             return await PageList<LichSuThi>.CreatePageAsync(query, pageNumber, pageSize);
         }
+        public async Task<PageList<LichSuThi>> GetLichSuThiByUserAsync(string userId, int pageNumber = 1, int pageSize = 10, string? result = null)
+        {
+            var query = _dbContext.LichSuThis
+                .AsNoTracking()
+                .Where(ls => ls.UserId == userId);
 
-        // Get detailed exam history
+            var r = (result ?? "").Trim().ToLowerInvariant();
+            if (!string.IsNullOrEmpty(r) && r != "all")
+            {
+                if (r is "pass" or "passed" or "dau")
+                    query = query.Where(ls => ls.KetQua == "Đậu");
+                else if (r is "fail" or "failed" or "rot")
+                    query = query.Where(ls => ls.KetQua != "Đậu"); // rớt/không đạt
+            }
+
+            query = query.OrderByDescending(ls => ls.NgayThi);
+            return await PageList<LichSuThi>.CreatePageAsync(query, pageNumber, pageSize);
+        }
+
         public async Task<LichSuThiDetailModel?> GetLichSuThiDetailAsync(Guid lichSuThiId)
         {
-            // Lấy thông tin cơ bản của lịch sử thi
             var lichSuThi = await _dbContext.LichSuThis
                 .FirstOrDefaultAsync(ls => ls.Id == lichSuThiId);
 
             if (lichSuThi == null)
                 return null;
 
-            // Lấy chi tiết câu hỏi và câu trả lời
             var chiTietList = await _dbContext.ChiTietLichSuThis
                 .Where(ct => ct.LichSuThiId == lichSuThiId)
                 .Include(ct => ct.CauHoi)
@@ -68,23 +79,18 @@ namespace Libs.Repositories
                     .ThenInclude(c => c.LoaiBangLai)
                 .ToListAsync();
 
-            // Lấy thông tin bài thi
             var baiThi = await _dbContext.BaiThis
                 .Include(b => b.ChiTietBaiThis)
                 .FirstOrDefaultAsync(b => b.Id == lichSuThi.BaiThiId);
 
-            // Tạo model chi tiết
-            var detail = new LichSuThiDetailModel
+            return new LichSuThiDetailModel
             {
                 LichSuThi = lichSuThi,
                 ChiTietList = chiTietList,
                 BaiThi = baiThi
             };
-
-            return detail;
         }
 
-        // Get exam statistics
         public async Task<LichSuThiStatModel> GetLichSuThiStatsAsync(string userId)
         {
             var allHistory = await _dbContext.LichSuThis
@@ -94,7 +100,7 @@ namespace Libs.Repositories
             if (!allHistory.Any())
                 return new LichSuThiStatModel();
 
-            var stats = new LichSuThiStatModel
+            return new LichSuThiStatModel
             {
                 TongSoBaiThi = allHistory.Count,
                 SoBaiThiDat = allHistory.Count(ls => ls.KetQua == "Đậu"),
@@ -103,44 +109,47 @@ namespace Libs.Repositories
                 TyLeDung = allHistory.Average(ls => ls.PhanTramDung / 10),
                 BaiThiGanNhat = allHistory.OrderByDescending(ls => ls.NgayThi).FirstOrDefault()
             };
-
-            return stats;
         }
 
-        // Get frequently incorrect questions
+        // ✅ SỬA/TỐI ƯU: đếm đúng + tránh N+1 query
         public async Task<List<CauHoiSaiFrequencyModel>> GetFrequentWrongQuestionsAsync(string userId, int limit = 10)
         {
-            var cauHoiSai = await _dbContext.CauHoiSais
+            var list = await _dbContext.CauHoiSais
+                .AsNoTracking()
                 .Where(cs => cs.UserId == userId)
-                .GroupBy(cs => cs.CauHoiId)
-                .Select(group => new CauHoiSaiFrequencyModel
-                {
-                    CauHoiId = group.Key,
-                    SoLanSai = group.Count(),
-                    NgaySaiGanNhat = group.Max(cs => cs.NgaySai)
-                })
                 .OrderByDescending(cs => cs.SoLanSai)
+                .ThenByDescending(cs => cs.NgaySai)
                 .Take(limit)
+                .Select(cs => new CauHoiSaiFrequencyModel
+                {
+                    CauHoiId = cs.CauHoiId,
+                    SoLanSai = cs.SoLanSai,
+                    NgaySaiGanNhat = cs.NgaySai
+                })
                 .ToListAsync();
 
-            // Lấy thông tin chi tiết của câu hỏi
-            foreach (var item in cauHoiSai)
-            {
-                item.CauHoi = await _dbContext.CauHois
-                    .Include(c => c.ChuDe)
-                    .Include(c => c.LoaiBangLai)
-                    .FirstOrDefaultAsync(c => c.Id == item.CauHoiId);
-            }
+            var ids = list.Select(x => x.CauHoiId).ToList();
+            if (ids.Count == 0) return list;
 
-            return cauHoiSai;
+            var questions = await _dbContext.CauHois
+                .AsNoTracking()
+                .Include(c => c.ChuDe)
+                .Include(c => c.LoaiBangLai)
+                .Where(c => ids.Contains(c.Id))
+                .ToDictionaryAsync(c => c.Id);
+
+            foreach (var item in list)
+                if (questions.TryGetValue(item.CauHoiId, out var q))
+                    item.CauHoi = q;
+
+            return list;
         }
 
-        // Delete exam history
+
         public async Task<bool> DeleteLichSuThiAsync(Guid lichSuThiId, string userId)
         {
             try
             {
-                // Kiểm tra quyền xóa
                 var lichSuThi = await _dbContext.LichSuThis
                     .FirstOrDefaultAsync(ls => ls.Id == lichSuThiId && ls.UserId == userId);
 
@@ -151,7 +160,6 @@ namespace Libs.Repositories
                 {
                     try
                     {
-                        // Xóa chi tiết lịch sử thi
                         var chiTietList = await _dbContext.ChiTietLichSuThis
                             .Where(ct => ct.LichSuThiId == lichSuThiId)
                             .ToListAsync();
@@ -161,7 +169,6 @@ namespace Libs.Repositories
 
                         await _dbContext.SaveChangesAsync();
                         await transaction.CommitAsync();
-
                         return true;
                     }
                     catch
@@ -178,7 +185,6 @@ namespace Libs.Repositories
             }
         }
 
-        // Save exam history
         public async Task<bool> SaveLichSuThiAsync(LichSuThi lichSuThi, List<ChiTietLichSuThi> chiTietList)
         {
             try
@@ -187,31 +193,53 @@ namespace Libs.Repositories
                 {
                     try
                     {
-                        // Thêm lịch sử thi
                         await _dbContext.LichSuThis.AddAsync(lichSuThi);
                         await _dbContext.SaveChangesAsync();
 
-                        // Thêm chi tiết lịch sử thi
                         foreach (var chiTiet in chiTietList)
                         {
                             chiTiet.LichSuThiId = lichSuThi.Id;
                             await _dbContext.ChiTietLichSuThis.AddAsync(chiTiet);
                         }
 
-                        // Lưu lại những câu hỏi sai để phục vụ ôn tập
-                        foreach (var chiTiet in chiTietList.Where(ct => ct.DungSai == true))
+                        // ✅ Upsert câu sai: tăng SoLanSai nếu đã tồn tại
+                        var userId = lichSuThi.UserId ?? string.Empty;
+
+                        var wrongQuestionIds = chiTietList
+                            .Where(ct => ct.DungSai == true)   // giữ theo code gốc của chị
+                            .Select(ct => ct.CauHoiId)
+                            .Distinct()
+                            .ToList();
+
+                        if (wrongQuestionIds.Count > 0 && !string.IsNullOrEmpty(userId))
                         {
-                            await _dbContext.CauHoiSais.AddAsync(new CauHoiSai
+                            var existing = await _dbContext.CauHoiSais
+                                .Where(x => x.UserId == userId && wrongQuestionIds.Contains(x.CauHoiId))
+                                .ToListAsync();
+
+                            foreach (var qid in wrongQuestionIds)
                             {
-                                UserId = lichSuThi.UserId ?? string.Empty, // Fix null reference with null-coalescing operator
-                                CauHoiId = chiTiet.CauHoiId,
-                                NgaySai = DateTime.Now
-                            });
+                                var row = existing.FirstOrDefault(x => x.CauHoiId == qid);
+                                if (row != null)
+                                {
+                                    row.SoLanSai += 1;
+                                    row.NgaySai = DateTime.Now;
+                                }
+                                else
+                                {
+                                    await _dbContext.CauHoiSais.AddAsync(new CauHoiSai
+                                    {
+                                        UserId = userId,
+                                        CauHoiId = qid,
+                                        NgaySai = DateTime.Now,
+                                        SoLanSai = 1
+                                    });
+                                }
+                            }
                         }
 
                         await _dbContext.SaveChangesAsync();
                         await transaction.CommitAsync();
-
                         return true;
                     }
                     catch
@@ -232,9 +260,10 @@ namespace Libs.Repositories
         public async Task<List<CauHoi>> GetCauHoiSaiByUserAsync(string userId)
         {
             return await _dbContext.CauHoiSais
+                .AsNoTracking()
                 .Where(c => c.UserId == userId)
                 .Include(c => c.CauHoi)
-                .ThenInclude(ch => ch.ChuDe)
+                    .ThenInclude(ch => ch.ChuDe)
                 .Select(c => c.CauHoi)
                 .Distinct()
                 .ToListAsync();
@@ -252,11 +281,12 @@ namespace Libs.Repositories
                 .ToListAsync();
         }
 
-        public async Task XoaCauHoiSaisAsync(List<CauHoiSai> list)
+        public Task XoaCauHoiSaisAsync(List<CauHoiSai> list)
         {
             _dbContext.CauHoiSais.RemoveRange(list);
-            _dbContext.CauHoiSais.RemoveRange(list);
+            return Task.CompletedTask;
         }
+
 
         public async Task AddCauHoiSaiAsync(CauHoiSai cauHoiSai)
         {
@@ -267,7 +297,7 @@ namespace Libs.Repositories
         {
             await _dbContext.SaveChangesAsync();
         }
-        // Get database context
+
         public ApplicationDbContext GetDbContext()
         {
             return _dbContext;

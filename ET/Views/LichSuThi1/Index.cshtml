@@ -2,132 +2,657 @@
     ViewData["Title"] = "Lịch Sử Thi";
 }
 
-<div class="container my-4">
-    <h2 class="mb-4">Lịch Sử Thi</h2>
+<style>
+    :root {
+        --soft: #f5f7fb;
+        --card: #ffffff;
+        --border: rgba(15,23,42,.10);
+        --text: #0f172a;
+        --muted: #64748b;
+        --primary: #2563eb;
+        --primary-10: rgba(37,99,235,.10);
+        --success: #16a34a;
+        --success-10: rgba(22,163,74,.12);
+        --danger: #ef4444;
+        --danger-10: rgba(239,68,68,.12);
+        --info: #0284c7;
+        --info-10: rgba(2,132,199,.12);
+        --shadow: 0 12px 28px rgba(2,6,23,.08);
+        --radius: 16px;
+    }
 
-    <!-- Thống kê tổng quan -->
-    <div class="card mb-4">
-        <div class="card-header bg-primary text-white">
-            <h5 class="card-title mb-0">Tổng kết kết quả</h5>
+    .page-wrap {
+        color: var(--text);
+    }
+
+    .page-head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+    }
+
+    .page-title {
+        font-weight: 900;
+        letter-spacing: -.02em;
+        margin: 0;
+    }
+
+    .page-sub {
+        color: var(--muted);
+        font-size: .95rem;
+        margin-top: 4px;
+    }
+
+    .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .btn-soft {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: .48rem .9rem;
+        box-shadow: 0 8px 18px rgba(2,6,23,.06);
+        font-weight: 700;
+    }
+
+        .btn-soft:hover {
+            filter: brightness(.98);
+        }
+
+    .filter-group .btn {
+        border-radius: 999px !important;
+        border: 1px solid var(--border);
+        background: var(--card);
+        padding: .35rem .8rem;
+        font-weight: 700;
+    }
+
+        .filter-group .btn.active {
+            background: var(--primary-10);
+            border-color: rgba(37,99,235,.25);
+            color: #1d4ed8;
+            font-weight: 900;
+        }
+
+    .cardx {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+
+    .cardx-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border);
+        background: linear-gradient(180deg, rgba(2,6,23,.02), transparent);
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+        .cardx-head h5 {
+            margin: 0;
+            font-weight: 900;
+        }
+
+    .cardx-body {
+        padding: 16px;
+    }
+
+    /* ===== KPI ===== */
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+    }
+   
+
+    .kpi {
+        position: relative;
+        padding: 16px 14px;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        background: var(--card);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        overflow: hidden;
+    }
+
+        .kpi:before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            background: var(--primary);
+            border-radius: 14px 0 0 14px;
+        }
+
+        .kpi .meta {
+            color: var(--muted);
+            font-weight: 800;
+            font-size: .9rem;
+            letter-spacing: .01em;
+        }
+
+        .kpi .value {
+            margin: 4px 0 0;
+            font-weight: 1000;
+            font-size: 2.05rem;
+            letter-spacing: -.02em;
+            line-height: 1.05;
+            color: var(--text);
+        }
+
+        .kpi .sub {
+            margin-top: 4px;
+            font-size: .85rem;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .kpi .unit {
+            font-size: .95rem;
+            color: var(--muted);
+            font-weight: 800;
+            margin-left: 6px;
+        }
+
+        .kpi .icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            font-weight: 1000;
+            font-size: 1.05rem;
+            flex: 0 0 auto;
+        }
+
+        .kpi.total:before {
+            background: var(--primary);
+        }
+
+        .kpi.total .icon {
+            background: var(--primary-10);
+            color: #1d4ed8;
+        }
+
+        .kpi.pass:before {
+            background: var(--success);
+        }
+
+        .kpi.pass .icon {
+            background: var(--success-10);
+            color: var(--success);
+        }
+
+        .kpi.fail:before {
+            background: var(--danger);
+        }
+
+        .kpi.fail .icon {
+            background: var(--danger-10);
+            color: var(--danger);
+        }
+
+        .kpi.avg:before {
+            background: var(--info);
+        }
+
+        .kpi.avg .icon {
+            background: var(--info-10);
+            color: var(--info);
+        }
+
+    /* ===== Right header cluster ===== */
+    .head-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    /* Sparkline box */
+    .spark {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: rgba(2,6,23,.02);
+        white-space: nowrap;
+    }
+
+        .spark .meta {
+            color: var(--muted);
+            font-size: .9rem;
+            font-weight: 800;
+        }
+
+        .spark .big {
+            font-weight: 1000;
+            font-size: 1.15rem;
+            color: var(--text);
+        }
+
+    /* ===== Donut đẹp: không overlay chữ ===== */
+    .donutBox {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: rgba(2,6,23,.02);
+    }
+
+        .donutBox svg {
+            width: 56px;
+            height: 56px;
+            flex: 0 0 auto;
+        }
+
+        .donutBox .track {
+            stroke: rgba(2,6,23,.10);
+        }
+
+        /* vòng giá trị chung */
+        .donutBox .value {
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+            stroke-linecap: round;
+            transition: stroke-dashoffset .35s ease;
+        }
+
+            /* FAIL đỏ (nền) */
+            .donutBox .value.fail {
+                stroke: rgba(239,68,68,.85);
+            }
+
+            /* PASS xanh (đè lên) */
+            .donutBox .value.pass {
+                stroke: rgba(22,163,74,.95);
+            }
+
+    .donutTxt {
+        line-height: 1.05;
+        min-width: 72px;
+    }
+
+        .donutTxt .row1, .donutTxt .row2 {
+            display: flex;
+            gap: 6px;
+            align-items: baseline;
+        }
+
+        .donutTxt .row2 {
+            margin-top: 4px;
+        }
+
+        .donutTxt .pct {
+            font-weight: 1000;
+            font-size: 1.05rem;
+            color: var(--text);
+        }
+
+        .donutTxt .pct2 {
+            font-weight: 900;
+            font-size: .9rem;
+            color: var(--muted);
+        }
+
+        .donutTxt .lbl {
+            font-weight: 900;
+            font-size: .85rem;
+            color: var(--muted);
+        }
+
+            .donutTxt .lbl.pass {
+                color: var(--success);
+            }
+
+            .donutTxt .lbl.fail {
+                color: var(--danger);
+            }
+
+
+    .hint {
+        color: var(--muted);
+        font-size: .92rem;
+        margin: 8px 0 0;
+    }
+
+    /* Table */
+    .table thead th {
+        background: rgba(2,6,23,.02);
+        border-bottom: 1px solid var(--border);
+        color: var(--muted);
+        font-weight: 900;
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        vertical-align: middle;
+    }
+
+    .badge-soft {
+        border-radius: 999px;
+        padding: .35rem .6rem;
+        border: 1px solid var(--border);
+        font-weight: 900;
+        display: inline-block;
+    }
+
+        .badge-soft.success {
+            background: var(--success-10);
+            color: var(--success);
+            border-color: rgba(22,163,74,.20);
+        }
+
+        .badge-soft.danger {
+            background: var(--danger-10);
+            color: var(--danger);
+            border-color: rgba(239,68,68,.20);
+        }
+
+        .badge-soft.primary {
+            background: var(--primary-10);
+            color: #1d4ed8;
+            border-color: rgba(37,99,235,.22);
+        }
+
+    /* Icon button xem chi tiết */
+    .btn-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 999px;
+        display: inline-grid;
+        place-items: center;
+        border: 1px solid var(--border);
+        background: var(--card);
+        box-shadow: 0 8px 16px rgba(2,6,23,.06);
+        text-decoration: none;
+        color: #111827;
+    }
+
+        .btn-icon:hover {
+            filter: brightness(.98);
+        }
+
+    /* Wrong items */
+    .wrong-item {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 12px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: var(--card);
+        margin-bottom: 10px;
+    }
+
+        .wrong-item h6 {
+            margin: 0;
+            font-weight: 1000;
+        }
+
+        .wrong-item .meta {
+            margin: 4px 0 0;
+            color: var(--muted);
+            font-size: .9rem;
+            font-weight: 700;
+        }
+
+    .mini-bar {
+        height: 7px;
+        border-radius: 999px;
+        background: rgba(2,6,23,.06);
+        overflow: hidden;
+        margin-top: 8px;
+    }
+
+        .mini-bar > span {
+            display: block;
+            height: 100%;
+            width: 0;
+            background: rgba(239,68,68,.75);
+            border-radius: 999px;
+        }
+
+    .right-bits {
+        text-align: right;
+        min-width: 120px;
+    }
+
+    /* Modal overlays cleanup */
+    .modal[aria-hidden="true"]:not(.show) {
+        display: none !important;
+        pointer-events: none !important;
+    }
+
+    .modal-backdrop:not(.show) {
+        display: none !important;
+        pointer-events: none !important;
+    }
+</style>
+
+<div class="container my-4 page-wrap">
+
+    <div class="page-head">
+        <div>
+            <h2 class="page-title">Lịch Sử Thi</h2>
+            <div class="page-sub">Theo dõi kết quả. lọc Đậu/Rớt. xem xu hướng điểm theo thời gian.</div>
         </div>
-        <div class="card-body">
-            <div class="row" id="statistics-container">
-                <!-- JS will populate this area -->
-                <div class="col-md-3 mb-3">
-                    <div class="card bg-light">
-                        <div class="card-body text-center">
-                            <h4 id="totalExams">-</h4>
-                            <p class="mb-0">Tổng số bài thi</p>
+
+        <div class="toolbar">
+            <div class="btn-group filter-group" role="group" aria-label="Filter">
+                <button type="button" class="btn btn-sm active" data-filter="all">Tất cả</button>
+                <button type="button" class="btn btn-sm" data-filter="pass">Đậu</button>
+                <button type="button" class="btn btn-sm" data-filter="fail">Rớt</button>
+            </div>
+
+            <button type="button" class="btn btn-soft" id="btnRefresh">↻ Làm mới</button>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="cardx mb-3">
+        <div class="cardx-head">
+            <h5>Tổng kết kết quả</h5>
+
+            <div class="head-right">
+                <div class="spark">
+                    <svg width="120" height="40" viewBox="0 0 120 40" fill="none" aria-label="Sparkline">
+                        <polyline id="sparkLine" points="" stroke="currentColor" stroke-width="2" fill="none" opacity="0.85"></polyline>
+                        <circle id="sparkDot" cx="0" cy="0" r="2.8" fill="currentColor" opacity="0"></circle>
+                    </svg>
+                    <div>
+                        <div class="meta">Điểm TB (xu hướng)</div>
+                        <div class="big"><span id="sparkMeta">—</span> điểm</div>
+                    </div>
+                </div>
+
+                <!-- Donut nhỏ: tỷ lệ đậu/rớt -->
+                <div class="donutBox" title="Tỷ lệ đậu/rớt">
+                    <svg viewBox="0 0 44 44" aria-hidden="true">
+                        <!-- Track xám -->
+                        <circle class="track" cx="22" cy="22" r="14" stroke-width="6" fill="none"></circle>
+
+                        <!-- FAIL (đỏ) nền -->
+                        <circle id="failDonut"
+                                class="value fail"
+                                cx="22" cy="22" r="14"
+                                stroke-width="6"
+                                fill="none"></circle>
+
+                        <!-- PASS (xanh) đè lên -->
+                        <circle id="passDonut"
+                                class="value pass"
+                                cx="22" cy="22" r="14"
+                                stroke-width="6"
+                                fill="none"></circle>
+                    </svg>
+
+                    <div class="donutTxt">
+                        <div class="row1">
+                            <span class="pct" id="passRateText">0%</span>
+                            <span class="lbl pass">Đậu</span>
+                        </div>
+                        <div class="row2">
+                            <span class="pct2" id="failRateText">0%</span>
+                            <span class="lbl fail">Rớt</span>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3 mb-3">
-                    <div class="card bg-success text-white">
-                        <div class="card-body text-center">
-                            <h4 id="passedExams">-</h4>
-                            <p class="mb-0">Số bài đậu</p>
-                        </div>
+
+
+            </div>
+        </div>
+
+        <div class="cardx-body">
+            <div class="kpi-grid">
+                <div class="kpi total">
+                    <div>
+                        <div class="meta">Tổng số bài thi</div>
+                        <div class="value"><span id="totalExams">—</span></div>
+                        <div class="sub">tất cả lần làm</div>
                     </div>
+                    <div class="icon">Σ</div>
                 </div>
-                <div class="col-md-3 mb-3">
-                    <div class="card bg-danger text-white">
-                        <div class="card-body text-center">
-                            <h4 id="failedExams">-</h4>
-                            <p class="mb-0">Số bài rớt</p>
-                        </div>
+
+                <div class="kpi pass">
+                    <div>
+                        <div class="meta">Số bài Đậu</div>
+                        <div class="value"><span id="passedExams">—</span></div>
+                        <div class="sub">kết quả đạt</div>
                     </div>
+                    <div class="icon">✓</div>
                 </div>
-                <div class="col-md-3 mb-3">
-                    <div class="card bg-info text-white">
-                        <div class="card-body text-center">
-                            <h4 id="averageScore">-</h4>
-                            <p class="mb-0">Điểm trung bình</p>
-                        </div>
+
+                <div class="kpi fail">
+                    <div>
+                        <div class="meta">Số bài Rớt</div>
+                        <div class="value"><span id="failedExams">—</span></div>
+                        <div class="sub">chưa đạt</div>
                     </div>
+                    <div class="icon">✕</div>
+                </div>
+
+                <div class="kpi avg">
+                    <div>
+                        <div class="meta">Điểm trung bình</div>
+                        <div class="value">
+                            <span id="averageScore">—</span><span class="unit">điểm</span>
+                        </div>
+                        <div class="sub">trung bình tất cả bài</div>
+                    </div>
+                    <div class="icon">≈</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row">
-        <!-- Danh sách lịch sử -->
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="card-title mb-0">Danh sách lịch sử thi</h5>
-                </div>
-                <div class="card-body">
-                    <div id="history-container">
-                        <!-- Loading indicator -->
-                        <div class="text-center" id="loading-history">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                            <p>Đang tải dữ liệu...</p>
-                        </div>
-                        
-                        <!-- No data message - initially hidden -->
-                        <div class="alert alert-info d-none" id="no-history-message">
-                            Bạn chưa có lịch sử thi nào.
-                        </div>
-                        
-                        <!-- Table will be inserted here by JS -->
-                        <div class="table-responsive d-none" id="history-table-container">
-                            <table class="table table-bordered table-hover">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th>Ngày Thi</th>
-                                        <th>Tên Bài Thi</th>
-                                        <th>Điểm</th>
-                                        <th>Kết Quả</th>
-                                        <th>Tỉ lệ đúng</th>
-                                        <th>Chi Tiết</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="history-table-body">
-                                    <!-- JS will populate this area -->
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- Pagination -->
-                        <nav aria-label="Phân trang" class="mt-3 d-none" id="pagination-container">
-                            <ul class="pagination justify-content-center" id="pagination">
-                                <!-- JS will populate this area -->
-                            </ul>
-                        </nav>
+    <div class="row g-3">
+        <!-- History -->
+        <div class="col-lg-8">
+            <div class="cardx">
+                <div class="cardx-head">
+                    <div>
+                        <h5>Danh sách lịch sử thi</h5>
+                        <div class="hint" id="historyHint"></div>
                     </div>
+                </div>
+
+                <div class="cardx-body">
+                    <div id="loading-history" class="text-center">
+                        <div class="spinner-border" role="status" aria-hidden="true"></div>
+                        <div class="mt-2 text-muted">Đang tải dữ liệu...</div>
+                    </div>
+
+                    <div class="alert alert-info d-none" id="no-history-message">
+                        Bạn chưa có lịch sử thi nào.
+                    </div>
+
+                    <div class="table-responsive d-none" id="history-table-container">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Ngày thi</th>
+                                    <th>Tên bài thi</th>
+                                    <th class="text-center">Điểm</th>
+                                    <th class="text-center">Kết quả</th>
+                                    <th class="text-center">Tỉ lệ đúng</th>
+                                    <th class="text-center">Chi tiết</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body"></tbody>
+                        </table>
+                    </div>
+
+                    <nav aria-label="Phân trang" class="mt-3 d-none" id="pagination-container">
+                        <ul class="pagination justify-content-center mb-0" id="pagination"></ul>
+                    </nav>
                 </div>
             </div>
         </div>
 
-        <!-- Câu hỏi hay làm sai -->
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header bg-warning">
-                    <h5 class="card-title mb-0">Câu hỏi hay làm sai</h5>
+        <!-- Wrong questions -->
+        <div class="col-lg-4">
+            <div class="cardx">
+                <div class="cardx-head">
+                    <h5>Câu hỏi hay làm sai</h5>
+                    <button type="button" class="btn btn-soft" id="btnPracticeWrong">🔥 Luyện lại</button>
                 </div>
-                <div class="card-body">
-                    <div id="wrong-questions-container">
-                        <!-- Loading indicator -->
-                        <div class="text-center" id="loading-wrong-questions">
-                            <div class="spinner-border text-warning" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                            <p>Đang tải dữ liệu...</p>
-                        </div>
-                        
-                        <!-- No data message - initially hidden -->
-                        <div class="alert alert-info d-none" id="no-wrong-questions-message">
-                            Chưa có dữ liệu câu hỏi hay làm sai.
-                        </div>
-                        
-                        <!-- List will be inserted here by JS -->
-                        <ul class="list-group d-none" id="wrong-questions-list">
-                            <!-- JS will populate this area -->
-                        </ul>
+
+                <div class="cardx-body">
+                    <div id="loading-wrong-questions" class="text-center">
+                        <div class="spinner-border" role="status" aria-hidden="true"></div>
+                        <div class="mt-2 text-muted">Đang tải dữ liệu...</div>
                     </div>
+
+                    <div class="alert alert-info d-none" id="no-wrong-questions-message">
+                        Chưa có dữ liệu câu hỏi hay làm sai.
+                    </div>
+
+                    <div id="wrong-questions-list" class="d-none"></div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Modal -->
+<div class="modal fade" id="payModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:16px;">
+            <div class="modal-header">
+                <h5 class="modal-title">Mở khóa tính năng “Luyện câu sai”</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-2 text-muted">Giá mở khóa:</div>
+                <div class="fs-3 fw-bold" id="payPrice">—</div>
+                <div class="alert alert-danger d-none mt-3" id="payError"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Để sau</button>
+                <button type="button" class="btn btn-primary" id="btnPayMomo">Thanh toán MoMo</button>
             </div>
         </div>
     </div>
@@ -135,49 +660,247 @@
 
 @section Scripts {
     <script>
-        $(document).ready(function () {
+        $(function () {
             let currentPage = 1;
             const pageSize = 10;
+            let historyFilter = 'all';
 
-            // Load all data
-            loadStatistics();
-            loadExamHistory(currentPage);
-            loadWrongQuestions();
+            cleanupModalArtifacts();
 
-            // Load statistics data
-            function loadStatistics() {
+            const payModalEl = document.getElementById('payModal');
+            if (payModalEl) {
+                payModalEl.addEventListener('hidden.bs.modal', cleanupModalArtifacts);
+                payModalEl.addEventListener('shown.bs.modal', function () {
+                    const firstBtn = payModalEl.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+                    if (firstBtn) firstBtn.focus();
+                });
+            }
+
+            loadAll(true);
+
+            $(document).on('click', '#btnRefresh', function (e) {
+                e.preventDefault();
+                loadAll(true);
+            });
+
+            $(document).on('click', '.filter-group .btn', function (e) {
+                e.preventDefault();
+                $('.filter-group .btn').removeClass('active');
+                $(this).addClass('active');
+                historyFilter = $(this).data('filter') || 'all';
+                currentPage = 1;
+                loadExamHistory(currentPage, true);
+            });
+
+            $(document).on('click', '#pagination .page-link[data-page]', function (e) {
+                e.preventDefault();
+                currentPage = parseInt($(this).data('page'));
+                loadExamHistory(currentPage, true);
+            });
+
+            $(document).on('click', '#btnPracticeWrong', async function (e) {
+                e.preventDefault();
+
+                const btn = $(this);
+                btn.prop('disabled', true);
+
+                try {
+                    const access = await ajaxGet('/api/lichsuthi/check-premium-access', true);
+
+                    if (access.status && access.hasAccess) {
+                        window.location.href = '/LichSuThi1/LuyenLaiCauSai';
+                        return;
+                    }
+
+                    const price = access.price ?? 25000;
+                    $('#payPrice').text(formatVND(price));
+                    $('#payError').addClass('d-none').text('');
+
+                    if (!window.bootstrap || !bootstrap.Modal) {
+                        alert('Thiếu bootstrap.bundle.js (Bootstrap Modal).');
+                        return;
+                    }
+
+                    bootstrap.Modal.getOrCreateInstance(payModalEl).show();
+                } catch (err) {
+                    console.error(err);
+                    alert('Không kiểm tra được quyền truy cập. Mở F12 xem log.');
+                } finally {
+                    btn.prop('disabled', false);
+                }
+            });
+
+            $(document).on('click', '#btnPayMomo', function (e) {
+                e.preventDefault();
+                $('#payError').addClass('d-none').text('');
+
                 $.ajax({
-                    url: '/api/lichsuthi/get-stats',
-                    type: 'GET',
-                    success: function(response) {
-                        if (response.status && response.data) {
-                            $('#totalExams').text(response.data.tongSoBaiThi);
-                            $('#passedExams').text(response.data.soBaiThiDat);
-                            $('#failedExams').text(response.data.soBaiThiKhongDat);
-                            $('#averageScore').text(response.data.diemTrungBinh.toFixed(1));
+                    url: '/api/lichsuthi/create-payment-session',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ method: 1 }),
+                    success: function (res) {
+                        if (res && res.status && res.redirectUrl) {
+                            window.location.href = res.redirectUrl;
                         } else {
-                            console.error('Failed to load statistics');
+                            $('#payError').removeClass('d-none').text(res?.message || 'Không tạo được phiên thanh toán.');
                         }
                     },
-                    error: function(err) {
-                        console.error('Error loading statistics:', err);
+                    error: function (xhr) {
+                        const msg = xhr?.responseJSON?.message || xhr?.responseText || 'Lỗi gọi API thanh toán.';
+                        $('#payError').removeClass('d-none').text(msg);
+                    }
+                });
+            });
+
+            function cleanupModalArtifacts() {
+                document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+                document.querySelectorAll('.modal').forEach(m => {
+                    const isShown = m.classList.contains('show');
+                    const ariaHidden = m.getAttribute('aria-hidden') === 'true';
+                    if (!isShown && ariaHidden) {
+                        m.style.display = 'none';
+                        m.style.pointerEvents = 'none';
+                        const focused = m.querySelector(':focus');
+                        if (focused) focused.blur();
                     }
                 });
             }
 
-            // Load exam history
-            function loadExamHistory(page) {
+            function loadAll(forceNoCache) {
+                loadStatistics(forceNoCache);
+                loadSparkline(forceNoCache);
+                loadExamHistory(currentPage, forceNoCache);
+                loadWrongQuestions(forceNoCache);
+            }
+
+            function ajaxGet(url, forceNoCache) {
+                const u = forceNoCache ? (url + (url.includes('?') ? '&' : '?') + 't=' + Date.now()) : url;
+                return $.ajax({ url: u, type: 'GET', cache: false });
+            }
+
+            // ✅ KPI + donut
+                    // ✅ KPI + donut (PASS đè lên FAIL)
+        function loadStatistics(forceNoCache) {
+          ajaxGet('/api/lichsuthi/get-stats', forceNoCache)
+            .done(function (response) {
+              if (!(response && response.status && response.data)) return;
+
+              const total = Number(response.data.tongSoBaiThi ?? 0);
+              const pass  = Number(response.data.soBaiThiDat ?? 0);
+              const fail  = Number(response.data.soBaiThiKhongDat ?? 0);
+              const avg   = Number(response.data.diemTrungBinh ?? 0);
+
+              $('#totalExams').text(total);
+              $('#passedExams').text(pass);
+              $('#failedExams').text(fail);
+              $('#averageScore').text(avg.toFixed(1) + ' điểm'); // ✅ hiện số + chữ
+
+              // % (đảm bảo fail = 100 - pass để không lệch do làm tròn)
+              const passRate = total > 0 ? (pass * 100 / total) : 0;
+              const failRate = total > 0 ? (100 - passRate) : 0;
+
+              $('#passRateText').text(passRate.toFixed(0) + '%');
+              $('#failRateText').text(failRate.toFixed(0) + '%');
+
+              // donut math
+              const r = 14;
+              const c = 2 * Math.PI * r;     // circumference
+              const passOffset = c * (1 - passRate / 100);
+
+              // ✅ FAIL (đỏ) luôn full vòng (nền)
+              $('#failDonut')
+                .attr('stroke-dasharray', c.toFixed(2))
+                .attr('stroke-dashoffset', '0');
+
+              // ✅ PASS (xanh) đè lên theo % đậu
+              $('#passDonut')
+                .attr('stroke-dasharray', c.toFixed(2))
+                .attr('stroke-dashoffset', passOffset.toFixed(2));
+            })
+            .fail(function (err) {
+              console.error('Error loading statistics:', err);
+            });
+        }
+
+
+
+            function loadSparkline(forceNoCache) {
+                ajaxGet('/api/lichsuthi/get-history?pageNumber=1&pageSize=50&result=all', forceNoCache)
+                    .done(function (res) {
+                        if (!(res?.status && res?.data?.items?.length)) {
+                            drawSparkline([]);
+                            $('#sparkMeta').text('—');
+                            return;
+                        }
+
+                        const items = res.data.items.slice().sort((a, b) => new Date(a.ngayThi) - new Date(b.ngayThi));
+                        const avgs = [];
+                        let sum = 0;
+
+                        for (let i = 0; i < items.length; i++) {
+                            sum += Number(items[i].diem || 0);
+                            avgs.push(sum / (i + 1));
+                        }
+
+                        $('#sparkMeta').text(Number(avgs[avgs.length - 1] || 0).toFixed(1));
+                        drawSparkline(avgs);
+                    })
+                    .fail(function (err) {
+                        console.error('Sparkline load fail:', err);
+                        drawSparkline([]);
+                        $('#sparkMeta').text('—');
+                    });
+            }
+
+            function drawSparkline(values) {
+                const line = document.getElementById('sparkLine');
+                const dot = document.getElementById('sparkDot');
+                const W = 120, H = 40, pad = 3;
+
+                if (!values || values.length < 2) {
+                    line.setAttribute('points', '');
+                    dot.setAttribute('cx', '0'); dot.setAttribute('cy', '0');
+                    dot.style.opacity = 0;
+                    return;
+                }
+
+                dot.style.opacity = .9;
+
+                const min = Math.min(...values);
+                const max = Math.max(...values);
+                const span = (max - min) || 1;
+
+                const points = values.map((v, i) => {
+                    const x = pad + (i * (W - pad * 2) / (values.length - 1));
+                    const yNorm = (v - min) / span;
+                    const y = (H - pad) - yNorm * (H - pad * 2);
+                    return { x, y };
+                });
+
+                line.setAttribute('points', points.map(p => `${p.x},${p.y}`).join(' '));
+                const last = points[points.length - 1];
+                dot.setAttribute('cx', last.x);
+                dot.setAttribute('cy', last.y);
+            }
+
+            function loadExamHistory(page, forceNoCache) {
                 $('#loading-history').removeClass('d-none');
                 $('#no-history-message').addClass('d-none');
                 $('#history-table-container').addClass('d-none');
                 $('#pagination-container').addClass('d-none');
+                $('#historyHint').text('');
 
-                $.ajax({
-                    url: `/api/lichsuthi/get-history?pageNumber=${page}&pageSize=${pageSize}`,
-                    type: 'GET',
-                    success: function(response) {
+                const filterParam = historyFilter && historyFilter !== 'all'
+                    ? `&result=${encodeURIComponent(historyFilter)}`
+                    : `&result=all`;
+
+                ajaxGet(`/api/lichsuthi/get-history?pageNumber=${page}&pageSize=${pageSize}${filterParam}`, forceNoCache)
+                    .done(function (response) {
                         $('#loading-history').addClass('d-none');
-                        console.log('History response:', response);
 
                         if (response.status && response.data) {
                             const data = response.data;
@@ -186,45 +909,52 @@
                                 $('#history-table-container').removeClass('d-none');
                                 renderHistoryTable(data.items);
                                 renderPagination(data);
+
+                                const totalPages = Math.ceil((data.totalCount || 0) / (data.pageSize || pageSize));
+                                const labelFilter = historyFilter === 'pass' ? 'Đậu' : (historyFilter === 'fail' ? 'Rớt' : 'Tất cả');
+                                $('#historyHint').text(`${labelFilter} • Trang ${data.pageNumber} / ${totalPages} • Tổng ${data.totalCount} bài`);
                             } else {
                                 $('#no-history-message').removeClass('d-none');
                             }
                         } else {
                             $('#no-history-message').removeClass('d-none');
-                            console.error('Failed to load exam history');
                         }
-                    },
-                    error: function(err) {
+                    })
+                    .fail(function (err) {
                         $('#loading-history').addClass('d-none');
                         $('#no-history-message').removeClass('d-none');
                         console.error('Error loading exam history:', err);
-                    }
-                });
+                    });
             }
 
-            // Add the missing renderHistoryTable function
+            // ✅ XÓA ID, ĐỔI NÚT CHI TIẾT THÀNH ICON
             function renderHistoryTable(items) {
                 const tableBody = $('#history-table-body');
                 tableBody.empty();
 
                 items.forEach(item => {
                     const date = new Date(item.ngayThi);
-                    const formattedDate = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+                    const formattedDate = `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+
+                    const passed = item.ketQua === 'Đậu';
+                    const badge = passed
+                        ? `<span class="badge-soft success">Đậu</span>`
+                        : `<span class="badge-soft danger">${escapeHtml(item.ketQua || 'Không đạt')}</span>`;
+
+                    const percent = Number(item.phanTramDung || 0).toFixed(1);
 
                     const row = $(`
-                        <tr class="${item.ketQua === 'Đậu' ? 'table-success' : 'table-danger'}">
-                            <td>${formattedDate}</td>
-                            <td>${item.tenBaiThi}</td>
-                            <td>${item.diem}</td>
+                        <tr>
+                            <td class="text-nowrap">${formattedDate}</td>
                             <td>
-                                <span class="badge ${item.ketQua === 'Đậu' ? 'bg-success' : 'bg-danger'}">
-                                    ${item.ketQua}
-                                </span>
+                                <div class="fw-bold">${escapeHtml(item.tenBaiThi || '')}</div>
                             </td>
-                            <td>${item.phanTramDung.toFixed(1)}%</td>
-                            <td>
-                                <a href="/LichSuThi1/Detail/${item.id}" class="btn btn-sm btn-primary">
-                                    <i class="bi bi-eye"></i> Xem
+                            <td class="text-center fw-bold">${item.diem ?? 0}</td>
+                            <td class="text-center">${badge}</td>
+                            <td class="text-center"><span class="badge-soft primary">${percent}%</span></td>
+                            <td class="text-center">
+                                <a class="btn-icon" href="/LichSuThi1/Detail/${item.id}" title="Xem chi tiết" aria-label="Xem chi tiết">
+                                    <i class="bi bi-eye"></i>
                                 </a>
                             </td>
                         </tr>
@@ -234,60 +964,41 @@
                 });
             }
 
-            // Add the missing renderPagination function
             function renderPagination(data) {
-                if (data.totalCount > pageSize) {
+                if ((data.totalCount || 0) > pageSize) {
                     $('#pagination-container').removeClass('d-none');
                     const pagination = $('#pagination');
                     pagination.empty();
 
-                    // Previous button
+                    const totalPages = Math.ceil((data.totalCount || 0) / (data.pageSize || pageSize));
+
                     const prevDisabled = !data.hasPreviousPage;
                     pagination.append(`
                         <li class="page-item ${prevDisabled ? 'disabled' : ''}">
-                            <a class="page-link" href="javascript:void(0);" ${!prevDisabled ? `data-page="${data.pageNumber - 1}"` : ''}>
-                                <i class="bi bi-chevron-left"></i> Trước
-                            </a>
+                            <a class="page-link" href="#" ${!prevDisabled ? `data-page="${data.pageNumber - 1}"` : ''}>← Trước</a>
                         </li>
                     `);
 
-                    // Current page info
-                    const totalPages = Math.ceil(data.totalCount / data.pageSize);
                     pagination.append(`
-                        <li class="page-item disabled">
-                            <span class="page-link">
-                                Trang ${data.pageNumber} / ${totalPages}
-                            </span>
-                        </li>
+                        <li class="page-item disabled"><span class="page-link">Trang ${data.pageNumber} / ${totalPages}</span></li>
                     `);
 
-                    // Next button
                     const nextDisabled = !data.hasNextPage;
                     pagination.append(`
                         <li class="page-item ${nextDisabled ? 'disabled' : ''}">
-                            <a class="page-link" href="javascript:void(0);" ${!nextDisabled ? `data-page="${data.pageNumber + 1}"` : ''}>
-                                Sau <i class="bi bi-chevron-right"></i>
-                            </a>
+                            <a class="page-link" href="#" ${!nextDisabled ? `data-page="${data.pageNumber + 1}"` : ''}>Sau →</a>
                         </li>
                     `);
-
-                    // Attach click events to pagination links
-                    pagination.find('.page-link[data-page]').on('click', function() {
-                        currentPage = parseInt($(this).data('page'));
-                        loadExamHistory(currentPage);
-                    });
                 }
             }
 
-            function loadWrongQuestions() {
+            function loadWrongQuestions(forceNoCache) {
                 $('#loading-wrong-questions').removeClass('d-none');
                 $('#no-wrong-questions-message').addClass('d-none');
-                $('#wrong-questions-list').addClass('d-none');
+                $('#wrong-questions-list').addClass('d-none').empty();
 
-                $.ajax({
-                    url: '/api/lichsuthi/get-wrong-questions?count=5',
-                    type: 'GET',
-                    success: function(response) {
+                ajaxGet('/api/lichsuthi/get-wrong-questions?count=5', forceNoCache)
+                    .done(function (response) {
                         $('#loading-wrong-questions').addClass('d-none');
 
                         if (response.status && response.data && response.data.length > 0) {
@@ -296,38 +1007,83 @@
                         } else {
                             $('#no-wrong-questions-message').removeClass('d-none');
                         }
-                    },
-                    error: function(err) {
+                    })
+                    .fail(function (err) {
                         $('#loading-wrong-questions').addClass('d-none');
                         $('#no-wrong-questions-message').removeClass('d-none');
                         console.error('Error loading wrong questions:', err);
-                    }
-                });
+                    });
             }
 
-            // Render wrong questions list
             function renderWrongQuestions(items) {
                 const list = $('#wrong-questions-list');
                 list.empty();
 
-                items.forEach(item => {
-                    const question = item.cauHoi;
-                    const content = question?.noiDung || '';
-                    const shortenedContent = content.length > 50 ? content.substring(0, 50) + '...' : content;
+                const maxWrong = Math.max(...items.map(x => Number(x.soLanSai || 0)), 1);
 
-                    const listItem = $(`
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6>${shortenedContent}</h6>
-                                <small>Thuộc chủ đề: ${question?.chuDe?.tenChuDe || 'Không xác định'}</small>
+                items.forEach(item => {
+                    const q = item.cauHoi;
+                    const content = q?.noiDung || '';
+                    const shortened = content.length > 70 ? content.substring(0, 70) + '…' : content;
+
+                    const times = Number(item.soLanSai || 0);
+                    const pct = Math.round((times / maxWrong) * 100);
+
+                    const card = $(`
+                        <div class="wrong-item">
+                            <div class="left">
+                                <h6>${escapeHtml(shortened)}</h6>
+                                <p class="meta">Chủ đề: <b>${escapeHtml(q?.chuDe?.tenChuDe || 'Không xác định')}</b></p>
                             </div>
-                            <span class="badge bg-danger rounded-pill">${item.soLanSai} lần sai</span>
-                        </li>
+                            <div class="right-bits">
+                                <span class="badge-soft danger">${times} lần</span>
+                                <div class="mini-bar"><span style="width:${pct}%"></span></div>
+                            </div>
+                        </div>
                     `);
 
-                    list.append(listItem);
+                    list.append(card);
                 });
             }
+
+            function escapeHtml(str) {
+                return (str || '').replace(/[&<>"']/g, m => ({
+                    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+                }[m]));
+            }
+
+            function formatVND(n) {
+                try {
+                    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n);
+                } catch {
+                    return (n || 0).toLocaleString('vi-VN') + 'đ';
+                }
+            }
+                    function updateDonut(passed, failed){
+          const total = (Number(passed)||0) + (Number(failed)||0);
+          const passRate = total > 0 ? (passed * 100 / total) : 0;
+          const failRate = 100 - passRate;
+
+          $('#passRateText').text(`${passRate.toFixed(0)}%`);
+          $('#failRateText').text(`${failRate.toFixed(0)}%`);
+
+          const passEl = document.getElementById('passDonut');
+          const failEl = document.getElementById('failDonut');
+          if(!passEl || !failEl) return;
+
+          const r = 14;
+          const C = 2 * Math.PI * r; // ~87.96
+
+          // FAIL: luôn full vòng (đỏ nền)
+          failEl.setAttribute('stroke-dasharray', C.toFixed(2));
+          failEl.setAttribute('stroke-dashoffset', '0');
+
+          // PASS: che lên theo % đậu
+          passEl.setAttribute('stroke-dasharray', C.toFixed(2));
+          const offset = C * (1 - passRate/100);
+          passEl.setAttribute('stroke-dashoffset', offset.toFixed(2));
+        }
+
         });
     </script>
 }

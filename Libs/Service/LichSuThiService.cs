@@ -1,7 +1,6 @@
 ﻿using Libs.Entity;
 using Libs.Models;
 using Libs.Repositories;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,10 +17,11 @@ namespace Libs.Service
             _lichSuThiRepository = lichSuThiRepository;
         }
 
-        public async Task<PageList<LichSuThi>> GetLichSuThiByUser(string userId, int pageNumber = 1, int pageSize = 10)
+        public async Task<PageList<LichSuThi>> GetLichSuThiByUser(string userId, int pageNumber = 1, int pageSize = 10, string? result = null)
         {
-            return await _lichSuThiRepository.GetLichSuThiByUserAsync(userId, pageNumber, pageSize);
+            return await _lichSuThiRepository.GetLichSuThiByUserAsync(userId, pageNumber, pageSize, result);
         }
+
 
         public async Task<LichSuThiDetailModel> GetLichSuThiDetail(Guid lichSuThiId)
         {
@@ -70,7 +70,9 @@ namespace Libs.Service
             }
         }
 
-        //-----------//
+        // =========================
+        // Luyện lại câu sai
+        // =========================
         public async Task<List<object>> GetCauHoiLuyenLaiAsync(string userId)
         {
             var cauHois = await _lichSuThiRepository.GetCauHoiSaiByUserAsync(userId);
@@ -90,7 +92,7 @@ namespace Libs.Service
             return result;
         }
 
-
+        // ✅ SỬA: mỗi lần sai -> Add 1 record CauHoiSai để count() tăng đúng
         public async Task<List<object>> LuuKetQuaLuyenLaiAsync(string userId, Dictionary<Guid, string> cauHoiAnswers)
         {
             var results = new List<object>();
@@ -108,15 +110,18 @@ namespace Libs.Service
 
                 if (isCorrect)
                 {
+                    // đúng -> xóa khỏi danh sách câu sai
                     if (cauHoiSaiList.Any())
                         await _lichSuThiRepository.XoaCauHoiSaisAsync(cauHoiSaiList);
                 }
                 else
                 {
+                    // ✅ sai -> tăng SoLanSai (nếu chưa có thì tạo mới)
                     if (cauHoiSaiList.Any())
                     {
                         foreach (var itemSai in cauHoiSaiList)
                         {
+                            itemSai.SoLanSai += 1;
                             itemSai.NgaySai = DateTime.Now;
                         }
                     }
@@ -126,7 +131,8 @@ namespace Libs.Service
                         {
                             UserId = userId,
                             CauHoiId = cauHoiId,
-                            NgaySai = DateTime.Now
+                            NgaySai = DateTime.Now,
+                            SoLanSai = 1
                         });
                     }
                 }
