@@ -31,20 +31,16 @@ namespace ET.Controllers.api
         }
 
         [HttpGet("get-history")]
-        public async Task<IActionResult> GetLichSuThi(int pageNumber = 1, int pageSize = 10)
+        public async Task<IActionResult> GetLichSuThi(int pageNumber = 1, int pageSize = 10, string? result = null)
         {
             try
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (string.IsNullOrEmpty(userId))
-                {
-                    _logger.LogWarning("GetLichSuThi: User ID not found in claims");
                     return Unauthorized(new { status = false, message = "Không tìm thấy thông tin người dùng!" });
-                }
 
-                _logger.LogInformation($"Getting exam history for user: {userId}, page: {pageNumber}, size: {pageSize}");
-                var result = await _lichSuThiService.GetLichSuThiByUser(userId, pageNumber, pageSize);
-                return Ok(new { status = true, data = result });
+                var data = await _lichSuThiService.GetLichSuThiByUser(userId, pageNumber, pageSize, result);
+                return Ok(new { status = true, data });
             }
             catch (Exception ex)
             {
@@ -52,6 +48,7 @@ namespace ET.Controllers.api
                 return StatusCode(500, new { status = false, message = "Lỗi khi tải lịch sử thi: " + ex.Message });
             }
         }
+
 
         [HttpGet("get-stats")]
         public async Task<IActionResult> GetLichSuThiStats()

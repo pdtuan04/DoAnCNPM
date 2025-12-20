@@ -3,80 +3,503 @@
     var examId = ViewData["ExamId"];
 }
 
-<div class="container my-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>Chi tiết lịch sử thi</h2>
-        <a href="/LichSuThi1" class="btn btn-secondary">
+<style>
+    :root {
+        --bg: #f5f7fb;
+        --card: #ffffff;
+        --border: rgba(15,23,42,.10);
+        --text: #0f172a;
+        --muted: #64748b;
+        --primary: #2563eb;
+        --success: #16a34a;
+        --danger: #ef4444;
+        --warning: #f59e0b;
+        --shadow: 0 14px 30px rgba(2,6,23,.08);
+        --radius: 16px;
+    }
+
+    body {
+        background: var(--bg);
+    }
+
+    .page-wrap {
+        color: var(--text);
+    }
+
+    .page-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+
+    .page-title {
+        margin: 0;
+        font-weight: 900;
+        letter-spacing: -.02em;
+    }
+
+    .page-sub {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: .95rem;
+    }
+
+    .cardx {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+
+    .cardx-head {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border);
+        background: linear-gradient(180deg, rgba(2,6,23,.03), transparent);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+        .cardx-head h5 {
+            margin: 0;
+            font-weight: 900;
+        }
+
+    .cardx-body {
+        padding: 16px;
+    }
+
+    .btn-soft {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: .45rem .9rem;
+        box-shadow: 0 6px 16px rgba(2,6,23,.06);
+    }
+
+        .btn-soft:hover {
+            filter: brightness(.98);
+        }
+
+    .badge-soft {
+        border-radius: 999px;
+        padding: .35rem .6rem;
+        border: 1px solid var(--border);
+        font-weight: 800;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+    }
+
+        .badge-soft.success {
+            background: rgba(22,163,74,.10);
+            color: var(--success);
+            border-color: rgba(22,163,74,.22);
+        }
+
+        .badge-soft.danger {
+            background: rgba(239,68,68,.10);
+            color: var(--danger);
+            border-color: rgba(239,68,68,.22);
+        }
+
+        .badge-soft.warning {
+            background: rgba(245,158,11,.12);
+            color: #b45309;
+            border-color: rgba(245,158,11,.25);
+        }
+
+        .badge-soft.primary {
+            background: rgba(37,99,235,.10);
+            color: #1d4ed8;
+            border-color: rgba(37,99,235,.22);
+        }
+
+    /* ===== Summary layout ===== */
+    .summary-grid {
+        display: grid;
+        grid-template-columns: 1.4fr .6fr;
+        gap: 14px;
+    }
+   
+    .info-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 8px;
+        margin: 0;
+    }
+
+        .info-table th {
+            width: 140px;
+            color: var(--muted);
+            font-weight: 800;
+            padding: 0;
+            vertical-align: top;
+        }
+
+        .info-table td {
+            padding: 0;
+            font-weight: 700;
+            vertical-align: top;
+            word-break: break-word;
+        }
+
+    .score-box {
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 14px;
+        background: rgba(2,6,23,.02);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .score-big {
+        font-weight: 950;
+        font-size: 2rem;
+        letter-spacing: -.03em;
+        margin: 0;
+        line-height: 1.05;
+    }
+
+    .score-meta {
+        color: var(--muted);
+        font-size: .92rem;
+        margin: 0;
+    }
+
+    /* ===== Donut chart ===== */
+    .donut-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 12px;
+        background: #fff;
+    }
+
+    .donut {
+        width: 88px;
+        height: 88px;
+        display: grid;
+        place-items: center;
+        position: relative;
+        flex: 0 0 auto;
+        color: var(--primary);
+    }
+
+        .donut svg {
+            transform: rotate(-90deg);
+        }
+   
+    .donut-center {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        pointer-events: none;
+    }
+
+        .donut-center .donut-pct {
+            font-weight: 950;
+            font-size: 1.15rem;
+            letter-spacing: -.02em;
+            line-height: 1.05;
+        }
+
+        .donut-center .donut-lbl {
+            font-size: .78rem;
+            color: var(--muted);
+            margin-top: 4px;
+            line-height: 1.1;
+        }
+
+    .donut-legend {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        min-width: 150px;
+    }
+
+    .legend-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        font-size: .92rem;
+    }
+
+    .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 99px;
+        display: inline-block;
+        margin-right: 8px;
+    }
+
+        .dot.pass {
+            background: var(--success);
+        }
+
+        .dot.fail {
+            background: var(--danger);
+        }
+
+    .legend-left {
+        display: flex;
+        align-items: center;
+        color: var(--muted);
+        font-weight: 700;
+    }
+
+    .legend-right {
+        font-weight: 900;
+        color: var(--text);
+    }
+
+    /* ===== Answer table as "card rows" ===== */
+    .ans-table {
+        border-collapse: separate !important;
+        border-spacing: 0 10px !important;
+    }
+
+        .ans-table thead th {
+            background: rgba(2,6,23,.02);
+            color: var(--muted);
+            font-weight: 900;
+            border-bottom: 1px solid var(--border) !important;
+            white-space: nowrap;
+        }
+
+        .ans-table tbody td {
+            background: #fff;
+            border-top: 1px solid var(--border) !important;
+            border-bottom: 1px solid var(--border) !important;
+            padding: .95rem .85rem !important;
+            vertical-align: top;
+        }
+
+            .ans-table tbody td:first-child {
+                border-left: 1px solid var(--border) !important;
+                border-top-left-radius: 14px;
+                border-bottom-left-radius: 14px;
+                width: 56px;
+                text-align: center;
+                font-weight: 900;
+                color: var(--muted);
+            }
+
+            .ans-table tbody td:last-child {
+                border-right: 1px solid var(--border) !important;
+                border-top-right-radius: 14px;
+                border-bottom-right-radius: 14px;
+                width: 84px;
+                text-align: center;
+                vertical-align: middle;
+            }
+
+    .q-title {
+        font-weight: 950;
+        margin: 0 0 8px;
+    }
+
+    .q-sub {
+        color: var(--muted);
+        font-size: .9rem;
+        margin: 0;
+    }
+
+    /* ảnh câu hỏi nhỏ lại + khớp khung */
+    .q-thumb {
+        width: 190px;
+        max-width: 100%;
+        height: 120px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        overflow: hidden;
+        background: rgba(2,6,23,.04);
+        margin-top: 10px;
+        cursor: zoom-in;
+    }
+
+        .q-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+    .ans-wrap {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: flex-start;
+    }
+
+    .ans-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 12px;
+        padding: .45rem .6rem;
+        border: 1px solid var(--border);
+        background: rgba(2,6,23,.02);
+        font-weight: 800;
+        max-width: 100%;
+        white-space: normal;
+        word-break: break-word;
+    }
+
+        .ans-badge.good {
+            background: rgba(22,163,74,.10);
+            border-color: rgba(22,163,74,.22);
+            color: var(--success);
+        }
+
+        .ans-badge.bad {
+            background: rgba(239,68,68,.10);
+            border-color: rgba(239,68,68,.22);
+            color: var(--danger);
+        }
+
+    /* loading */
+    .loading-wrap {
+        padding: 28px 0;
+        color: var(--muted);
+    }
+
+    /* Fix overlay/modal kẹt click */
+    .modal[aria-hidden="true"]:not(.show) {
+        pointer-events: none !important;
+    }
+
+    .modal-backdrop:not(.show) {
+        pointer-events: none !important;
+    }
+</style>
+
+<div class="container my-4 page-wrap">
+    <div class="page-head">
+        <div>
+            <h2 class="page-title">Chi tiết lịch sử thi</h2>
+            <div class="page-sub">Xem điểm, tỉ lệ đúng và từng câu trả lời một cách rõ ràng.</div>
+        </div>
+        <a href="/LichSuThi1" class="btn btn-soft">
             <i class="bi bi-arrow-left"></i> Quay lại
         </a>
     </div>
 
-    <!-- Loading indicator -->
-    <div class="text-center" id="loading-detail">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
+    <!-- Loading -->
+    <div class="cardx mb-3" id="loading-detail">
+        <div class="cardx-body text-center loading-wrap">
+            <div class="spinner-border" role="status" aria-hidden="true"></div>
+            <div class="mt-2">Đang tải dữ liệu chi tiết bài thi...</div>
         </div>
-        <p>Đang tải dữ liệu chi tiết bài thi...</p>
     </div>
 
-    <!-- Error message - initially hidden -->
+    <!-- Error -->
     <div class="alert alert-danger d-none" id="error-message">
         Không tìm thấy thông tin lịch sử thi.
     </div>
 
-    <!-- Exam details - initially hidden -->
     <div id="exam-details-container" class="d-none">
-        <!-- Thông tin cơ bản -->
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="card-title mb-0">Thông tin bài thi</h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <table class="table table-borderless">
-                            <tr>
-                                <th>Tên bài thi:</th>
-                                <td id="exam-name"></td>
-                            </tr>
-                            <tr>
-                                <th>Ngày thi:</th>
-                                <td id="exam-date"></td>
-                            </tr>
-                            <tr>
-                                <th>Kết quả:</th>
-                                <td id="exam-result"></td>
-                            </tr>
-                        </table>
-                    </div>
-                    <div class="col-md-6">
-                        <table class="table table-borderless">
-                            <tr>
-                                <th>Tổng số câu:</th>
-                                <td id="total-questions"></td>
-                            </tr>
-                            <tr>
-                                <th>Số câu đúng:</th>
-                                <td id="correct-answers"></td>
-                            </tr>
-                            <tr>
-                                <th>Điểm:</th>
-                                <td id="exam-score"></td>
-                            </tr>
-                        </table>
-                    </div>
+        <!-- Summary -->
+        <div class="cardx mb-3">
+            <div class="cardx-head">
+                <h5>Thông tin bài thi</h5>
+                <div class="d-flex gap-2 align-items-center">
+                    <span id="resultBadge"></span>
+                    <span id="criticalBadge" class="badge-soft warning d-none">
+                        <i class="bi bi-exclamation-triangle-fill"></i> Có lỗi nghiêm trọng
+                    </span>
                 </div>
+            </div>
 
-                <!-- Biểu đồ kết quả -->
-                <div class="progress" style="height: 25px;">
-                    <div class="progress-bar bg-success"
-                         role="progressbar"
-                         id="progress-bar"
-                         style="width: 0%;"
-                         aria-valuenow="0"
-                         aria-valuemin="0"
-                         aria-valuemax="100">
-                        0%
+            <div class="cardx-body">
+                <div class="summary-grid">
+                    <!-- left info -->
+                    <div>
+                        <table class="info-table">
+                            <tr>
+                                <th>Tên bài thi</th>
+                                <td id="exam-name">—</td>
+                            </tr>
+                            <tr>
+                                <th>Ngày thi</th>
+                                <td id="exam-date">—</td>
+                            </tr>
+                            <tr>
+                                <th>Tổng câu</th>
+                                <td><span id="total-questions">0</span></td>
+                            </tr>
+                            <tr>
+                                <th>Đúng</th>
+                                <td><span id="correct-answers">0</span></td>
+                            </tr>
+                            <tr>
+                                <th>Sai</th>
+                                <td><span id="wrong-answers">0</span></td>
+                            </tr>
+                        </table>
+
+                        <div class="donut-wrap mt-2">
+                            <div class="donut" title="Tỉ lệ đúng">
+                                <svg width="88" height="88" viewBox="0 0 88 88" fill="none" aria-label="Correct rate donut">
+                                    <circle cx="44" cy="44" r="34" stroke="rgba(15,23,42,.10)" stroke-width="10"></circle>
+                                    <circle id="donutPass"
+                                            cx="44" cy="44" r="34"
+                                            stroke="currentColor" stroke-width="10"
+                                            stroke-linecap="round"
+                                            fill="none"
+                                            stroke-dasharray="0"
+                                            stroke-dashoffset="0"></circle>
+                                </svg>
+                                <div class="donut-center">
+                                    <div class="donut-pct" id="donutPct">0%</div>
+                                    <div class="donut-lbl">Tỉ lệ đúng</div>
+                                </div>
+
+                            </div>
+
+                            <div class="donut-legend">
+                                <div class="legend-row">
+                                    <div class="legend-left"><span class="dot pass"></span>Đậu</div>
+                                    <div class="legend-right" id="passRateText">0%</div>
+                                </div>
+                                <div class="legend-row">
+                                    <div class="legend-left"><span class="dot fail"></span>Rớt</div>
+                                    <div class="legend-right" id="failRateText">0%</div>
+                                </div>
+                                <div class="small text-muted">Tính theo số bài thi Đậu/Rớt tổng hợp.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- right score -->
+                    <div class="score-box">
+                        <div>
+                            <p class="score-meta mb-1">Điểm</p>
+                            <p class="score-big"><span id="exam-score">0</span>/10</p>
+                            <p class="score-meta mb-0">Điểm trung bình hiển thị trực tiếp theo lần thi này.</p>
+                        </div>
+
+                        <div class="d-flex gap-2 justify-content-end">
+                            <button id="delete-exam-btn" class="btn btn-outline-danger">
+                                <i class="bi bi-trash"></i> Xóa lịch sử
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -86,54 +509,86 @@
             </div>
         </div>
 
-        <!-- Chi tiết câu trả lời -->
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h5 class="card-title mb-0">Chi tiết câu trả lời</h5>
+        <!-- Answers -->
+        <div class="cardx">
+            <div class="cardx-head">
+                <h5>Chi tiết câu trả lời</h5>
+                <div class="small text-muted">Bấm vào ảnh để xem lớn.</div>
             </div>
-            <div class="card-body">
+            <div class="cardx-body">
                 <div class="table-responsive">
-                    <table class="table table-bordered table-hover">
-                        <thead class="thead-light">
+                    <table class="table ans-table align-middle mb-0">
+                        <thead>
                             <tr>
                                 <th scope="col">#</th>
                                 <th scope="col">Câu hỏi</th>
-                                <th scope="col">Câu trả lời của bạn</th>
+                                <th scope="col">Bạn chọn</th>
                                 <th scope="col">Đáp án đúng</th>
-                                <th scope="col">Kết quả</th>
+                                <th scope="col">KQ</th>
                             </tr>
                         </thead>
-                        <tbody id="answers-table-body">
-                            <!-- JS will populate this area -->
-                        </tbody>
+                        <tbody id="answers-table-body"></tbody>
                     </table>
                 </div>
             </div>
         </div>
+    </div>
+</div>
 
-        <!-- Nút xóa lịch sử thi -->
-        <div class="mt-4 text-end">
-            <button id="delete-exam-btn" class="btn btn-danger">
-                <i class="bi bi-trash"></i> Xóa lịch sử thi này
-            </button>
+<!-- Image Modal (xem ảnh lớn) -->
+<div class="modal fade" id="imgModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" style="border-radius:16px;">
+            <div class="modal-header">
+                <h6 class="modal-title mb-0">Hình ảnh câu hỏi</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <img id="imgModalSrc" src="" alt="Ảnh câu hỏi" class="img-fluid w-100" style="border-radius:14px; border:1px solid rgba(15,23,42,.10);">
+            </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
     <script>
-        $(document).ready(function() {
+        $(function(){
             const examId = '@examId';
 
-            // Remove the getToken function - cookies are being used automatically
-            // function getToken() {
-            //     return localStorage.getItem('jwtToken') || '';
-            // }
+            // ✅ dọn overlay/backdrop kẹt để tránh "không bấm được"
+            cleanupModalArtifacts();
+            window.addEventListener('load', cleanupModalArtifacts);
+            document.addEventListener('hidden.bs.modal', cleanupModalArtifacts);
 
-            // Load exam detail
             loadExamDetail(examId);
 
-            function loadExamDetail(id) {
+            // click ảnh thumbnail -> show modal
+            $(document).on('click', '.q-thumb', function(e){
+                e.preventDefault();
+                const src = $(this).data('src');
+                if(!src) return;
+
+                $('#imgModalSrc').attr('src', src);
+
+                if(window.bootstrap && bootstrap.Modal){
+                    bootstrap.Modal.getOrCreateInstance(document.getElementById('imgModal')).show();
+                }else{
+                    // fallback: mở tab mới nếu thiếu bootstrap bundle
+                    window.open(src, '_blank');
+                }
+            });
+
+            // delete
+            $(document).on('click', '#delete-exam-btn', function(){
+                const id = $(this).data('id');
+                if(!id) return;
+
+                if(confirm('Bạn có chắc chắn muốn xóa lịch sử thi này?')){
+                    deleteExam(id);
+                }
+            });
+
+            function loadExamDetail(id){
                 $('#loading-detail').removeClass('d-none');
                 $('#error-message').addClass('d-none');
                 $('#exam-details-container').addClass('d-none');
@@ -141,21 +596,18 @@
                 $.ajax({
                     url: `/api/lichsuthi/detail/${id}`,
                     type: 'GET',
-                    // Remove Authorization header since cookies handle auth
-                    // headers: { 'Authorization': 'Bearer ' + getToken() },
-                    success: function(response) {
+                    success: function(res){
                         $('#loading-detail').addClass('d-none');
-                        console.log('Exam detail response:', response);
 
-                        if (response.status && response.data) {
+                        if(res && res.status && res.data){
                             $('#exam-details-container').removeClass('d-none');
-                            renderExamDetail(response.data);
-                        } else {
+                            renderExamDetail(res.data);
+                        }else{
                             $('#error-message').removeClass('d-none');
-                            console.error('Failed to load exam detail:', response.message || 'Unknown error');
+                            console.error('Load detail failed:', res?.message);
                         }
                     },
-                    error: function(err) {
+                    error: function(err){
                         $('#loading-detail').addClass('d-none');
                         $('#error-message').removeClass('d-none');
                         console.error('Error loading exam detail:', err);
@@ -163,126 +615,175 @@
                 });
             }
 
-            function renderExamDetail(data) {
-                console.log('Rendering exam details with data:', data);
-
-                if (!data.lichSuThi) {
-                    console.error('No lichSuThi data in response');
+            function renderExamDetail(data){
+                if(!data || !data.lichSuThi){
                     $('#error-message').removeClass('d-none').text('Dữ liệu lịch sử thi không hợp lệ');
                     return;
                 }
 
-                const lichSuThi = data.lichSuThi;
+                const ls = data.lichSuThi;
                 const chiTietList = data.chiTietList || [];
 
-                // Format date
-                const date = new Date(lichSuThi.ngayThi);
-                const formattedDate = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+                const date = new Date(ls.ngayThi);
+                const formattedDate = `${String(date.getDate()).padStart(2,'0')}/${String(date.getMonth()+1).padStart(2,'0')}/${date.getFullYear()} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
 
-                // Populate basic info
-                $('#exam-name').text(lichSuThi.tenBaiThi || 'Không có tên');
+                const tong = Number(ls.tongSoCau || 0);
+                const dung = Number(ls.soCauDung || 0);
+                const sai  = Math.max(tong - dung, 0);
+
+                // percent: ưu tiên phanTramDung, fallback tính lại
+                let pct = (ls.phanTramDung !== null && ls.phanTramDung !== undefined)
+                    ? Number(ls.phanTramDung)
+                    : (tong > 0 ? (dung / tong) * 100 : 0);
+
+                if(!isFinite(pct)) pct = 0;
+                pct = Math.max(0, Math.min(100, pct));
+
+                // basic info
+                $('#exam-name').text(ls.tenBaiThi || 'Không có tên');
                 $('#exam-date').text(formattedDate);
-                $('#exam-result').html(`
-                    <span class="badge ${lichSuThi.ketQua === 'Đậu' ? 'bg-success' : 'bg-danger'}">
-                        ${lichSuThi.ketQua || 'Không xác định'}
-                    </span>
-                `);
-                $('#total-questions').text(lichSuThi.tongSoCau || 0);
-                $('#correct-answers').text(lichSuThi.soCauDung || 0);
-                $('#exam-score').text(lichSuThi.diem || 0);
+                $('#total-questions').text(tong);
+                $('#correct-answers').text(dung);
+                $('#wrong-answers').text(sai);
+                $('#exam-score').text(Number(ls.diem || 0));
 
-                // Update progress bar
-                const percent = lichSuThi.phanTramDung || 0;
-                $('#progress-bar').css('width', `${percent}%`).attr('aria-valuenow', percent).text(`${percent.toFixed(1)}%`);
+                // result badge
+                const isPass = (ls.ketQua === 'Đậu');
+                $('#resultBadge').html(isPass
+                    ? `<span class="badge-soft success"><i class="bi bi-check-circle-fill"></i> Đậu</span>`
+                    : `<span class="badge-soft danger"><i class="bi bi-x-circle-fill"></i> ${escapeHtml(ls.ketQua || 'Rớt')}</span>`
+                );
 
-                // Show critical error message if needed
-                if (lichSuThi.macLoiNghiemTrong) {
+                // critical
+                if(ls.macLoiNghiemTrong){
+                    $('#criticalBadge').removeClass('d-none');
                     $('#critical-error-message').removeClass('d-none');
+                }else{
+                    $('#criticalBadge').addClass('d-none');
+                    $('#critical-error-message').addClass('d-none');
                 }
 
-                // Render answers table
+                // donut correct-rate
+                updateDonut(pct);
+                $('#donutPct').text(pct.toFixed(0) + '%');
+
+                // nếu chị có pass/fail tổng hợp ở API stats thì set ở trang list.
+                // ở đây detail: mình tạm hiển thị pass/fail theo bài hiện tại:
+                $('#passRateText').text(isPass ? '100%' : '0%');
+                $('#failRateText').text(isPass ? '0%' : '100%');
+
+                // delete id
+                $('#delete-exam-btn').data('id', ls.id);
+
                 renderAnswersTable(chiTietList);
-
-                // Set up delete button
-                $('#delete-exam-btn').on('click', function() {
-                    if (confirm('Bạn có chắc chắn muốn xóa lịch sử thi này?')) {
-                        deleteExam(lichSuThi.id);
-                    }
-                });
-
             }
 
-            function renderAnswersTable(chiTietList) {
-                const tableBody = $('#answers-table-body');
-                tableBody.empty();
+            function updateDonut(passPercent){
+                const circle = document.getElementById('donutPass');
+                if(!circle) return;
 
-                if (!chiTietList || chiTietList.length === 0) {
-                    tableBody.append(`
-                        <tr>
-                            <td colspan="5" class="text-center">Không có dữ liệu chi tiết</td>
-                        </tr>
-                    `);
+                const r = 34;
+                const c = 2 * Math.PI * r;
+                const offset = c * (1 - (passPercent / 100));
+
+                circle.setAttribute('stroke-dasharray', c.toFixed(2));
+                circle.setAttribute('stroke-dashoffset', offset.toFixed(2));
+
+                // đổi màu nhẹ theo mức đúng
+                const root = document.documentElement;
+                const color = passPercent >= 50 ? getCss('--success') : getCss('--danger');
+                circle.style.stroke = color;
+                document.querySelector('.donut').style.color = color;
+            }
+
+            function renderAnswersTable(list){
+                const tb = $('#answers-table-body');
+                tb.empty();
+
+                if(!list || list.length === 0){
+                    tb.append(`<tr><td colspan="5" class="text-center text-muted">Không có dữ liệu chi tiết</td></tr>`);
                     return;
                 }
 
-                chiTietList.forEach((chiTiet, index) => {
-                    const question = chiTiet.cauHoi || {};
+                list.forEach((ct, idx) => {
+                    const q = ct.cauHoi || {};
+                    const isWrong = (ct.dungSai === true); // true = sai
 
-                    // Fix the class based on dungSai value (true means wrong, false means correct)
-                    const rowClass = chiTiet.dungSai === true ? 'table-danger' : 'table-success';
-                    const iconClass = chiTiet.dungSai === true ?
-                        '<i class="bi bi-x-circle-fill text-danger fs-4"></i>' :
-                        '<i class="bi bi-check-circle-fill text-success fs-4"></i>';
+                    const icon = isWrong
+                        ? `<i class="bi bi-x-circle-fill" style="color:var(--danger); font-size:1.35rem;"></i>`
+                        : `<i class="bi bi-check-circle-fill" style="color:var(--success); font-size:1.35rem;"></i>`;
+
+                    const yourAnsBadge = ct.cauTraLoi
+                        ? `<span class="ans-badge ${isWrong ? 'bad' : 'good'}">${escapeHtml(ct.cauTraLoi)}</span>`
+                        : `<span class="ans-badge bad">Không trả lời</span>`;
+
+                    const correctAnsBadge = q.dapAnDung
+                        ? `<span class="ans-badge good">${escapeHtml(q.dapAnDung)}</span>`
+                        : `<span class="ans-badge">Không xác định</span>`;
+
+                    const media = q.mediaUrl
+                        ? `
+                            <div class="q-thumb" data-src="${escapeAttr(q.mediaUrl)}" title="Bấm để xem lớn">
+                                <img src="${escapeAttr(q.mediaUrl)}" alt="Hình ảnh câu hỏi">
+                            </div>
+                          `
+                        : '';
 
                     const row = $(`
-                        <tr class="${rowClass}">
-                            <td>${index + 1}</td>
+                        <tr>
+                            <td>${idx + 1}</td>
                             <td>
-                                <strong>${question.noiDung || 'Không có nội dung'}</strong>
-                                ${question.mediaUrl ?
-                                    `<div class="mt-2">
-                                        <img src="${question.mediaUrl}" alt="Hình ảnh câu hỏi" class="img-fluid" style="max-height: 150px; max-width:200px;" />
-                                    </div>` : ''
-                                }
-                                <div class="mt-2">
-                                    <small class="text-muted">Chủ đề: ${question.chuDe?.tenChuDe || 'Không xác định'}</small>
-                                </div>
+                                <p class="q-title">${escapeHtml(q.noiDung || 'Không có nội dung')}</p>
+                                <p class="q-sub">Chủ đề: <b>${escapeHtml(q.chuDe?.tenChuDe || 'Không xác định')}</b></p>
+                                ${media}
                             </td>
-                            <td>
-                                ${chiTiet.cauTraLoi || 'Không trả lời'}
-                            </td>
-                            <td>
-                                ${question.dapAnDung || 'Không xác định'}
-                            </td>
-                            <td class="text-center">
-                                ${iconClass}
-                            </td>
+                            <td><div class="ans-wrap">${yourAnsBadge}</div></td>
+                            <td><div class="ans-wrap">${correctAnsBadge}</div></td>
+                            <td>${icon}</td>
                         </tr>
                     `);
 
-                    tableBody.append(row);
+                    tb.append(row);
                 });
             }
 
-            function deleteExam(id) {
+            function deleteExam(id){
                 $.ajax({
                     url: `/api/lichsuthi/delete/${id}`,
                     type: 'DELETE',
-                    // Remove Authorization header since cookies handle auth
-                    // headers: { 'Authorization': 'Bearer ' + getToken() },
-                    success: function(response) {
-                        if (response.status) {
+                    success: function(res){
+                        if(res && res.status){
                             alert('Xóa lịch sử thi thành công');
                             window.location.href = '/LichSuThi1';
-                        } else {
-                            alert('Xóa lịch sử thi thất bại: ' + response.message);
+                        }else{
+                            alert('Xóa thất bại: ' + (res?.message || 'Không rõ lỗi'));
                         }
                     },
-                    error: function(err) {
-                        alert('Xóa lịch sử thi thất bại. Vui lòng thử lại sau.');
+                    error: function(err){
+                        alert('Xóa thất bại. Vui lòng thử lại.');
                         console.error('Error deleting exam:', err);
                     }
                 });
+            }
+
+            function cleanupModalArtifacts(){
+                document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+            }
+
+            function escapeHtml(str){
+                return (str || '').replace(/[&<>"']/g, m => ({
+                    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+                }[m]));
+            }
+            function escapeAttr(str){
+                // đủ dùng cho src
+                return (str || '').replace(/"/g, '&quot;');
+            }
+            function getCss(name){
+                return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#2563eb';
             }
         });
     </script>
