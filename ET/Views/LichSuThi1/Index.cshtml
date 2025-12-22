@@ -15,8 +15,6 @@
         --success-10: rgba(22,163,74,.12);
         --danger: #ef4444;
         --danger-10: rgba(239,68,68,.12);
-        --info: #0284c7;
-        --info-10: rgba(2,132,199,.12);
         --shadow: 0 12px 28px rgba(2,6,23,.08);
         --radius: 16px;
     }
@@ -112,10 +110,9 @@
     /* ===== KPI ===== */
     .kpi-grid {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 12px;
     }
-   
 
     .kpi {
         position: relative;
@@ -164,13 +161,6 @@
             font-weight: 600;
         }
 
-        .kpi .unit {
-            font-size: .95rem;
-            color: var(--muted);
-            font-weight: 800;
-            margin-left: 6px;
-        }
-
         .kpi .icon {
             width: 44px;
             height: 44px;
@@ -209,15 +199,6 @@
             color: var(--danger);
         }
 
-        .kpi.avg:before {
-            background: var(--info);
-        }
-
-        .kpi.avg .icon {
-            background: var(--info-10);
-            color: var(--info);
-        }
-
     /* ===== Right header cluster ===== */
     .head-right {
         display: flex;
@@ -226,31 +207,7 @@
         flex-wrap: wrap;
     }
 
-    /* Sparkline box */
-    .spark {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 12px;
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        background: rgba(2,6,23,.02);
-        white-space: nowrap;
-    }
-
-        .spark .meta {
-            color: var(--muted);
-            font-size: .9rem;
-            font-weight: 800;
-        }
-
-        .spark .big {
-            font-weight: 1000;
-            font-size: 1.15rem;
-            color: var(--text);
-        }
-
-    /* ===== Donut đẹp: không overlay chữ ===== */
+    /* ===== Donut ===== */
     .donutBox {
         display: flex;
         align-items: center;
@@ -271,7 +228,6 @@
             stroke: rgba(2,6,23,.10);
         }
 
-        /* vòng giá trị chung */
         .donutBox .value {
             transform: rotate(-90deg);
             transform-origin: 50% 50%;
@@ -279,12 +235,10 @@
             transition: stroke-dashoffset .35s ease;
         }
 
-            /* FAIL đỏ (nền) */
             .donutBox .value.fail {
                 stroke: rgba(239,68,68,.85);
             }
 
-            /* PASS xanh (đè lên) */
             .donutBox .value.pass {
                 stroke: rgba(22,163,74,.95);
             }
@@ -329,7 +283,6 @@
             .donutTxt .lbl.fail {
                 color: var(--danger);
             }
-
 
     .hint {
         color: var(--muted);
@@ -376,7 +329,6 @@
             border-color: rgba(37,99,235,.22);
         }
 
-    /* Icon button xem chi tiết */
     .btn-icon {
         width: 36px;
         height: 36px;
@@ -457,7 +409,7 @@
     <div class="page-head">
         <div>
             <h2 class="page-title">Lịch Sử Thi</h2>
-            <div class="page-sub">Theo dõi kết quả. lọc Đậu/Rớt. xem xu hướng điểm theo thời gian.</div>
+            <div class="page-sub">Theo dõi kết quả. lọc Đậu/Rớt. xem thống kê theo thời gian.</div>
         </div>
 
         <div class="toolbar">
@@ -477,21 +429,9 @@
             <h5>Tổng kết kết quả</h5>
 
             <div class="head-right">
-                <div class="spark">
-                    <svg width="120" height="40" viewBox="0 0 120 40" fill="none" aria-label="Sparkline">
-                        <polyline id="sparkLine" points="" stroke="currentColor" stroke-width="2" fill="none" opacity="0.85"></polyline>
-                        <circle id="sparkDot" cx="0" cy="0" r="2.8" fill="currentColor" opacity="0"></circle>
-                    </svg>
-                    <div>
-                        <div class="meta">Điểm TB (xu hướng)</div>
-                        <div class="big"><span id="sparkMeta">—</span> điểm</div>
-                    </div>
-                </div>
-
                 <!-- Donut nhỏ: tỷ lệ đậu/rớt -->
                 <div class="donutBox" title="Tỷ lệ đậu/rớt">
                     <svg viewBox="0 0 44 44" aria-hidden="true">
-                        <!-- Track xám -->
                         <circle class="track" cx="22" cy="22" r="14" stroke-width="6" fill="none"></circle>
 
                         <!-- FAIL (đỏ) nền -->
@@ -520,8 +460,6 @@
                         </div>
                     </div>
                 </div>
-
-
             </div>
         </div>
 
@@ -552,17 +490,6 @@
                         <div class="sub">chưa đạt</div>
                     </div>
                     <div class="icon">✕</div>
-                </div>
-
-                <div class="kpi avg">
-                    <div>
-                        <div class="meta">Điểm trung bình</div>
-                        <div class="value">
-                            <span id="averageScore">—</span><span class="unit">điểm</span>
-                        </div>
-                        <div class="sub">trung bình tất cả bài</div>
-                    </div>
-                    <div class="icon">≈</div>
                 </div>
             </div>
         </div>
@@ -595,7 +522,6 @@
                                 <tr>
                                     <th>Ngày thi</th>
                                     <th>Tên bài thi</th>
-                                    <th class="text-center">Điểm</th>
                                     <th class="text-center">Kết quả</th>
                                     <th class="text-center">Tỉ lệ đúng</th>
                                     <th class="text-center">Chi tiết</th>
@@ -772,7 +698,6 @@
 
             function loadAll(forceNoCache) {
                 loadStatistics(forceNoCache);
-                loadSparkline(forceNoCache);
                 loadExamHistory(currentPage, forceNoCache);
                 loadWrongQuestions(forceNoCache);
             }
@@ -782,109 +707,45 @@
                 return $.ajax({ url: u, type: 'GET', cache: false });
             }
 
-            // ✅ KPI + donut
-                    // ✅ KPI + donut (PASS đè lên FAIL)
-        function loadStatistics(forceNoCache) {
-          ajaxGet('/api/lichsuthi/get-stats', forceNoCache)
-            .done(function (response) {
-              if (!(response && response.status && response.data)) return;
+            // ✅ KPI + donut (không còn phần điểm)
+            function loadStatistics(forceNoCache) {
+                ajaxGet('/api/lichsuthi/get-stats', forceNoCache)
+                    .done(function (response) {
+                        if (!(response && response.status && response.data)) return;
 
-              const total = Number(response.data.tongSoBaiThi ?? 0);
-              const pass  = Number(response.data.soBaiThiDat ?? 0);
-              const fail  = Number(response.data.soBaiThiKhongDat ?? 0);
-              const avg   = Number(response.data.diemTrungBinh ?? 0);
+                        const total = Number(response.data.tongSoBaiThi ?? 0);
+                        const pass = Number(response.data.soBaiThiDat ?? 0);
+                        const fail = Number(response.data.soBaiThiKhongDat ?? 0);
 
-              $('#totalExams').text(total);
-              $('#passedExams').text(pass);
-              $('#failedExams').text(fail);
-              $('#averageScore').text(avg.toFixed(1) + ' điểm'); // ✅ hiện số + chữ
+                        $('#totalExams').text(total);
+                        $('#passedExams').text(pass);
+                        $('#failedExams').text(fail);
 
-              // % (đảm bảo fail = 100 - pass để không lệch do làm tròn)
-              const passRate = total > 0 ? (pass * 100 / total) : 0;
-              const failRate = total > 0 ? (100 - passRate) : 0;
+                        // % (đảm bảo fail = 100 - pass để không lệch do làm tròn)
+                        const passRate = total > 0 ? (pass * 100 / total) : 0;
+                        const failRate = total > 0 ? (100 - passRate) : 0;
 
-              $('#passRateText').text(passRate.toFixed(0) + '%');
-              $('#failRateText').text(failRate.toFixed(0) + '%');
+                        $('#passRateText').text(passRate.toFixed(0) + '%');
+                        $('#failRateText').text(failRate.toFixed(0) + '%');
 
-              // donut math
-              const r = 14;
-              const c = 2 * Math.PI * r;     // circumference
-              const passOffset = c * (1 - passRate / 100);
+                        // donut math
+                        const r = 14;
+                        const c = 2 * Math.PI * r; // circumference
+                        const passOffset = c * (1 - passRate / 100);
 
-              // ✅ FAIL (đỏ) luôn full vòng (nền)
-              $('#failDonut')
-                .attr('stroke-dasharray', c.toFixed(2))
-                .attr('stroke-dashoffset', '0');
+                        // FAIL (đỏ) luôn full vòng (nền)
+                        $('#failDonut')
+                            .attr('stroke-dasharray', c.toFixed(2))
+                            .attr('stroke-dashoffset', '0');
 
-              // ✅ PASS (xanh) đè lên theo % đậu
-              $('#passDonut')
-                .attr('stroke-dasharray', c.toFixed(2))
-                .attr('stroke-dashoffset', passOffset.toFixed(2));
-            })
-            .fail(function (err) {
-              console.error('Error loading statistics:', err);
-            });
-        }
-
-
-
-            function loadSparkline(forceNoCache) {
-                ajaxGet('/api/lichsuthi/get-history?pageNumber=1&pageSize=50&result=all', forceNoCache)
-                    .done(function (res) {
-                        if (!(res?.status && res?.data?.items?.length)) {
-                            drawSparkline([]);
-                            $('#sparkMeta').text('—');
-                            return;
-                        }
-
-                        const items = res.data.items.slice().sort((a, b) => new Date(a.ngayThi) - new Date(b.ngayThi));
-                        const avgs = [];
-                        let sum = 0;
-
-                        for (let i = 0; i < items.length; i++) {
-                            sum += Number(items[i].diem || 0);
-                            avgs.push(sum / (i + 1));
-                        }
-
-                        $('#sparkMeta').text(Number(avgs[avgs.length - 1] || 0).toFixed(1));
-                        drawSparkline(avgs);
+                        // PASS (xanh) đè lên theo % đậu
+                        $('#passDonut')
+                            .attr('stroke-dasharray', c.toFixed(2))
+                            .attr('stroke-dashoffset', passOffset.toFixed(2));
                     })
                     .fail(function (err) {
-                        console.error('Sparkline load fail:', err);
-                        drawSparkline([]);
-                        $('#sparkMeta').text('—');
+                        console.error('Error loading statistics:', err);
                     });
-            }
-
-            function drawSparkline(values) {
-                const line = document.getElementById('sparkLine');
-                const dot = document.getElementById('sparkDot');
-                const W = 120, H = 40, pad = 3;
-
-                if (!values || values.length < 2) {
-                    line.setAttribute('points', '');
-                    dot.setAttribute('cx', '0'); dot.setAttribute('cy', '0');
-                    dot.style.opacity = 0;
-                    return;
-                }
-
-                dot.style.opacity = .9;
-
-                const min = Math.min(...values);
-                const max = Math.max(...values);
-                const span = (max - min) || 1;
-
-                const points = values.map((v, i) => {
-                    const x = pad + (i * (W - pad * 2) / (values.length - 1));
-                    const yNorm = (v - min) / span;
-                    const y = (H - pad) - yNorm * (H - pad * 2);
-                    return { x, y };
-                });
-
-                line.setAttribute('points', points.map(p => `${p.x},${p.y}`).join(' '));
-                const last = points[points.length - 1];
-                dot.setAttribute('cx', last.x);
-                dot.setAttribute('cy', last.y);
             }
 
             function loadExamHistory(page, forceNoCache) {
@@ -927,14 +788,16 @@
                     });
             }
 
-            // ✅ XÓA ID, ĐỔI NÚT CHI TIẾT THÀNH ICON
+            // ✅ Không còn cột điểm
             function renderHistoryTable(items) {
                 const tableBody = $('#history-table-body');
                 tableBody.empty();
 
                 items.forEach(item => {
                     const date = new Date(item.ngayThi);
-                    const formattedDate = `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+                    const formattedDate =
+                        `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()} ` +
+                        `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 
                     const passed = item.ketQua === 'Đậu';
                     const badge = passed
@@ -949,7 +812,6 @@
                             <td>
                                 <div class="fw-bold">${escapeHtml(item.tenBaiThi || '')}</div>
                             </td>
-                            <td class="text-center fw-bold">${item.diem ?? 0}</td>
                             <td class="text-center">${badge}</td>
                             <td class="text-center"><span class="badge-soft primary">${percent}%</span></td>
                             <td class="text-center">
@@ -1059,31 +921,6 @@
                     return (n || 0).toLocaleString('vi-VN') + 'đ';
                 }
             }
-                    function updateDonut(passed, failed){
-          const total = (Number(passed)||0) + (Number(failed)||0);
-          const passRate = total > 0 ? (passed * 100 / total) : 0;
-          const failRate = 100 - passRate;
-
-          $('#passRateText').text(`${passRate.toFixed(0)}%`);
-          $('#failRateText').text(`${failRate.toFixed(0)}%`);
-
-          const passEl = document.getElementById('passDonut');
-          const failEl = document.getElementById('failDonut');
-          if(!passEl || !failEl) return;
-
-          const r = 14;
-          const C = 2 * Math.PI * r; // ~87.96
-
-          // FAIL: luôn full vòng (đỏ nền)
-          failEl.setAttribute('stroke-dasharray', C.toFixed(2));
-          failEl.setAttribute('stroke-dashoffset', '0');
-
-          // PASS: che lên theo % đậu
-          passEl.setAttribute('stroke-dasharray', C.toFixed(2));
-          const offset = C * (1 - passRate/100);
-          passEl.setAttribute('stroke-dashoffset', offset.toFixed(2));
-        }
-
         });
     </script>
 }
