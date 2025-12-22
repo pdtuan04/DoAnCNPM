@@ -102,6 +102,25 @@ namespace ET.Controllers.api
 
             return Ok(new { status = true, message = "Xóa câu hỏi thành công" });
         }
-     
+        [HttpGet("get-cau-hoi-on-theo-chu-de")]
+        public async Task<IActionResult> GetCauHoiOnTheoChuDe(int page, int pageSize, string? search, string? sortCol, string? sortDir, Guid? chuDeId, Guid? loaiBangLaiId)
+        {
+            Guid? actualChuDeId = (chuDeId.HasValue && chuDeId.Value != Guid.Empty) ? chuDeId : null;
+            Guid? actualLoaiBangLaiId = (loaiBangLaiId.HasValue && loaiBangLaiId.Value != Guid.Empty) ? loaiBangLaiId : null;
+
+            var result = await _cauHoiService.GetCauHoisOnTapTheoChuDeAsync(page, pageSize, search, sortCol, sortDir, actualChuDeId, actualLoaiBangLaiId);
+
+            return Ok(new
+            {
+                status = true,  // Thêm dòng này
+                recordsTotal = result?.TotalCount ?? 0,
+                recordsFiltered = result?.TotalCount ?? 0,
+                data = new
+                {
+                    items = result?.Items ?? new List<CauHoi>(),
+                    totalCount = result?.TotalCount ?? 0
+                }
+            });
+        }
     }
 }

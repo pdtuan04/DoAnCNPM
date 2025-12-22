@@ -466,5 +466,74 @@ namespace ET.Controllers.api
                 return StatusCode(500, new { success = false, message = "Lỗi khi tải dữ liệu bằng lái và chủ đề.", error = ex.Message });
             }
         }
+        [HttpPost("tao-bai-thi")]
+        public async Task<IActionResult> TaoBaiThi([FromBody] TaoBaiThiRequest request)
+        {
+            try
+            {
+                var result = await _baiThiService.TaoBaiThi(request);
+                return Ok(new { success = true, message = "Thành công", data = result });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = "Lỗi khi tạo đề thi: " + ex.Message });
+            }
+        }
+        [HttpPost("tao-bai-thi-hay-sai")]
+        public async Task<IActionResult> TaoBaiThiHaySai([FromBody] TaoBaiThiHaySaiRequest request)
+        {
+            try
+            {
+                // Validate
+                if (string.IsNullOrWhiteSpace(request.TenBaiThi))
+                {
+                    return BadRequest(new { success = false, message = "Tên bài thi không được để trống" });
+                }
+
+                if (request.SoLuong <= 0 || request.SoLuong > 100)
+                {
+                    return BadRequest(new { success = false, message = "Số lượng câu hỏi phải từ 1 đến 100" });
+                }
+
+                var result = await _baiThiService.CreateBaiThiHaySai(request.SoLuong, request.TenBaiThi);
+
+                // Trả về đúng format với id
+                return Ok(new
+                {
+                    success = true,
+                    message = "Tạo bài thi thành công",
+                    data = new
+                    {
+                        id = result.Id,  // ← Quan trọng nhất
+                        tenBaiThi = result.TenBaiThi,
+                        soLuongCauHoi = result.ChiTietBaiThis?.Count ?? 0
+                    }
+                });
+            }
+            catch (ArgumentException argEx)
+            {
+                return BadRequest(new { success = false, message = argEx.Message });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in TaoBaiThiHaySai: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+
+                return StatusCode(500, new { success = false, message = "Lỗi khi tạo đề thi:  " + ex.Message });
+            }
+        }
+        [HttpPost("tao-bai-thi-ngau-nhien-theo-chu-de")]
+        public async Task<IActionResult> TaoBaiThiNgauNhienTheoChuDe([FromBody] TaoBaiThiNgauNhienRequest request)
+        {
+            try
+            {
+                var result = await _baiThiService.TaoBaiThiNgauNhienTheoChuDe(request);
+                return Ok(new { success = true, message = "Thành công", data = result });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = "Lỗi khi tạo đề thi: " + ex.Message });
+            }
+        }
     }
 }

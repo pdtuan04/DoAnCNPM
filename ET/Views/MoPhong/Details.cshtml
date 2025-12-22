@@ -1,70 +1,77 @@
 ﻿@{
     ViewData["Title"] = "Chi tiết mô phỏng";
 }
-
 <style>
+    body {
+        background-color: #f8f9fa; /* Nền sáng hơn cho toàn trang */
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Font hiện đại */
+    }
+
     .video-container {
         position: relative;
         width: 100%;
-        max-width: 800px; /* Giới hạn chiều rộng tối đa */
-        margin: 0 auto 1.5em; /* Căn giữa và thêm khoảng cách dưới */
-        padding: 15px;
-        background: #fff;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Thêm bóng đổ */
+        max-width: 700px; /* Giảm chiều rộng tối đa để gọn hơn */
+        margin: 0 auto 1em; /* Giảm margin dưới */
+        padding: 15px; /* Giảm padding */
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
         overflow: hidden;
     }
 
     video {
         width: 100%;
-        max-height: 400px; /* Tăng chiều cao tối đa để cân đối */
+        max-height: 350px; /* Giảm chiều cao để UI gọn hơn */
         object-fit: contain;
         display: block;
-        border-radius: 8px; /* Bo góc cho video */
+        border-radius: 10px;
+        border: 1px solid #dee2e6; /* Thêm viền nhẹ */
     }
 
     .progress-container {
+        display: flex;
+        flex-direction: column;
         align-items: center;
-        background: #f5f5f5; /* Màu nền sáng hơn */
-        padding: 0.75rem;
-        border-radius: 5px;
-        margin-top: 10px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        background: #f8f9fa;
+        padding: 0.75rem; /* Giảm padding */
+        border-radius: 6px;
+        margin-top: 10px; /* Giảm margin */
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
     }
 
     .markers-container {
         position: relative;
         width: 100%;
-        height: 20px;
+        height: 18px; /* Giảm chiều cao nhẹ */
     }
 
     #progress {
         appearance: none;
         border: none;
-        border-radius: 3px;
-        box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1) inset;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) inset;
         display: block;
-        height: 15px;
+        height: 16px; /* Giảm chiều cao */
         width: 100%;
         margin: 0;
     }
 
         #progress::-webkit-progress-bar {
-            background-color: #e0e0e0;
-            border-radius: 3px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) inset;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) inset;
         }
 
         #progress::-webkit-progress-value {
-            background-image: linear-gradient(to right, #ff6b6b, #ff8e53); /* Màu gradient đẹp hơn */
-            border-radius: 3px;
-            transition: width 0.2s ease;
+            background-image: linear-gradient(to right, #4dabf7, #228be6); /* Gradient xanh dương hiện đại */
+            border-radius: 4px;
+            transition: width 0.3s ease;
         }
 
         #progress::-moz-progress-bar {
-            background-image: -moz-linear-gradient(to right, #ff6b6b, #ff8e53);
-            border-radius: 3px;
-            transition: width 0.2s ease;
+            background-image: -moz-linear-gradient(to right, #4dabf7, #228be6);
+            border-radius: 4px;
+            transition: width 0.3s ease;
         }
 
     #markers {
@@ -72,59 +79,63 @@
         top: 0;
         left: 0;
         width: 100%;
-        height: 15px;
+        height: 16px;
         pointer-events: none;
     }
 
     .marker {
         position: absolute;
-        width: 2px;
-        height: 15px;
-        background-color: #ff4444; /* Màu đỏ tươi hơn */
+        width: 3px;
+        height: 16px;
+        background-color: #ff6b6b; /* Màu đỏ cam tươi */
         transform: translateX(-50%);
     }
 
         .marker::after {
             content: '';
             position: absolute;
-            top: -6px;
+            top: -6px; /* Điều chỉnh vị trí */
             left: -4px;
-            width: 10px;
-            height: 10px; /* Tăng kích thước điểm marker */
+            width: 10px; /* Giảm kích thước */
+            height: 10px;
             background-color: #fff;
             border-radius: 50%;
-            border: 2px solid #ff4444;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            border: 2px solid #ff6b6b;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
         }
 
     #timer {
         text-align: center;
         display: block;
-        margin-bottom: 8px;
-        font-size: 1.1rem;
-        color: #333;
-        font-weight: 500;
+        margin-bottom: 8px; /* Giảm margin */
+        font-size: 1.1rem; /* Giảm font size */
+        color: #212529;
+        font-weight: 600;
     }
 
     .controls {
         text-align: center;
-        margin-top: 1.5em;
+        margin-top: 1em; /* Giảm margin */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.75rem; /* Giảm gap */
     }
 
     button {
-        background-color: #007bff; /* Màu xanh dương hiện đại */
+        background-color: #0d6efd; /* Màu xanh dương Bootstrap */
         color: white;
         border: none;
-        padding: 10px 25px;
-        font-size: 1rem;
+        padding: 10px 25px; /* Giảm padding */
+        font-size: 1rem; /* Giảm font size */
         cursor: pointer;
-        border-radius: 5px;
-        transition: background-color 0.2s, transform 0.1s;
+        border-radius: 6px;
+        transition: background-color 0.3s, transform 0.2s;
     }
 
         button:hover {
-            background-color: #0056b3;
-            transform: translateY(-1px); /* Hiệu ứng nhấc lên */
+            background-color: #0a58ca;
+            transform: translateY(-2px);
         }
 
         button:active {
@@ -133,22 +144,48 @@
 
     .score-container {
         text-align: center;
-        margin-top: 1.5em;
-        padding: 10px 20px;
-        background: linear-gradient(135deg, #6b7280, #4b5563); /* Gradient xám */
+        margin-top: 0;
+        padding: 10px 20px; /* Giảm padding */
+        background: linear-gradient(135deg, #4dabf7, #228be6); /* Gradient xanh dương để phù hợp theme */
         color: white;
         border-radius: 8px;
-        font-size: 1.25rem;
-        font-weight: 600;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        font-size: 1.2rem; /* Giảm font size */
+        font-weight: 700;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
         display: inline-block;
-        transition: transform 0.2s ease, opacity 0.2s ease;
+        transition: transform 0.3s ease, opacity 0.3s ease;
     }
 
         .score-container.updated {
-            transform: scale(1.05); /* Hiệu ứng phóng to khi cập nhật */
-            opacity: 0.9;
+            transform: scale(1.08);
+            opacity: 0.95;
         }
+
+    .instruction {
+        text-align: center;
+        font-size: 1rem; /* Giảm font size */
+        color: #495057;
+        margin: 1em 0; /* Giảm margin */
+        padding: 8px; /* Giảm padding */
+        background: #e9f7ff; /* Nền xanh nhạt */
+        border-radius: 6px;
+        border: 1px solid #bee5eb;
+    }
+
+    .list-group-item.active {
+        background-color: #e9f7ff !important; /* Màu xanh nhạt nhẹ để highlight, thêm !important để ưu tiên */
+        color: #0d6efd !important;
+        font-weight: 600 !important;
+        border-left: 4px solid #0d6efd !important; /* Thêm viền trái để nổi bật */
+    }
+
+    #currentTitle {
+        text-align: center;
+        font-weight: 600;
+        color: #212529;
+        margin-bottom: 1em; /* Giảm margin */
+        font-size: 1.1rem; /* Giảm font size */
+    }
 
     video::-webkit-media-controls-play-button,
     video::-webkit-media-controls-mute-button,
@@ -157,8 +194,30 @@
     video::-webkit-media-controls-time-remaining-display {
         display: none !important;
     }
-</style>
 
+    .card-body {
+        padding: 1rem; /* Giảm padding cho card body */
+    }
+
+    .row {
+        margin-bottom: 1em; /* Giảm margin cho row */
+    }
+
+    .side-panel {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        padding-left: 1rem;
+    }
+
+    @@media (max-width: 768px) {
+        .side-panel {
+            margin-top: 1em;
+            padding-left: 0;
+        }
+    }
+</style>
 <div class="container-xl">
     <div class="row" id="license-info-container">
         <div class="col-12">
@@ -169,11 +228,11 @@
             </div>
         </div>
     </div>
-
     <div class="row">
         <!-- Left sidebar with list of questions -->
         <div class="col-md-3">
-            <div class="card mb-4">
+            <div class="card mb-3 shadow-sm">
+                <!-- Giảm margin bottom -->
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">Chọn Bài Ôn</h5>
                 </div>
@@ -186,10 +245,9 @@
                 </div>
             </div>
         </div>
-
         <!-- Right side with current question content and video -->
         <div class="col-md-9">
-            <div class="card">
+            <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">Bài Mô phỏng</h5>
                 </div>
@@ -198,22 +256,29 @@
                         <div class="loading">
                             <div class="loading-spinner"></div>
                         </div>
-                        <div class="video-container">
-                            <video id="video" controls autoplay muted>
-                                Trình duyệt của bạn không hỗ trợ video.
-                            </video>
-                            <div class="progress-container">
-                                <label id="timer" for="progress" role="timer">00:00</label>
-                                <div class="markers-container">
-                                    <progress id="progress" max="100" value="0">Progress</progress>
-                                    <div id="markers"></div>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h6 id="currentTitle" class="mb-3"></h6> <!-- Giữ title trên video -->
+                                <div class="video-container">
+                                    <video id="video" controls autoplay muted>
+                                        Trình duyệt của bạn không hỗ trợ video.
+                                    </video>
+                                    <div class="progress-container">
+                                        <label id="timer" for="progress" role="timer">00:00</label>
+                                        <div class="markers-container">
+                                            <progress id="progress" max="100" value="0">Progress</progress>
+                                            <div id="markers"></div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="controls">
-                            <div class="score-container" id="score">Điểm Của Bạn: 0</div>
-
-                            <button id="resetBtn"><i class="bi bi-arrow-repeat"></i> Làm lại</button>
+                            <div class="col-md-4 side-panel">
+                                <p class="instruction">Nhấn phím <strong>Space</strong> để phanh xe khi phát hiện tình huống nguy hiểm.</p>
+                                <div class="controls">
+                                    <div class="score-container" id="score">Điểm Của Bạn: 0</div>
+                                    <button id="resetBtn"><i class="bi bi-arrow-repeat"></i> Làm lại</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -221,11 +286,9 @@
         </div>
     </div>
 </div>
-
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
     $(document).ready(function () {
         const video = document.getElementById("video");
@@ -234,6 +297,7 @@
         const markersContainer = document.getElementById("markers");
         const resetBtn = document.getElementById("resetBtn");
         const scoreContainer = document.getElementById("score");
+        const currentTitle = document.getElementById("currentTitle");
         const colors = ['green', 'red', 'yellow', 'blue', 'purple'];
         const scores = [5, 4, 3, 2, 1];
         let predefinedMarkers = [];
@@ -242,7 +306,6 @@
         let readyToDraw = false;
         let userMarked = false;
         const moPhongId = new URLSearchParams(window.location.search).get("moPhongId");
-
         // Cập nhật tiến trình video
         function progressLoop() {
             setInterval(function () {
@@ -254,7 +317,6 @@
                 }
             }, 100);
         }
-
         // Tải dữ liệu mô phỏng
         if (moPhongId) {
             fetch(`/api/MoPhong/${moPhongId}`)
@@ -267,6 +329,7 @@
                 .then(data => {
                     if (data.status && data.data) {
                         const { noiDung, videoUrl, dapAn } = data.data;
+                        currentTitle.textContent = noiDung || "Không có nội dung";
                         $('#video').attr('src', videoUrl);
                         const numbers = dapAn.split(',').map(num => parseFloat(num.trim()));
                         for (let i = 0; i < numbers.length - 1; i++) {
@@ -295,7 +358,6 @@
                     console.error("Lỗi khi tải mô phỏng:", err);
                 });
         }
-
         // Tải danh sách mô phỏng
         const id = new URLSearchParams(window.location.search).get("id");
         fetch(`/api/MoPhong/get-mo-phong-by-loai-bang-lai?id=${id}`)
@@ -310,7 +372,9 @@
                 moPhongListContainer.empty();
                 if (data.data && data.data.length > 0) {
                     $.each(data.data, function (index, moPhong) {
-                        const listItem = `<a href="/MoPhong/Details?id=${id}&moPhongId=${moPhong.id}" class="list-group-item list-group-item-action">${moPhong.noiDung || "Không có nội dung"}</a>`;
+                        const isActive = moPhong.id === moPhongId; // Xóa toString() vì cả hai đều là string
+                        const activeClass = isActive ? 'active' : '';
+                        const listItem = `<a href="/MoPhong/Details?id=${id}&moPhongId=${moPhong.id}" class="list-group-item list-group-item-action ${activeClass}">${moPhong.noiDung || "Không có nội dung"}</a>`;
                         moPhongListContainer.append(listItem);
                     });
                 } else {
@@ -325,20 +389,17 @@
                 });
                 console.error('Error fetching mo phong list:', error);
             });
-
         // Khởi tạo video
         video.addEventListener("loadedmetadata", () => {
             readyToDraw = true;
             progressLoop();
         }, { once: true });
-
         // Cập nhật khi cửa sổ thay đổi
         window.addEventListener("resize", () => {
             if (readyToDraw) {
                 drawMarkers();
             }
         });
-
         // Xử lý sự kiện phím Space
         document.addEventListener("keydown", (e) => {
             if (e.code === "Space") {
@@ -359,25 +420,21 @@
                     });
                     return;
                 }
-
                 const currentTime = video.currentTime;
                 userMarkers.push(currentTime);
                 userMarkers.sort((a, b) => a - b);
                 userMarked = true;
-
                 predefinedMarkers.forEach(marker => {
                     if (currentTime >= marker.start && currentTime <= marker.end) {
                         userScore += marker.score;
                     }
                 });
-
                 scoreContainer.textContent = `Điểm Của Bạn: ${userScore}`;
                 scoreContainer.classList.add('updated');
                 setTimeout(() => scoreContainer.classList.remove('updated'), 300); // Xóa hiệu ứng sau 300ms
                 drawMarkers();
             }
         });
-
         // Xử lý nút Reset
         resetBtn.addEventListener("click", () => {
             userMarkers = [];
@@ -390,16 +447,13 @@
             readyToDraw = true;
             drawMarkers();
         });
-
         // Hàm vẽ các marker
         function drawMarkers() {
             const duration = video.duration || 1;
             if (isNaN(duration) || duration <= 0) {
                 return;
             }
-
             markersContainer.innerHTML = '';
-
             // Vẽ các predefinedMarkers chỉ khi đã nhấn Space
             if (userMarked) {
                 predefinedMarkers.forEach(marker => {
@@ -407,7 +461,7 @@
                     range.style.position = 'absolute';
                     range.style.backgroundColor = marker.color;
                     range.style.opacity = '0.5';
-                    range.style.height = '5px';
+                    range.style.height = '4px'; /* Giảm chiều cao */
                     range.style.bottom = '0';
                     const startPos = (marker.start / duration) * 100;
                     const endPos = (marker.end / duration) * 100;
@@ -416,7 +470,6 @@
                     markersContainer.appendChild(range);
                 });
             }
-
             // Vẽ các marker của người dùng
             userMarkers.forEach(time => {
                 const marker = document.createElement('span');

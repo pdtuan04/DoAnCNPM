@@ -109,6 +109,7 @@ builder.Services.AddTransient<ILoaiBangLaiRepository, LoaiBangLaiRepository>();
 builder.Services.AddTransient<IBaiThiRepository, BaiThiRepository>();
 builder.Services.AddTransient<IGmailSender, GmailSender>();
 builder.Services.AddTransient<ILichSuThiRepository, LichSuThiRepository>();
+builder.Services.AddTransient<ICauHoiRepository, CauHoiRepository>();
 builder.Services.AddTransient<LichSuThiService>();
 builder.Services.AddTransient<ChatBoxService>();
 builder.Services.AddChatClient(new OpenAI.Chat.ChatClient("gpt-4o-mini", builder.Configuration["OpenAIOptions:APIKey"]).AsIChatClient());
