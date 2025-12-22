@@ -13,10 +13,12 @@ namespace Libs.Service
     public class BaiThiService
     {
         private readonly IBaiThiRepository _baiThiRepository;
+        private readonly ICauHoiRepository _cauHoiRepository;
 
-        public BaiThiService(IBaiThiRepository baiThiRepository)
+        public BaiThiService(IBaiThiRepository baiThiRepository, ICauHoiRepository cauHoiRepository)
         {
             _baiThiRepository = baiThiRepository;
+            _cauHoiRepository = cauHoiRepository;
         }
 
         public async Task<BaiThi> CreateDeThiNgauNhienTheoChuDe(Guid loaiBangLaiId, Guid chuDeId, List<CauHoi> cauHois)
@@ -191,6 +193,41 @@ namespace Libs.Service
         public async Task<BaiThi> GetById(Guid id)
         {
             return await _baiThiRepository.GetByIdAsync(id); // Sử dụng phương thức async
+        }
+        public async Task<BaiThi> CreateBaiThiHaySai(int soLuong, String tenBaiThi)
+        {
+            var _cauHoiHaySai = await _cauHoiRepository.CauHoiHaySai(soLuong);
+            var result = await _baiThiRepository.CreateDeThiHaySai(_cauHoiHaySai, tenBaiThi);
+
+            return result;
+        }
+        public async Task<BaiThi> TaoBaiThi(TaoBaiThiRequest request)
+        {
+            var result = await _baiThiRepository.TaoBaiThi(request.CauHoiIds, request.TenBaiThi);
+            return result;
+        }
+        public async Task<BaiThi> TaoBaiThiNgauNhienTheoChuDe(TaoBaiThiNgauNhienRequest request)
+        {
+            var allCauHoi = new List<CauHoi>();
+
+            foreach (var item in request.SoLuongCauHoiTheoChuDe)
+            {
+                var cauHois = await _cauHoiRepository.GetCauHoiNgauNhienTheoChuDe(
+                    request.LoaiBangLaiId,
+                    item.ChuDeId,
+                    item.SoLuong
+                );
+
+                allCauHoi.AddRange(cauHois);
+            }
+
+            var cauHoiIds = allCauHoi
+                .Select(c => c.Id)
+                .Distinct()
+                .ToList();
+
+            var result = await _baiThiRepository.TaoBaiThi(cauHoiIds, request.TenBaiThi);
+            return result;
         }
     }
 }

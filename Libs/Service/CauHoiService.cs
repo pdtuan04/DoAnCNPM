@@ -13,10 +13,12 @@ namespace Libs.Service
     {
         private readonly ApplicationDbContext _dbContext;
         private readonly ICauHoiRepository _cauHoiRepository;
+        private readonly IChuDeRepository _chuDeRepository;
         public CauHoiService(ApplicationDbContext dbContext)
         {
             this._dbContext = dbContext;
             this._cauHoiRepository= new CauHoiRepository(dbContext);
+            this._chuDeRepository = new ChuDeRepository(dbContext);
         }
         public async Task SaveAsync()
         {
@@ -100,6 +102,34 @@ namespace Libs.Service
             _cauHoiRepository.Update(cauHoi);
             await _dbContext.SaveChangesAsync();
             return true;
+        }
+        public async Task<List<CauHoi>> CauHoiHaySai(int soLuong)
+        {
+            var cauHoi = await _cauHoiRepository.CauHoiHaySai(soLuong);
+            return cauHoi;
+        }
+
+        public async Task<PageList<CauHoi>> GetCauHoisOnTapTheoChuDeAsync(int pageNumber, int pageSize, string? search, string? sortCol, string sortDir, Guid? chuDeId, Guid? LoaiBangLaiId)
+        {
+            var cauHoi = await _cauHoiRepository.GetCauHoisOnTapTheoChuDeAsync(pageNumber, pageSize, search, sortCol, sortDir, chuDeId, LoaiBangLaiId);
+            return cauHoi;
+        }
+
+        public async Task<List<CauHoi>> GetCauHoiNgauNhien(int soLuong)
+        {
+            var cauHoi = await _cauHoiRepository.GetCauHoiNgauNhien(soLuong);
+            return cauHoi;
+        }
+        public async Task<List<CauHoi>> GetCauHoiNgauNhienTheoChuDe(Guid? loaiBangLaiId, Guid chuDeId, int soLuong)
+        {
+            var cauHoi = await _cauHoiRepository.GetCauHoiNgauNhienTheoChuDe(loaiBangLaiId, chuDeId, soLuong);
+
+            if (cauHoi.Count < soLuong)
+            {
+                var tenChuDe = await _chuDeRepository.GetTenChuDeByIdAsync(chuDeId);
+                throw new InvalidOperationException($"Không đủ câu hỏi trong chủ đề {tenChuDe}.");
+            }
+            return cauHoi;
         }
     }
 }

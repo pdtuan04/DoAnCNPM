@@ -4,56 +4,78 @@
 }
 
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0">Quản lý đề thi</h2>
-        <div>
-            <button type="button" class="btn btn-outline-primary" id="btnRefresh">
-                <i class="fas fa-sync-alt me-1"></i> Làm mới
-            </button>
-            <button type="button" class="btn btn-primary" onclick="filterDeThiByLoai()">
-                <i class="fas fa-filter me-1"></i> Lọc theo loại
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="fw-bold text-primary">
+                <i class="bi bi-journal-text me-2"></i>Quản lý đề thi
+            </h2>
+        </div>
+        <div class="col-auto">
+            <button type="button" class="btn btn-outline-primary me-2" id="btnRefresh">
+                <i class="bi bi-arrow-clockwise me-1"></i>Làm mới
             </button>
             <a href="@Url.Action("ThemDeThi", "Admin")" class="btn btn-success">
-                <i class="fas fa-plus me-1"></i> Thêm đề thi mới
+                <i class="bi bi-plus-circle me-1"></i>Thêm đề thi mới
             </a>
         </div>
     </div>
 
-    <div class="card">
+    <!-- Filter Section -->
+    <div class="card shadow-sm mb-4">
         <div class="card-body">
-            <div class="mb-3">
-                <div class="row g-2">
-                    <div class="col-md-3">
-                        <select id="loaiBangLaiFilter" class="form-select">
-                            <option value="">Tất cả loại bằng lái</option>
-                            <!-- Sẽ được điền bởi JavaScript -->
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="input-group">
-                            <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm theo tên đề thi...">
-                            <button class="btn btn-outline-secondary" type="button" id="searchBtn">
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </div>
-                    </div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">
+                        <i class="bi bi-filter me-1"></i>Loại bằng lái
+                    </label>
+                    <select id="loaiBangLaiFilter" class="form-select">
+                        <option value="">Tất cả loại bằng lái</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">
+                        <i class="bi bi-search me-1"></i>Tìm kiếm
+                    </label>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Nhập tên đề thi... ">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" class="btn btn-outline-secondary w-100" id="btnClearFilter">
+                        <i class="bi bi-x-circle me-1"></i>Xóa lọc
+                    </button>
                 </div>
             </div>
+        </div>
+    </div>
 
+    <!-- Table Section -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-semibold">Danh sách đề thi</h5>
+                <span id="paginationInfo" class="text-muted"></span>
+            </div>
+        </div>
+        <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-striped table-hover">
-                    <thead>
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
                         <tr>
-                            <th scope="col">STT</th>
-                            <th scope="col">Tên đề thi</th>
-                            <th scope="col">Loại bằng lái</th>
-                            <th scope="col">Số câu hỏi</th>
-                            <th scope="col">Thao tác</th>
+                            <th class="text-center" style="width: 60px;">STT</th>
+                            <th>Tên đề thi</th>
+                            <th class="text-center" style="width: 180px;">Loại bằng lái</th>
+                            <th class="text-center" style="width: 120px;">Số câu hỏi</th>
+                            <th class="text-center" style="width:  150px;">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody id="danhSachDeThiBody">
                         <tr>
-                            <td colspan="5" class="text-center py-3">Đang tải dữ liệu...</td>
+                            <td colspan="5" class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Đang tải...</span>
+                                </div>
+                                <p class="text-muted mt-2 mb-0">Đang tải dữ liệu...</p>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -63,322 +85,334 @@
 </div>
 
 <!-- Modal Xác nhận xoá -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Xác nhận xoá</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title text-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Xác nhận xoá
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p>Bạn có chắc chắn muốn xoá đề thi "<span id="deleteExamName" class="fw-bold"></span>"?</p>
-                <p class="text-danger">Lưu ý: Hành động này không thể khôi phục.</p>
+                <p class="mb-2">Bạn có chắc chắn muốn xoá đề thi: </p>
+                <p class="fw-bold text-primary mb-3">"<span id="deleteExamName"></span>"</p>
+                <div class="alert alert-danger mb-0">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Hành động này không thể hoàn tác!
+                </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huỷ</button>
-                <button type="button" class="btn btn-danger" id="confirmDelete">Xoá</button>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>Hủy
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">
+                    <i class="bi bi-trash me-1"></i>Xác nhận xoá
+                </button>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Toast Container -->
+<div class="toast-container position-fixed top-0 end-0 p-3">
+    <div id="successToast" class="toast align-items-center text-bg-success border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <span id="successMessage"></span>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+    <div id="errorToast" class="toast align-items-center text-bg-danger border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-exclamation-circle-fill me-2"></i>
+                <span id="errorMessage"></span>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
     <script>
         let allDeThis = [];
         let loaiBangLais = [];
         let deleteExamId = null;
         let deleteModal = null;
+        let successToast = null;
+        let errorToast = null;
 
         document.addEventListener("DOMContentLoaded", function () {
-            // Khởi tạo Modal
+            // Khởi tạo
             deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            successToast = new bootstrap.Toast(document.getElementById('successToast'));
+            errorToast = new bootstrap.Toast(document.getElementById('errorToast'));
 
             // Load dữ liệu
             loadDeThiList();
             loadLoaiBangLai();
 
-            // Xử lý tìm kiếm
-            document.getElementById("searchInput").addEventListener("keyup", function (e) {
-                if (e.key === "Enter") {
-                    filterData();
-                }
-            });
-            document.getElementById("searchBtn").addEventListener("click", filterData);
-
-            // Lọc theo loại bằng lái
-            document.getElementById("loaiBangLaiFilter").addEventListener("change", filterData);
-
-            // Nút làm mới
-            document.getElementById("btnRefresh").addEventListener("click", function() {
-                loadDeThiList(true);
-            });
+            // Events
+            document.getElementById("searchInput").addEventListener("input", debounce(filterData, 300));
+            document. getElementById("loaiBangLaiFilter").addEventListener("change", filterData);
+            document.getElementById("btnRefresh").addEventListener("click", () => loadDeThiList(true));
+            document.getElementById("btnClearFilter").addEventListener("click", clearFilters);
         });
 
-        
-        function loadDeThiList(forceRefresh = false) {
-            // Hiển thị trạng thái loading
-            document.getElementById("danhSachDeThiBody").innerHTML = `
-                <tr>
-                    <td colspan="5" class="text-center py-4">
-                        <div class="spinner-border text-primary" role="status"></div>
-                        <div class="mt-2">Đang tải danh sách đề thi...</div>
-                    </td>
-                </tr>`;
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
 
-            // Tạo URL kèm tham số chống cache nếu cần
-            // SỬA: Thay đổi đường dẫn API từ /api/BaiThi/danh-sach thành /api/BaiThi/danh-sach-de-thi
+        function loadDeThiList(forceRefresh = false) {
+            showLoading();
+
             const url = forceRefresh
-                ? `/api/BaiThi/danh-sach-de-thi?timestamp=${new Date().getTime()}`
+                ? `/api/BaiThi/danh-sach-de-thi?t=${Date.now()}`
                 : '/api/BaiThi/danh-sach-de-thi';
 
             fetch(url)
                 .then(res => {
-                    console.log(`[loadDeThiList] Response status: ${res.status}`);
-                    if (!res.ok) {
-                        return res.text().then(text => {
-                            let errorMessage = `Lỗi API (${res.status})`;
-                            try {
-                                const errorObj = JSON.parse(text);
-                                errorMessage = errorObj.message || errorObj.error || errorMessage;
-                            } catch(e) {
-                                errorMessage = text || errorMessage;
-                            }
-                            throw new Error(errorMessage);
-                        });
-                    }
-
+                    if (!res.ok) throw new Error(`Lỗi ${res.status}`);
                     return res.json();
                 })
                 .then(data => {
-                    console.log(`[loadDeThiList] Data received:`, data);
-                    // Lưu dữ liệu toàn cục để dùng cho tìm kiếm và lọc
                     allDeThis = Array.isArray(data) ? data : [];
                     renderDeThiTable(allDeThis);
+                    updatePaginationInfo(allDeThis.length, allDeThis.length);
                 })
                 .catch(err => {
-                    console.error("[loadDeThiList] Error:", err);
-                    document.getElementById("danhSachDeThiBody").innerHTML = `
-                        <tr>
-                            <td colspan="5" class="text-center text-danger py-3">
-                                <i class="fas fa-exclamation-circle me-2"></i>
-                                Lỗi khi tải dữ liệu: ${err.message}
-                                <button class="btn btn-sm btn-outline-primary ms-3" onclick="loadDeThiList(true)">
-                                    <i class="fas fa-sync-alt me-1"></i> Thử lại
-                                </button>
-                            </td>
-                        </tr>`;
+                    showError(err.message);
                 });
         }
 
-        /**
-         * Tải danh sách loại bằng lái để lọc
-         */
         function loadLoaiBangLai() {
-            fetch('/api/LoaiBangLai/danh-sach')  // Sửa URL này từ /api/LoaiBangLai thành /api/LoaiBangLai/danh-sach
-                .then(res => {
-                    if (!res.ok) throw new Error(`Lỗi API: ${res.status}`);
-                    return res.json();
-                })
+            fetch('/api/LoaiBangLai/danh-sach')
+                .then(res => res.json())
                 .then(data => {
                     loaiBangLais = Array.isArray(data) ? data : [];
                     const select = document.getElementById("loaiBangLaiFilter");
 
-                    // Xóa các option cũ trừ option đầu tiên
-                    while (select.options.length > 1) {
-                        select.remove(1);
-                    }
-
-                    // Thêm option mới
                     loaiBangLais.forEach(loai => {
                         const option = document.createElement("option");
-                        option.value = loai.id;
-                        option.text = loai.tenLoai || "Không có tên";
+                        option.value = loai. id;
+                        option.textContent = loai.tenLoai || "Không có tên";
                         select.appendChild(option);
                     });
                 })
-                .catch(err => {
-                    console.error("[loadLoaiBangLai] Lỗi khi tải loại bằng lái:", err);
-                });
+                .catch(err => console.error(err));
         }
 
-        /**
-         * Hiển thị dữ liệu đề thi lên bảng
-         */
         function renderDeThiTable(data) {
-            if (!Array.isArray(data)) {
-                console.error("[renderDeThiTable] Data is not an array:", data);
-                data = [];
-            }
+            const tbody = document.getElementById("danhSachDeThiBody");
 
-            if (data.length === 0) {
-                document.getElementById("danhSachDeThiBody").innerHTML = `
+            if (! data || data.length === 0) {
+                tbody.innerHTML = `
                     <tr>
-                        <td colspan="5" class="text-center py-3">
-                            <i class="fas fa-info-circle me-2"></i> Không tìm thấy đề thi nào
+                        <td colspan="5" class="text-center py-5">
+                            <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                            <p class="text-muted mt-3 mb-0">Không tìm thấy đề thi nào</p>
                         </td>
                     </tr>`;
                 return;
             }
 
-            let html = '';
-
-            data.forEach((item, index) => {
-                // Kiểm tra và bảo vệ dữ liệu để tránh lỗi
-                const tenBaiThi = htmlEncode(item.tenBaiThi || "Đề thi không có tên");
-                const id = item.id || "";
-                const loaiBangLai = htmlEncode(item.loaiBangLai || "Không xác định");
-                const soCauHoi = item.soCau || 0;
-
-                html += `
+            tbody.innerHTML = data.map((item, index) => `
                 <tr>
-                    <td>${index + 1}</td>
-                    <td>${tenBaiThi}</td>
-                    <td>${loaiBangLai}</td>
-                    <td>${soCauHoi}</td>
+                    <td class="text-center fw-semibold">${index + 1}</td>
                     <td>
-                        <div class="btn-group" role="group">
-                            <a href="/Admin/ChiTietDeThi/${id}" class="btn btn-sm btn-info">
-                                <i class="fas fa-eye"></i> Xem
+                        <div class="fw-semibold text-dark">${htmlEncode(item.tenBaiThi || 'Không có tên')}</div>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge bg-primary rounded-pill px-3 py-2">
+                            ${htmlEncode(item.loaiBangLai || 'N/A')}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge bg-info text-dark rounded-pill px-3 py-2">
+                            ${item.soCau || 0} câu
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a href="/Admin/ChiTietDeThi/${item.id}" class="btn btn-outline-primary">
+                                <i class="bi bi-eye"></i>
                             </a>
-                            <button type="button" class="btn btn-sm btn-danger" onclick="showDeleteModal('${id}', '${tenBaiThi.replace(/'/g, "\\'")}')">
-                                <i class="fas fa-trash"></i> Xoá
+                            <button type="button" class="btn btn-outline-danger"
+                                    onclick="showDeleteModal('${item.id}', '${htmlEncode(item.tenBaiThi).replace(/'/g, "\\'")}')">
+                                <i class="bi bi-trash"></i>
                             </button>
                         </div>
                     </td>
-                </tr>`;
-            });
-
-            document.getElementById("danhSachDeThiBody").innerHTML = html;
+                </tr>
+            `).join('');
         }
 
-        /**
-         * Lọc dữ liệu theo tìm kiếm và loại bằng lái
-         */
         function filterData() {
             const searchTerm = document.getElementById("searchInput").value.toLowerCase().trim();
             const loaiBangLaiId = document.getElementById("loaiBangLaiFilter").value;
 
-            if ((!searchTerm || searchTerm === "") && (!loaiBangLaiId || loaiBangLaiId === "")) {
-                // Nếu không có điều kiện lọc, hiển thị tất cả
-                renderDeThiTable(allDeThis);
-                return;
-            }
+            let filtered = [... allDeThis];
 
-            // Bắt đầu lọc từ dữ liệu gốc
-            let filtered = [...allDeThis];
-
-            // Lọc theo tên đề thi nếu có nhập
             if (searchTerm) {
-                filtered = filtered.filter(item => {
-                    const tenBaiThi = (item.tenBaiThi || "").toLowerCase();
-                    return tenBaiThi.includes(searchTerm);
-                });
+                filtered = filtered.filter(item =>
+                    (item.tenBaiThi || '').toLowerCase().includes(searchTerm)
+                );
             }
 
-            // Lọc theo loại bằng lái nếu có chọn
             if (loaiBangLaiId) {
-                filtered = filtered.filter(item => {
-                    // Với API mới, chúng ta sẽ cần lọc theo loại bằng lái khác
-                    // Giả sử API trả về loaiBangLaiId trong dữ liệu
-                    return item.loaiBangLaiId === loaiBangLaiId;
-                });
+                filtered = filtered.filter(item =>
+                    String(item.loaiBangLaiId) === String(loaiBangLaiId)
+                );
             }
 
             renderDeThiTable(filtered);
+            updatePaginationInfo(filtered.length, allDeThis.length);
         }
 
-        /**
-         * Tập trung vào filter loại bằng lái
-         */
-        function filterDeThiByLoai() {
-            document.getElementById("loaiBangLaiFilter").focus();
+        function clearFilters() {
+            document.getElementById("searchInput").value = "";
+            document. getElementById("loaiBangLaiFilter").value = "";
+            filterData();
         }
 
-        /**
-         * Hiển thị modal xác nhận xóa
-         */
+        function updatePaginationInfo(showing, total) {
+            const info = document.getElementById("paginationInfo");
+            info.innerHTML = showing === total
+                ? `<strong>${total}</strong> đề thi`
+                : `<strong>${showing}</strong> / <strong>${total}</strong> đề thi`;
+        }
+
         function showDeleteModal(id, name) {
             document.getElementById('deleteExamName').textContent = name;
             deleteExamId = id;
 
-            // Thiết lập hàm xóa cho nút xác nhận
-            document.getElementById('confirmDelete').onclick = function() {
-                deleteDeThi(deleteExamId);
-                deleteModal.hide();
-            };
-
+            document.getElementById('confirmDelete').onclick = () => deleteDeThi(deleteExamId);
             deleteModal.show();
         }
 
-        /**
-         * Gọi API xóa đề thi
-         */
         function deleteDeThi(id) {
-            // Hiển thị loader hoặc disabled nút
-            document.getElementById('confirmDelete').disabled = true;
-            document.getElementById('confirmDelete').innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang xóa...';
+            const btn = document.getElementById('confirmDelete');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Đang xoá...';
 
-            fetch(`/api/BaiThi/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(res => {
-                if (!res.ok) {
-                    return res.text().then(text => {
-                        let errorMessage = "Lỗi khi xóa đề thi";
-                        try {
-                            const errorObj = JSON.parse(text);
-                            errorMessage = errorObj.message || errorObj.error || errorMessage;
-                        } catch(e) {
-                            if (text) errorMessage = text;
-                        }
-                        throw new Error(errorMessage);
-                    });
-                }
-
-                return res.text().then(text => {
-                    // Nhiều API có thể trả về chuỗi rỗng khi thành công
-                    if (!text || text.trim() === '') {
-                        return { success: true };
-                    }
-
-                    try {
-                        return JSON.parse(text);
-                    } catch (e) {
-                        return { success: true, message: text };
-                    }
+            fetch(`/api/BaiThi/${id}`, { method: 'DELETE' })
+                .then(res => {
+                    if (!res.ok) throw new Error('Xoá thất bại');
+                    return res.json().catch(() => ({ success: true }));
+                })
+                .then(() => {
+                    deleteModal.hide();
+                    showSuccessToast('Xoá đề thi thành công!');
+                    setTimeout(() => loadDeThiList(true), 500);
+                })
+                .catch(err => {
+                    showErrorToast(err.message);
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-trash me-1"></i>Xác nhận xoá';
                 });
-            })
-            .then(data => {
-                // Đóng modal và hiển thị thông báo thành công
-                alert('Xóa đề thi thành công!');
-
-                // Tải lại danh sách sau khi xóa thành công
-                loadDeThiList(true);
-            })
-            .catch(err => {
-                console.error('[deleteDeThi] Lỗi:', err);
-                alert(`Lỗi khi xóa đề thi: ${err.message}`);
-            })
-            .finally(() => {
-                // Khôi phục nút xóa về trạng thái ban đầu
-                document.getElementById('confirmDelete').disabled = false;
-                document.getElementById('confirmDelete').innerHTML = 'Xóa';
-            });
         }
 
-        /**
-         * Mã hóa HTML để tránh XSS
-         */
+        function showLoading() {
+            document.getElementById("danhSachDeThiBody").innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Đang tải...</span>
+                        </div>
+                        <p class="text-muted mt-2 mb-0">Đang tải dữ liệu...</p>
+                    </td>
+                </tr>`;
+        }
+
+        function showError(message) {
+            document.getElementById("danhSachDeThiBody").innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center py-5">
+                        <i class="bi bi-exclamation-circle text-danger" style="font-size: 3rem;"></i>
+                        <p class="text-danger mt-3 mb-2">Lỗi: ${message}</p>
+                        <button class="btn btn-sm btn-outline-primary" onclick="loadDeThiList(true)">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Thử lại
+                        </button>
+                    </td>
+                </tr>`;
+        }
+
+        function showSuccessToast(message) {
+            document.getElementById('successMessage').textContent = message;
+            successToast.show();
+        }
+
+        function showErrorToast(message) {
+            document. getElementById('errorMessage').textContent = message;
+            errorToast. show();
+        }
+
         function htmlEncode(str) {
-            if (!str) return '';
-            return String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;');
+            if (! str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
         }
     </script>
+
+    <style>
+        .card {
+            border: none;
+            border-radius: 12px;
+        }
+
+        .card-header {
+            border-radius: 12px 12px 0 0 !important;
+        }
+
+        .table > thead {
+            position: sticky;
+            top: 0;
+            z-index:  10;
+        }
+
+        .table > tbody > tr {
+            transition: all 0.2s ease;
+        }
+
+        .table > tbody > tr:hover {
+            background-color: #f8f9fa;
+            transform: scale(1.01);
+        }
+
+        .btn-group-sm > .btn {
+            padding: 0.375rem 0.75rem;
+        }
+
+        .badge {
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+
+        . modal-content {
+            border:  none;
+            border-radius:  12px;
+        }
+
+        .toast {
+            min-width: 300px;
+        }
+
+        .form-select:focus,
+        .form-control:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+        }
+    </style>
 }

@@ -32,6 +32,8 @@ namespace Libs.Repositories
         Task SaveChangesAsync();
         Task<BaiThi> GetByIdAsync(Guid id);
         ApplicationDbContext GetDbContext();
+        Task<BaiThi> CreateDeThiHaySai(List<CauHoi> cauHois, string tenBaiThi);
+        Task<BaiThi> TaoBaiThi(List<Guid> cauHoiIds, string tenBaiThi);
     }
 
     public class BaiThiRepository : RepositoryBase<BaiThi>, IBaiThiRepository
@@ -440,6 +442,46 @@ namespace Libs.Repositories
         public ApplicationDbContext GetDbContext()
         {
             return _dbContext;
+        }
+        public async Task<BaiThi> CreateDeThiHaySai(List<CauHoi> cauHois, String tenBaiThi)
+        {
+            var baiThiId = Guid.NewGuid();
+            var baiThi = new BaiThi
+            {
+                Id = baiThiId,
+                TenBaiThi = tenBaiThi,
+                ChiTietBaiThis = cauHois
+                    .Select(cauHoi => new ChiTietBaiThi
+                    {
+                        Id = Guid.NewGuid(),
+                        BaiThiId = baiThiId,
+                        CauHoiId = cauHoi.Id,
+                    })
+                    .ToList()
+            };
+            _dbContext.BaiThis.Add(baiThi);
+            await SaveChangesAsync();
+            return baiThi;
+        }
+        public async Task<BaiThi> TaoBaiThi(List<Guid> cauHoiIds, string tenBaiThi)
+        {
+            var baiThiId = Guid.NewGuid();
+            var baiThi = new BaiThi
+            {
+                Id = baiThiId,
+                TenBaiThi = tenBaiThi,
+                ChiTietBaiThis = cauHoiIds
+                    .Select(cauHoiId => new ChiTietBaiThi
+                    {
+                        Id = Guid.NewGuid(),
+                        BaiThiId = baiThiId,
+                        CauHoiId = cauHoiId
+                    })
+                    .ToList()
+            };
+            _dbContext.BaiThis.Add(baiThi);
+            await SaveChangesAsync();
+            return baiThi;
         }
     }
 }
