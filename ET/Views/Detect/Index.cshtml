@@ -1,70 +1,209 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@{
+    ViewData["Title"] = "Nhận Diện Biển Báo Giao Thông";
 }
 
 <style>
-    #mainContainer {
+    :root {
+        --primary-color: #0d6efd;
+        --secondary-color: #6c757d;
+        --bg-light: #f8f9fa;
+        --border-radius: 8px;
+        --box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .detect-container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 20px;
+        background: #fff;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    h2 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 30px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .controls-area {
         display: flex;
-        align-items: flex-start;
-        margin-top: 15px;
+        gap: 15px;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+    }
+
+    input[type="file"] {
+        display: none;
+    }
+
+    .custom-file-upload {
+        border: 2px dashed #ccc;
+        display: inline-block;
+        padding: 10px 20px;
+        cursor: pointer;
+        border-radius: var(--border-radius);
+        background-color: var(--bg-light);
+        transition: all 0.3s;
+        font-weight: 600;
+        color: #555;
+    }
+
+        .custom-file-upload:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background-color: #e9f2ff;
+        }
+
+    #btnDetect {
+        padding: 12px 30px;
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: var(--border-radius);
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.3s;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+        #btnDetect:hover {
+            background-color: #0b5ed7;
+            transform: translateY(-1px);
+        }
+
+        #btnDetect:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+    #mainContainer {
+        display: grid;
+        grid-template-columns: 350px 1fr;
+        gap: 30px;
+        align-items: start;
     }
 
     #legend {
-        width: 250px;
-        margin-right: 20px;
-        padding: 10px;
-        border: 1px solid #ccc;
-        background-color: #f9f9f9;
-        min-height: 400px; /* Thêm min-height để cao hơn lúc mới load */
-        max-height: 300px; /* Tăng max-height một chút để dài ra */
+        background-color: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: var(--border-radius);
+        padding: 20px;
+        max-height: 600px;
         overflow-y: auto;
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.02);
     }
 
-        #legend ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
+        #legend h3 {
+            margin-top: 0;
+            font-size: 18px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            color: #333;
         }
 
-        #legend li {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-            font-size: 16px;
-            font-weight: bold;
-        }
+    .result-item {
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+    }
 
-        #legend .color-box {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            margin-right: 10px;
-            border: 1px solid #000;
-        }
+    .result-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 5px;
+        font-weight: 600;
+        font-size: 15px;
+    }
+
+    .color-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+    }
+
+    .progress-bg {
+        background-color: #e9ecef;
+        height: 8px;
+        border-radius: 4px;
+        overflow: hidden;
+        width: 100%;
+    }
+
+    .progress-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.6s ease;
+    }
 
     #canvasContainer {
-        width: 600px;
-        border: 1px solid #ccc;
+        border: 1px solid #ddd;
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        background: #fdfdfd;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 400px;
     }
 
     #canvas {
-        width: 100%;
+        max-width: 100%;
         height: auto;
         display: block;
     }
+
+    @@media (max-width: 768px) {
+        #mainContainer {
+            grid-template-columns: 1fr;
+        }
+
+        #legend {
+            order: 2;
+        }
+
+        #canvasContainer {
+            order: 1;
+        }
+    }
 </style>
 
-<h2>Nhận Diện Biển Báo</h2>
+<div class="detect-container">
+    <h2> Hệ Thống Nhận Diện Biển Báo</h2>
 
-<input type="file" id="fileInput" accept="image/*" />
-<button id="btnDetect">Nhận diện ngay</button>
+    <div class="controls-area">
+        <label for="fileInput" class="custom-file-upload">
+            <i class="fa fa-cloud-upload"></i> Chọn ảnh ...
+        </label>
+        <input type="file" id="fileInput" accept="image/*" />
 
-<div id="mainContainer">
-    <div id="legend"></div>
-    <div id="canvasContainer">
-        <canvas id="canvas"></canvas>
+        <button id="btnDetect">
+            <span>🔍 Nhận diện ngay</span>
+        </button>
+    </div>
+
+    <div id="mainContainer">
+        <div id="legend">
+            <p style="text-align:center; color:#888; margin-top: 20px;">
+                <em>Kết quả nhận diện sẽ hiển thị tại đây...</em>
+            </p>
+        </div>
+
+        <div id="canvasContainer">
+            <canvas id="canvas"></canvas>
+            <p id="placeholderText" style="color:#aaa;">Vui lòng chọn ảnh để bắt đầu</p>
+        </div>
     </div>
 </div>
 
@@ -73,39 +212,31 @@
     const ctx = canvas.getContext("2d");
     const legend = document.getElementById("legend");
     const canvasContainer = document.getElementById("canvasContainer");
+    const fileInput = document.getElementById("fileInput");
+    const btnDetect = document.getElementById("btnDetect");
+    const placeholderText = document.getElementById("placeholderText");
+    const customLabel = document.querySelector(".custom-file-upload");
 
     let uploadedImage = null;
 
     function randomColor() {
-        return "hsl(" + Math.floor(Math.random() * 360) + ", 90%, 50%)";
+        return "hsl(" + Math.floor(Math.random() * 360) + ", 70%, 50%)";
     }
 
     function drawDetections(image, detections) {
-        // Set canvas to *real resolution* của ảnh
         canvas.width = image.naturalWidth;
         canvas.height = image.naturalHeight;
 
-        // Tính scale factor (display width / canvas width)
         const displayWidth = canvasContainer.offsetWidth;
         const scale = displayWidth / canvas.width;
 
-        // Desired sizes in screen pixels
-        const desiredBoxLineWidth = 3;
-        const desiredFontSize = 22;
-        const desiredTextLineWidth = 4;
-        const desiredXOffset = 5;
-        const desiredYOffset = desiredFontSize; // Để chữ nằm ngay dưới cạnh trên
-
-        // Scale to canvas coordinates
-        const boxLineWidth = desiredBoxLineWidth / scale;
-        const fontSize = desiredFontSize / scale;
-        const textLineWidth = desiredTextLineWidth / scale;
-        const xOffset = desiredXOffset / scale;
-        const yOffset = desiredYOffset / scale;
+        const desiredBoxLineWidth = 4;
+        const desiredFontSize = 24;
+        const xOffset = 5 / scale;
+        const yOffset = desiredFontSize / scale;
 
         ctx.drawImage(image, 0, 0);
 
-        // Tạo map label -> color để thống nhất màu cho cùng label
         const colors = {};
         detections.forEach(d => {
             if (!colors[d.label]) {
@@ -113,70 +244,91 @@
             }
         });
 
-        // Vẽ bounding boxes và số
         detections.forEach((d, index) => {
             const num = index + 1;
             const color = colors[d.label];
-
-            const x = d.bBox.x;
-            const y = d.bBox.y;
-            const w = d.bBox.width;
-            const h = d.bBox.height;
+            const { x, y, width: w, height: h } = d.bBox;
 
             ctx.strokeStyle = color;
-            ctx.lineWidth = boxLineWidth;
+            ctx.lineWidth = desiredBoxLineWidth / scale;
             ctx.strokeRect(x, y, w, h);
 
-            // Vẽ số bên trong box, góc trên trái
-            ctx.font = `bold ${fontSize}px Arial`;
-            ctx.lineWidth = textLineWidth;
-            ctx.strokeStyle = "black";
+            ctx.font = `bold ${desiredFontSize / scale}px Arial`;
+            ctx.lineWidth = 3 / scale;
+            ctx.strokeStyle = "white";
             ctx.strokeText(num, x + xOffset, y + yOffset);
-
             ctx.fillStyle = color;
             ctx.fillText(num, x + xOffset, y + yOffset);
         });
 
-        // Xóa legend cũ và tạo mới
-        legend.innerHTML = '<h3>Detected Objects</h3><ul></ul>';
-        const ul = legend.querySelector('ul');
+        legend.innerHTML = '<h3>📋 Kết Quả Phát Hiện</h3>';
 
-        // List detections với số
+        if (detections.length === 0) {
+            legend.innerHTML += '<p>Không tìm thấy biển báo nào.</p>';
+            return;
+        }
+
         detections.forEach((d, index) => {
             const num = index + 1;
             const color = colors[d.label];
-            const text = `${d.label} (${(d.confidence * 100).toFixed(1)}%)`;
+            const confidencePercent = (d.confidence * 100).toFixed(1);
 
-            const li = document.createElement('li');
-            li.innerHTML = `<span class="color-box" style="background-color: ${color};"></span> ${num}. ${text}`;
-            ul.appendChild(li);
+            const itemHtml = `
+                <div class="result-item">
+                    <div class="result-header">
+                        <span>
+                            <span class="color-indicator" style="background-color: ${color};"></span>
+                            #${num}. ${d.label}
+                        </span>
+                        <span>${confidencePercent}%</span>
+                    </div>
+                    <div class="progress-bg">
+                        <div class="progress-fill" style="width: ${confidencePercent}%; background-color: ${color};"></div>
+                    </div>
+                </div>
+            `;
+            legend.innerHTML += itemHtml;
         });
     }
 
-    document.getElementById("fileInput").addEventListener("change", event => {
+ 
+    fileInput.addEventListener("change", event => {
         const file = event.target.files[0];
         if (!file) return;
 
-        const url = URL.createObjectURL(file);
+     
+        customLabel.innerHTML = `<i class="fa fa-check"></i> Đã chọn: ${file.name}`;
+        customLabel.style.borderColor = "#28a745";
+        customLabel.style.color = "#28a745";
 
+        const url = URL.createObjectURL(file);
         uploadedImage = new Image();
         uploadedImage.src = url;
 
         uploadedImage.onload = () => {
+            placeholderText.style.display = 'none';
+            canvas.style.display = 'block';
+
             canvas.width = uploadedImage.naturalWidth;
             canvas.height = uploadedImage.naturalHeight;
             ctx.drawImage(uploadedImage, 0, 0);
-            // Xóa legend khi upload ảnh mới
-            legend.innerHTML = '';
+
+       
+            legend.innerHTML = '<p style="text-align:center; color:#666;">Nhấn <b>"Nhận diện ngay"</b> để xem kết quả.</p>';
         };
     });
 
-    document.getElementById("btnDetect").addEventListener("click", () => {
-        const file = document.getElementById("fileInput").files[0];
+
+    btnDetect.addEventListener("click", () => {
+        const file = fileInput.files[0];
         if (!file) {
-            alert("Vui lòng chọn ảnh.");
+            alert("⚠️ Vui lòng chọn ảnh trước!");
             return;
         }
+
+        const originalBtnText = btnDetect.innerHTML;
+        btnDetect.innerHTML = '<span>⏳ Đang xử lý...</span>';
+        btnDetect.disabled = true;
 
         const formData = new FormData();
         formData.append("file", file);
@@ -185,26 +337,35 @@
             method: "POST",
             body: formData
         })
-            .then(async res => {
-                if (!res.ok) {
-                    throw new Error("API Error: " + await res.text());
-                }
-
-                const text = await res.text();
-                if (!text.trim()) throw new Error("API trả về rỗng!");
-
-                return JSON.parse(text);
-            })
-            .then(json => {
-                if (!json.data || json.data.length === 0) {
-                    alert("Không phát hiện vật thể nào.");
-                    return;
-                }
-
+        .then(async res => {
+            if (!res.ok) throw new Error("API Error: " + await res.text());
+            const text = await res.text();
+            if (!text.trim()) throw new Error("API trả về rỗng!");
+            return JSON.parse(text);
+        })
+        .then(json => {
+            if (!json.data || json.data.length === 0) {
+                alert("Không phát hiện vật thể nào.");
+                legend.innerHTML = '<p style="text-align:center;">Không tìm thấy biển báo.</p>';
+            } else {
                 drawDetections(uploadedImage, json.data);
-            })
-            .catch(err => {
-                alert("Lỗi API detect: " + err.message);
-            });
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("❌ Lỗi: " + err.message);
+        })
+        .finally(() => {
+     
+            btnDetect.innerHTML = originalBtnText;
+            btnDetect.disabled = false;
+
+        
+            customLabel.innerHTML = '<i class="fa fa-cloud-upload"></i> Chọn ảnh ...';
+            customLabel.style.borderColor = "#ccc"; 
+            customLabel.style.color = "#555";      
+          
+            fileInput.value = '';
+        });
     });
 </script>

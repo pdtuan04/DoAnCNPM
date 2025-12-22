@@ -17,7 +17,7 @@
             <input type="number" id="Order" class="form-control" required />
         </div>
 
-        <!-- CKEditor thay thế upload ảnh/video -->
+    
         <div class="form-group">
             <label for="NoiDung">Nội dung *</label>
             <textarea id="NoiDung" class="form-control"></textarea>
@@ -33,11 +33,10 @@
 </div>
 
 @section Scripts {
-    <!-- CKEditor -->
+
     <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
 
     <script>
-        // Load danh sách loại bằng lái
         fetch('/api/LoaiBangLai/get-loai-bang-lai-list')
             .then(res => res.json())
             .then(data => {
@@ -50,7 +49,7 @@
                 });
             });
 
-        // CUSTOM UPLOAD ADAPTER (Upload ảnh & video)
+    
         class UploadAdapter {
             constructor(loader) {
                 this.loader = loader;
@@ -95,7 +94,7 @@
 
         let editorInstance;
 
-        // Khởi tạo CKEditor
+   
         ClassicEditor
             .create(document.querySelector('#NoiDung'), {
                 extraPlugins: [CustomUploadAdapterPlugin],
@@ -104,31 +103,79 @@
             .then(editor => editorInstance = editor)
             .catch(err => console.error(err));
 
-        // Submit form
-        document.getElementById("createForm").addEventListener("submit", async function (e) {
-            e.preventDefault();
 
-            const data = {
-                TenBai: document.getElementById("TenBai").value,
-                Order: parseInt(document.getElementById("Order").value),
-                NoiDung: editorInstance.getData(),
-                LoaiBangLaiId: document.getElementById("LoaiBangLaiId").value
-            };
+        // Xử lý sự kiện Submit Form
+         document.getElementById("createForm").addEventListener("submit", async function (e) {
+             e.preventDefault();
 
-            const resCreate = await fetch("/api/SaHinh/create", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data)
-            });
+             // 1. Lấy dữ liệu từ Form
+             const inputTenBai = document.getElementById("TenBai").value.trim();
+             const inputOrder = parseInt(document.getElementById("Order").value);
+             const inputLoaiBangLaiId = document.getElementById("LoaiBangLaiId").value;
 
-            const result = await resCreate.json();
+             // Lấy dữ liệu từ CKEditor
+             const noiDungValue = editorInstance.getData();
 
-            if (result.status) {
-                alert("Thêm bài sa hình thành công!");
-                location.href = "/Admin/QLSaHinh";
-            } else {
-                alert("Lỗi: " + result.message);
-            }
-        });
+             // 2. VALIDATE NỘI DUNG (Bắt buộc nhập)
+             if (!noiDungValue || noiDungValue.trim() === "") {
+                 alert("Vui lòng nhập nội dung cho bài sa hình!");
+                 return;
+             }
+
+             // 3. KIỂM TRA TRÙNG LẶP (Logic mới thêm)
+             try {
+                 // Gọi API lấy danh sách các bài sa hình thuộc loại bằng lái đang chọn
+                 // Đặt pageSize lớn (ví dụ 1000) để đảm bảo lấy hết danh sách về để so sánh
+                 const resCheck = await fetch(`/api/SaHinh/paged-bai-sa-hinh?page=1&pageSize=1000&search=&sortCol=&sortDir=&loaiBangLaiId=${inputLoaiBangLaiId}`);
+                 const resultCheck = await resCheck.json();
+
+                 if (resultCheck.data && resultCheck.data.length > 0) {
+                     // Kiểm tra trùng Tên bài (Không phân biệt hoa thường)
+                     const isDuplicateName = resultCheck.data.some(bai => bai.tenBai.toLowerCase() === inputTenBai.toLowerCase());
+                     if (isDuplicateName) {
+                         alert(`Lỗi: Tên bài "${inputTenBai}" đã tồn tại trong danh sách của bằng này!`);
+                         return; // Dừng lại, không gửi dữ liệu
+                     }
+
+                     // Kiểm tra trùng Thứ tự (Order)
+                     const isDuplicateOrder = resultCheck.data.some(bai => bai.order === inputOrder);
+                     if (isDuplicateOrder) {
+                         alert(`Lỗi: Thứ tự số ${inputOrder} đã được sử dụng cho bài khác!`);
+                         return; // Dừng lại, không gửi dữ liệu
+                     }
+                 }
+             } catch (error) {
+                 console.error("Lỗi kiểm tra trùng lặp:", error);
+                 alert("Không thể kiểm tra dữ liệu trùng lặp. Vui lòng thử lại.");
+                 return;
+             }
+
+             // 4. GỬI DỮ LIỆU TẠO MỚI (Nếu không bị trùng)
+             const data = {
+                 TenBai: inputTenBai,
+                 Order: inputOrder,
+                 NoiDung: noiDungValue,
+                 LoaiBangLaiId: inputLoaiBangLaiId
+             };
+
+             try {
+                 const resCreate = await fetch("/api/SaHinh/create", {
+                     method: "POST",
+                     headers: { "Content-Type": "application/json" },
+                     body: JSON.stringify(data)
+                 });
+
+                 const result = await resCreate.json();
+
+                 if (result.status) {
+                     alert("Thêm bài sa hình thành công!");
+                     location.href = "/Admin/QLSaHinh";
+                 } else {
+                     alert("Lỗi hệ thống: " + result.message);
+                 }
+             } catch (err) {
+                 alert("Lỗi kết nối: " + err.message);
+             }
+         });
     </script>
 }
