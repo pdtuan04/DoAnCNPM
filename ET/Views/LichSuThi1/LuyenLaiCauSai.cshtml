@@ -205,7 +205,18 @@
         width: 100%;
     }
 
+    /* FIX: ảnh trong nút momo không bị ăn style img global */
+    .btn-momo img {
+        width: 28px;
+        height: 28px;
+        object-fit: contain;
+        /* override từ img global */
+        margin-top: 0 !important;
+        border: none !important;
+        border-radius: 6px !important; /* hoặc 0 nếu muốn vuông */
+        display: block;
     }
+
 </style>
 
 
@@ -244,10 +255,15 @@
 
                 <div class="payment-section">
 
-                    <button class="btn-momo" onclick="thanhToanMoKhoa(1)">
-                        <img src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png">
-                        Thanh toán qua MoMo
-                    </button>
+                        <button class="btn-momo" onclick="thanhToanMoKhoa(1)">
+      <img
+        src="https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-MoMo-Square.png"
+        alt="MoMo"
+        loading="lazy"
+      />
+      Thanh toán qua MoMo
+    </button>
+
 
                     <div class="divider">
                         <span>Hoặc</span>
